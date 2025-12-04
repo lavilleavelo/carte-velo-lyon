@@ -87,7 +87,7 @@
 		},
 		...Array.from({ length: 12 }, (_, i) => ({
 			id: `vl-${i + 1}`,
-			label: `VL ${i + 1}`,
+			label: `${i + 1}`,
 			color: vlColors[i],
 			category: 'Voies Lyonnaises'
 		})),
@@ -105,7 +105,7 @@
 		},
 		{
 			id: 'parking-demand',
-			label: 'Zones de demande de stationnements vélos',
+			label: 'Zones de demande de stationnements',
 			color: '#0595d3',
 			category: 'Baromètre Cyclable FUB'
 		}
@@ -123,6 +123,20 @@
 	let selectedFeature: any = $state(null);
 	let hoveredCommune: any = $state(null);
 	let hoverLngLat = $state.raw(new maplibregl.LngLat(0, 0));
+	let collapsedCategories = $state(
+		new Set<string>(
+			// Initially collapse all categories if no layer from that category is active
+			availableLayers
+				.map((layer) => layer.category)
+				.filter(
+					(category, index, self) =>
+						self.indexOf(category) === index &&
+						!availableLayers
+							.filter((layer) => layer.category === category)
+							.some((layer) => (params.layers || []).includes(layer.id))
+				)
+		)
+	);
 
 	const center = $derived.by(() => {
 		const [lng, lat] = params.center;
@@ -156,6 +170,43 @@
 
 	function isLayerVisible(layerId: string): boolean {
 		return (params.layers || []).includes(layerId);
+	}
+
+	function toggleCategory(category: string) {
+		const categoryLayers = layersByCategory.get(category);
+		if (!categoryLayers) return;
+
+		const layerIds = categoryLayers.map((layer) => layer.id);
+		const allVisible = layerIds.every((id) => isLayerVisible(id));
+
+		if (allVisible) {
+			// Turn off all layers in category
+			params.layers = (params.layers || []).filter((id) => !layerIds.includes(id));
+		} else {
+			// Turn on all layers in category
+			const currentLayers = new Set(params.layers || []);
+			layerIds.forEach((id) => currentLayers.add(id));
+			params.layers = Array.from(currentLayers);
+		}
+	}
+
+	function isCategoryVisible(category: string): boolean {
+		const categoryLayers = layersByCategory.get(category);
+		if (!categoryLayers) return false;
+		return categoryLayers.some((layer) => isLayerVisible(layer.id));
+	}
+
+	function isCategoryCollapsed(category: string): boolean {
+		return collapsedCategories.has(category);
+	}
+
+	function toggleCategoryCollapse(category: string) {
+		if (collapsedCategories.has(category)) {
+			collapsedCategories.delete(category);
+		} else {
+			collapsedCategories.add(category);
+		}
+		collapsedCategories = new Set(collapsedCategories);
 	}
 
 	function handleFeatureClick(e: any, type: string) {
@@ -245,31 +296,63 @@
 						</Collapsible.Trigger>
 
 						<Collapsible.Content class="border-t">
-							<div class="max-h-[60vh] overflow-y-auto p-4">
+							<div class="max-h-[60vh] max-w-[350px] overflow-y-auto p-4">
 								<div class="flex flex-col gap-4">
 									{#each [...layersByCategory.entries()] as [category, layers]}
 										<div class="flex flex-col gap-2">
-											<h3 class="text-xs font-semibold text-gray-500 uppercase">
-												{category}
-											</h3>
-											<div class="flex flex-col gap-2 pl-1">
-												{#each layers as layer}
-													<div class="flex items-center gap-2">
-														<Checkbox
-															id={layer.id}
-															checked={isLayerVisible(layer.id)}
-															onCheckedChange={() => toggleLayer(layer.id)}
+											<div class="flex items-center justify-between">
+												<button
+													onclick={() => toggleCategoryCollapse(category)}
+													class="flex items-center gap-1.5 text-xs font-semibold text-gray-500 uppercase transition-colors hover:text-gray-700"
+												>
+													<svg
+														class="h-3 w-3 transition-transform duration-200"
+														class:rotate-180={!isCategoryCollapsed(category)}
+														fill="none"
+														stroke="currentColor"
+														viewBox="0 0 24 24"
+													>
+														<path
+															stroke-linecap="round"
+															stroke-linejoin="round"
+															stroke-width="2"
+															d="M19 9l-7 7-7-7"
 														/>
-														<Label for={layer.id} class="flex items-center gap-2 text-sm">
-															<span
-																class="inline-block h-3 w-3 rounded-full"
-																style="background-color: {layer.color}"
-															></span>
-															{layer.label}
-														</Label>
-													</div>
-												{/each}
+													</svg>
+													{category}
+												</button>
+												<button
+													onclick={() => toggleCategory(category)}
+													class="rounded px-2 py-0.5 text-xs transition-colors hover:bg-gray-100"
+													class:text-brand-navy={isCategoryVisible(category)}
+													class:text-gray-400={!isCategoryVisible(category)}
+													title={isCategoryVisible(category)
+														? 'Désactiver toutes les couches'
+														: 'Activer toutes les couches'}
+												>
+													{isCategoryVisible(category) ? 'Tout désactiver' : 'Tout activer'}
+												</button>
 											</div>
+											{#if !isCategoryCollapsed(category)}
+												<div class="flex flex-row flex-wrap gap-2 pl-1">
+													{#each layers as layer}
+														<div class="flex items-center gap-2">
+															<Checkbox
+																id={layer.id}
+																checked={isLayerVisible(layer.id)}
+																onCheckedChange={() => toggleLayer(layer.id)}
+															/>
+															<Label for={layer.id} class="flex items-center gap-2 text-sm">
+																<span
+																	class="inline-block h-3 w-3 rounded-full"
+																	style="background-color: {layer.color}"
+																></span>
+																{layer.label}
+															</Label>
+														</div>
+													{/each}
+												</div>
+											{/if}
 										</div>
 									{/each}
 								</div>
