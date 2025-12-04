@@ -27,7 +27,9 @@
 	let { data }: { data: PageData } = $props();
 
 	const mapSearchParamsSchema = type({
-		layers: type('string[]').default(() => ['communes', 'cycleways']),
+		layers: type('string[]').default(() =>
+			['communes', 'cycleways', Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`)].flat()
+		),
 		commune: 'string = ""',
 		zoom: 'number = 11',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
@@ -42,6 +44,21 @@
 		pushHistory: false,
 		debounce: 100
 	});
+
+	const vlColors = [
+		'#60A75B', // Line 1
+		'#AC4D35', // Line 2
+		'#3B7B64', // Line 3
+		'#DC8953', // Line 4
+		'#AF7392', // Line 5
+		'#396083', // Line 6
+		'#75BCAE', // Line 7
+		'#7E6D98', // Line 8
+		'#EAAB50', // Line 9
+		'#9A8A4B', // Line 10
+		'#4DADC9', // Line 11
+		'#DBABB7' // Line 12
+	];
 
 	const availableLayers = [
 		{
@@ -68,7 +85,12 @@
 			color: '#fbbf24',
 			category: 'Infrastructures Cyclables'
 		},
-
+		...Array.from({ length: 12 }, (_, i) => ({
+			id: `vl-${i + 1}`,
+			label: `VL ${i + 1}`,
+			color: vlColors[i],
+			category: 'Voies Lyonnaises'
+		})),
 		{
 			category: 'Baromètre Cyclable FUB',
 			id: 'problematic-red',
@@ -311,308 +333,380 @@
 					<GeolocateControl position="top-right" />
 					<AttributionControl compact={true} />
 
-					{#if isLayerVisible('communes')}
-						<GeoJSONSource id="arrondissements" data={data.arrondissementsLyon}>
-							<LineLayer
-								id="arrondissements-line"
-								source="arrondissements"
-								paint={{
-									'line-color': '#2563eb',
-									'line-width': 2,
-									'line-opacity': 0.3
-								}}
-							/>
-						</GeoJSONSource>
+					<GeoJSONSource id="arrondissements" data={data.arrondissementsLyon}>
+						<LineLayer
+							id="arrondissements-line"
+							source="arrondissements"
+							layout={{
+								visibility: isLayerVisible('communes') ? 'visible' : 'none'
+							}}
+							paint={{
+								'line-color': '#2563eb',
+								'line-width': 2,
+								'line-opacity': 0.3
+							}}
+						/>
+					</GeoJSONSource>
 
-						<GeoJSONSource data={data.communesLimit} id="communes-source">
-							<FillLayer
-								id="communes-fill"
+					<GeoJSONSource data={data.communesLimit} id="communes-source">
+						<FillLayer
+							id="communes-fill"
+							layout={{
+								visibility: isLayerVisible('communes') ? 'visible' : 'none'
+							}}
+							paint={{
+								'fill-color': '#6b7280',
+								'fill-opacity': 0.05
+							}}
+						/>
+						<LineLayer
+							id="communes-layer"
+							layout={{
+								visibility: isLayerVisible('communes') ? 'visible' : 'none'
+							}}
+							paint={{
+								'line-color': '#6b7280',
+								'line-width': 2,
+								'line-opacity': 0.5
+							}}
+						/>
+						{#if params.dimBackground}
+							<SymbolLayer
+								id="communes-labels"
+								layout={{
+									visibility: isLayerVisible('communes') ? 'visible' : 'none',
+									'text-field': ['get', 'nom'],
+									'text-font': ['systems-ui-bold'],
+									'text-size': 14,
+									'text-anchor': 'center',
+									'text-max-width': 10,
+									'text-allow-overlap': false,
+									'text-ignore-placement': false
+								}}
 								paint={{
-									'fill-color': '#6b7280',
-									'fill-opacity': 0.05
+									'text-color': '#ffffff',
+									'text-halo-color': '#000000',
+									'text-halo-width': 1.1,
+									'text-halo-blur': 0
 								}}
 							/>
-							<LineLayer
-								id="communes-layer"
-								paint={{
-									'line-color': '#6b7280',
-									'line-width': 2,
-									'line-opacity': 0.5
-								}}
-							/>
-							{#if params.dimBackground}
-								<SymbolLayer
-									id="communes-labels"
-									layout={{
-										'text-field': ['get', 'nom'],
-										'text-font': ['systems-ui-bold'],
-										'text-size': 14,
-										'text-anchor': 'center',
-										'text-max-width': 10,
-										'text-allow-overlap': false,
-										'text-ignore-placement': false
-									}}
-									paint={{
-										'text-color': '#ffffff',
-										'text-halo-color': '#000000',
-										'text-halo-width': 1.1,
-										'text-halo-blur': 0
-									}}
-								/>
-							{/if}
-							{#if hoveredCommune && selectedScoreIndicator.property !== null}
-								<Popup
-									lnglat={hoverLngLat}
-									offset={[0, -10]}
-									closeButton={false}
-									closeOnClick={false}
-								>
-									<div class="min-w-[150px]">
-										<div class="mb-1 text-sm font-semibold">
-											{hoveredCommune.properties.nom}
-										</div>
-										<div class=" text-xs text-gray-600">
-											<div class="mb-1">{selectedScoreIndicator.label}</div>
-											<div class="font-bold text-brand-navy">
-												{numFormatter.format(
-													JSON.parse(hoveredCommune.properties.scores)?.[
-														selectedScoreIndicator.property
-													] ?? 'N/A'
-												)}
-											</div>
+						{/if}
+						{#if hoveredCommune && selectedScoreIndicator.property !== null}
+							<Popup
+								lnglat={hoverLngLat}
+								offset={[0, -10]}
+								closeButton={false}
+								closeOnClick={false}
+							>
+								<div class="min-w-[150px]">
+									<div class="mb-1 text-sm font-semibold">
+										{hoveredCommune.properties.nom}
+									</div>
+									<div class=" text-xs text-gray-600">
+										<div class="mb-1">{selectedScoreIndicator.label}</div>
+										<div class="font-bold text-brand-navy">
+											{numFormatter.format(
+												JSON.parse(hoveredCommune.properties.scores)?.[
+													selectedScoreIndicator.property
+												] ?? 'N/A'
+											)}
 										</div>
 									</div>
-								</Popup>
-							{/if}
-						</GeoJSONSource>
-					{/if}
+								</div>
+							</Popup>
+						{/if}
+					</GeoJSONSource>
 
-					{#if isLayerVisible('cycleways')}
-						<GeoJSONSource data={data.voirieData} id="cycleways-source">
-							<LineLayer
-								id="cycleways-layer"
-								paint={{
-									'line-color': matchTypeColorReseau,
-									'line-width': matchTypeWidth,
-									'line-opacity': 0.8
-								}}
-								onclick={(e) => handleFeatureClick(e, 'cycleway')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-						</GeoJSONSource>
-					{/if}
+					<GeoJSONSource data={data.voirieData} id="cycleways-source">
+						<LineLayer
+							id="cycleways-layer"
+							paint={{
+								'line-color': matchTypeColorReseau,
+								'line-width': matchTypeWidth,
+								'line-opacity': 0.8
+							}}
+							layout={{
+								visibility: isLayerVisible('cycleways') ? 'visible' : 'none'
+							}}
+							onclick={(e) => handleFeatureClick(e, 'cycleway')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+					</GeoJSONSource>
 
-					{#if isLayerVisible('problematic-red')}
-						<GeoJSONSource data={data.clustersRouges} id="clusters-red-source">
-							<FillLayer
-								id="clusters-red-fill"
-								paint={{
-									'fill-color': '#ef4444',
-									'fill-opacity': 0.5
-								}}
-								onclick={(e) => handleFeatureClick(e, 'cluster-red')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-							<LineLayer
-								id="clusters-red-border"
-								paint={{
-									'line-color': '#b91c1c',
-									'line-width': 2,
-									'line-opacity': 0.8
-								}}
-								onclick={(e) => handleFeatureClick(e, 'cluster-red')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-						</GeoJSONSource>
+					<GeoJSONSource data={data.clustersRouges} id="clusters-red-source">
+						<FillLayer
+							id="clusters-red-fill"
+							layout={{
+								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none'
+							}}
+							paint={{
+								'fill-color': '#ef4444',
+								'fill-opacity': 0.5
+							}}
+							onclick={(e) => handleFeatureClick(e, 'cluster-red')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+						<LineLayer
+							id="clusters-red-border"
+							layout={{
+								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none'
+							}}
+							paint={{
+								'line-color': '#b91c1c',
+								'line-width': 2,
+								'line-opacity': 0.8
+							}}
+							onclick={(e) => handleFeatureClick(e, 'cluster-red')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+					</GeoJSONSource>
 
-						<GeoJSONSource data={data.pointsRouges} id="points-red-source">
-							<CircleLayer
-								id="points-red-layer"
-								paint={{
-									'circle-color': '#ef4444',
-									'circle-radius': 2,
-									'circle-opacity': 0.8,
-									'circle-stroke-width': 0.5,
-									'circle-stroke-color': '#fff'
-								}}
-								onclick={(e) => handleFeatureClick(e, 'point-red')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-						</GeoJSONSource>
-					{/if}
+					<GeoJSONSource data={data.pointsRouges} id="points-red-source">
+						<CircleLayer
+							id="points-red-layer"
+							layout={{
+								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none'
+							}}
+							paint={{
+								'circle-color': '#ef4444',
+								'circle-radius': 2,
+								'circle-opacity': 0.8,
+								'circle-stroke-width': 0.5,
+								'circle-stroke-color': '#fff'
+							}}
+							onclick={(e) => handleFeatureClick(e, 'point-red')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+					</GeoJSONSource>
 
-					{#if isLayerVisible('problematic-green')}
-						<GeoJSONSource data={data.clustersVerts} id="clusters-green-source">
-							<FillLayer
-								id="clusters-green-fill"
-								paint={{
-									'fill-color': '#22c55e',
-									'fill-opacity': 0.5
-								}}
-								onclick={(e) => handleFeatureClick(e, 'cluster-green')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-							<LineLayer
-								id="clusters-green-border"
-								paint={{
-									'line-color': '#16a34a',
-									'line-width': 2,
-									'line-opacity': 0.8
-								}}
-								onclick={(e) => handleFeatureClick(e, 'cluster-green')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-						</GeoJSONSource>
+					<GeoJSONSource data={data.clustersVerts} id="clusters-green-source">
+						<FillLayer
+							id="clusters-green-fill"
+							layout={{
+								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none'
+							}}
+							paint={{
+								'fill-color': '#22c55e',
+								'fill-opacity': 0.5
+							}}
+							onclick={(e) => handleFeatureClick(e, 'cluster-green')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+						<LineLayer
+							id="clusters-green-border"
+							layout={{
+								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none'
+							}}
+							paint={{
+								'line-color': '#16a34a',
+								'line-width': 2,
+								'line-opacity': 0.8
+							}}
+							onclick={(e) => handleFeatureClick(e, 'cluster-green')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+					</GeoJSONSource>
 
-						<GeoJSONSource data={data.pointsVerts} id="points-green-source">
-							<CircleLayer
-								id="points-green-layer"
-								paint={{
-									'circle-color': '#22c55e',
-									'circle-radius': 2,
-									'circle-opacity': 0.8,
-									'circle-stroke-width': 0.5,
-									'circle-stroke-color': '#fff'
-								}}
-								onclick={(e) => handleFeatureClick(e, 'point-green')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-						</GeoJSONSource>
-					{/if}
+					<GeoJSONSource data={data.pointsVerts} id="points-green-source">
+						<CircleLayer
+							id="points-green-layer"
+							layout={{
+								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none'
+							}}
+							paint={{
+								'circle-color': '#22c55e',
+								'circle-radius': 2,
+								'circle-opacity': 0.8,
+								'circle-stroke-width': 0.5,
+								'circle-stroke-color': '#fff'
+							}}
+							onclick={(e) => handleFeatureClick(e, 'point-green')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+					</GeoJSONSource>
 
-					{#if isLayerVisible('parking-demand')}
-						<GeoJSONSource data={data.clusterStationnements} id="parking-demand-source">
-							<FillLayer
-								id="parking-demand-fill"
-								paint={{
-									'fill-color': '#0595d3',
-									'fill-opacity': 0.5
-								}}
-								onclick={(e) => handleFeatureClick(e, 'parking-demand')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-							<LineLayer
-								id="parking-demand-line"
-								paint={{
-									'line-color': '#0595d3',
-									'line-width': 2,
-									'line-opacity': 0.8
-								}}
-								onclick={(e) => handleFeatureClick(e, 'parking-demand')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-						</GeoJSONSource>
-					{/if}
+					<GeoJSONSource data={data.clusterStationnements} id="parking-demand-source">
+						<FillLayer
+							id="parking-demand-fill"
+							layout={{
+								visibility: isLayerVisible('parking-demand') ? 'visible' : 'none'
+							}}
+							paint={{
+								'fill-color': '#0595d3',
+								'fill-opacity': 0.5
+							}}
+							onclick={(e) => handleFeatureClick(e, 'parking-demand')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+						<LineLayer
+							id="parking-demand-line"
+							layout={{
+								visibility: isLayerVisible('parking-demand') ? 'visible' : 'none'
+							}}
+							paint={{
+								'line-color': '#0595d3',
+								'line-width': 2,
+								'line-opacity': 0.8
+							}}
+							onclick={(e) => handleFeatureClick(e, 'parking-demand')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+					</GeoJSONSource>
 
-					{#if isLayerVisible('parking')}
+					<GeoJSONSource
+						id="parking-source"
+						data="https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvostationnementvelo&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid"
+					>
+						<CircleLayer
+							id="parking-layer-small"
+							layout={{
+								visibility: isLayerVisible('parking') ? 'visible' : 'none'
+							}}
+							paint={{
+								'circle-radius': [
+									'interpolate',
+									['linear'],
+									['zoom'],
+									10,
+									3,
+									12,
+									3,
+									15,
+									3,
+									17,
+									8,
+									20,
+									14,
+									22,
+									20
+								],
+								'circle-color': '#0944f3',
+								'circle-stroke-color': '#ffffff',
+								'circle-stroke-width': 0.5
+							}}
+							onclick={(e) => handleFeatureClick(e, 'parking')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+						<SymbolLayer
+							id="parking-layer"
+							filter={[
+								'all',
+								['==', ['get', 'validite'], 'Validé'],
+								[
+									'in',
+									['get', 'mobiliervelo'],
+									['literal', ['Consigne collective', 'Box', 'Consigne individuelle']]
+								]
+							]}
+							layout={{
+								visibility: isLayerVisible('parking') ? 'visible' : 'none',
+								'icon-image': 'parking',
+								'icon-size': [
+									'interpolate',
+									['linear'],
+									['zoom'],
+									10,
+									0.5,
+									14,
+									0.7,
+									18,
+									1.1,
+									22,
+									1.3
+								],
+								'icon-allow-overlap': true,
+								'icon-ignore-placement': true
+							}}
+							onclick={(e) => handleFeatureClick(e, 'parking')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+					</GeoJSONSource>
+
+					<GeoJSONSource
+						id="velov-stations-source"
+						data="https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvostationvelov&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid"
+					>
+						<SymbolLayer
+							id="velov-stations-layer"
+							layout={{
+								visibility: isLayerVisible('velov') ? 'visible' : 'none',
+								'icon-image': 'bicycle',
+								'icon-size': [
+									'interpolate',
+									['linear'],
+									['zoom'],
+									10,
+									0.6,
+									14,
+									0.8,
+									18,
+									1.2,
+									22,
+									1.4
+								],
+								'icon-allow-overlap': true,
+								'icon-ignore-placement': true
+							}}
+							onclick={(e) => handleFeatureClick(e, 'velov')}
+							onmouseenter={handleMouseEnter}
+							onmouseleave={handleMouseLeave}
+						/>
+					</GeoJSONSource>
+
+					{#each Array.from({ length: 12 }, (_, index) => index).reverse() as lineData, index}
+						{@const lineNumber = index}
+						{@const layerId = `vl-${lineNumber}`}
 						<GeoJSONSource
-							id="parking-source"
-							data="https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvostationnementvelo&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid"
+							id={`vl-${lineNumber}-source`}
+							data={`https://raw.githubusercontent.com/lavilleavelo/cyclopolis/refs/heads/main/content/voies-cyclables/ligne-${lineNumber}.json`}
 						>
-							<CircleLayer
-								id="parking-layer-small"
+							<LineLayer
+								id={`vl-${lineNumber}-line-contour`}
+								layout={{
+									'line-join': 'round',
+									'line-cap': 'round',
+									visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+								}}
 								paint={{
-									'circle-radius': [
-										'interpolate',
-										['linear'],
-										['zoom'],
-										10,
-										3,
-										12,
-										3,
-										15,
-										3,
-										17,
-										8,
-										20,
-										14,
-										22,
-										20
-									],
-									'circle-color': '#0944f3',
-									'circle-stroke-color': '#ffffff',
-									'circle-stroke-width': 0.5
+									'line-color': '#000000',
+									'line-width': 8,
+									'line-opacity': 1
 								}}
-								onclick={(e) => handleFeatureClick(e, 'parking')}
+								filter={['==', ['get', 'status'], 'done']}
+								onclick={(e) => handleFeatureClick(e, `vl-${lineNumber}`)}
 								onmouseenter={handleMouseEnter}
 								onmouseleave={handleMouseLeave}
 							/>
-							<SymbolLayer
-								id="parking-layer"
-								filter={[
-									'all',
-									['==', ['get', 'validite'], 'Validé'],
-									[
-										'in',
-										['get', 'mobiliervelo'],
-										['literal', ['Consigne collective', 'Box', 'Consigne individuelle']]
-									]
-								]}
+							<LineLayer
+								id={`vl-${lineNumber}-line`}
 								layout={{
-									'icon-image': 'parking',
-									'icon-size': [
-										'interpolate',
-										['linear'],
-										['zoom'],
-										10,
-										0.5,
-										14,
-										0.7,
-										18,
-										1.1,
-										22,
-										1.3
-									],
-									'icon-allow-overlap': true,
-									'icon-ignore-placement': true
+									'line-join': 'round',
+									'line-cap': 'round',
+									visibility: isLayerVisible(layerId) ? 'visible' : 'none'
 								}}
-								onclick={(e) => handleFeatureClick(e, 'parking')}
+								paint={{
+									'line-color': vlColors[index],
+									'line-width': 7,
+									'line-opacity': 1
+								}}
+								filter={['==', ['get', 'status'], 'done']}
+								onclick={(e) => handleFeatureClick(e, `vl-${lineNumber}`)}
 								onmouseenter={handleMouseEnter}
 								onmouseleave={handleMouseLeave}
 							/>
 						</GeoJSONSource>
-					{/if}
-
-					{#if isLayerVisible('velov')}
-						<GeoJSONSource
-							id="velov-stations-source"
-							data="https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvostationvelov&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid"
-						>
-							<SymbolLayer
-								id="velov-stations-layer"
-								layout={{
-									'icon-image': 'bicycle',
-									'icon-size': [
-										'interpolate',
-										['linear'],
-										['zoom'],
-										10,
-										0.6,
-										14,
-										0.8,
-										18,
-										1.2,
-										22,
-										1.4
-									],
-									'icon-allow-overlap': true,
-									'icon-ignore-placement': true
-								}}
-								onclick={(e) => handleFeatureClick(e, 'velov')}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-						</GeoJSONSource>
-					{/if}
+					{/each}
 				</MapLibre>
 			</div>
 		</div>
