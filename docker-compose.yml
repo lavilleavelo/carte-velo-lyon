@@ -1,5 +1,5 @@
 services:
-  web:
+  carte-velo-lyon-web:
     build: .
     restart: always
     ports:
