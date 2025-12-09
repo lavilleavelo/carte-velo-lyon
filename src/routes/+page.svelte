@@ -10,6 +10,6 @@
 		<a href="/carte">Voir la carte</a>
 	</div>
 	<div class="mt-10 mb-8 text-center text-2xl text-gray-600 hover:text-gray-800">
-		<a href="https://cyclopolis.fr">cyclopolis</a>
+		<a href="https://cyclopolis.fr">Cyclopolis</a>
 	</div>
 </div>
