@@ -8,8 +8,8 @@
 <div style="view-transition-name: main-map;">
 	<div class="mt-10 mb-8 text-center text-2xl text-gray-600 hover:text-gray-800">
 		<a href="/carte">Voir la carte</a>
-		<br />
-		<br />
+	</div>
+	<div class="mt-10 mb-8 text-center text-2xl text-gray-600 hover:text-gray-800">
 		<a href="https://cyclopolis.fr">cyclopolis</a>
 	</div>
 </div>
