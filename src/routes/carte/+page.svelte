@@ -15,6 +15,7 @@
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
+	import positronStyleCustom from './positron-custom.json';
 
 	import { matchTypeColorReseau, matchTypeWidth } from '$lib/utils.ts';
 	import { Button } from '$lib/components/ui/button';
@@ -401,7 +402,7 @@
 			<div class="h-[calc(100vh-60px)] transition-all duration-300 ease-in-out">
 				<MapLibre
 					class="h-[calc(100vh-60px)] w-full"
-					style={'https://tiles.openfreemap.org/styles/positron'}
+					style={positronStyleCustom}
 					center={[center.lng, center.lat]}
 					zoom={params.zoom}
 					maxBounds={MAP_BOUNDS}
@@ -453,51 +454,27 @@
 								'line-opacity': 0.5
 							}}
 						/>
-						{#if params.dimBackground}
-							<SymbolLayer
-								id="communes-labels"
-								layout={{
-									visibility: isLayerVisible('communes') ? 'visible' : 'none',
-									'text-field': ['get', 'nom'],
-									'text-font': ['systems-ui-bold'],
-									'text-size': 14,
-									'text-anchor': 'center',
-									'text-max-width': 10,
-									'text-allow-overlap': false,
-									'text-ignore-placement': false
-								}}
-								paint={{
-									'text-color': '#ffffff',
-									'text-halo-color': '#000000',
-									'text-halo-width': 1.1,
-									'text-halo-blur': 0
-								}}
-							/>
-						{/if}
-						{#if hoveredCommune && selectedScoreIndicator.property !== null}
-							<Popup
-								lnglat={hoverLngLat}
-								offset={[0, -10]}
-								closeButton={false}
-								closeOnClick={false}
-							>
-								<div class="min-w-[150px]">
-									<div class="mb-1 text-sm font-semibold">
-										{hoveredCommune.properties.nom}
-									</div>
-									<div class=" text-xs text-gray-600">
-										<div class="mb-1">{selectedScoreIndicator.label}</div>
-										<div class="font-bold text-brand-navy">
-											{numFormatter.format(
-												JSON.parse(hoveredCommune.properties.scores)?.[
-													selectedScoreIndicator.property
-												] ?? 'N/A'
-											)}
-										</div>
-									</div>
-								</div>
-							</Popup>
-						{/if}
+						<SymbolLayer
+							id="communes-labels"
+							layout={{
+								'text-field': ['get', 'nom'],
+								'text-font': ['Noto Sans Regular'],
+								'text-max-width': 8,
+								'text-offset': [0, -0.1],
+								'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 4, 10, 7, 11, 11, 15],
+								'text-allow-overlap': false,
+								'text-ignore-placement': false,
+								'text-optional': true,
+								'symbol-spacing': 1e6,
+								visibility: isLayerVisible('communes') ? 'visible' : 'none'
+							}}
+							paint={{
+								'text-color': '#000',
+								'text-halo-blur': 1,
+								'text-halo-color': '#fff',
+								'text-halo-width': 1
+							}}
+						/>
 					</GeoJSONSource>
 
 					<GeoJSONSource data={data.voirieData} id="cycleways-source">
@@ -762,8 +739,8 @@
 									visibility: isLayerVisible(layerId) ? 'visible' : 'none'
 								}}
 								paint={{
-									'line-color': '#000000',
-									'line-width': 8,
+									'line-color': vlColors[index],
+									'line-width': 6,
 									'line-opacity': 1
 								}}
 								filter={['==', ['get', 'status'], 'done']}
@@ -779,8 +756,8 @@
 									visibility: isLayerVisible(layerId) ? 'visible' : 'none'
 								}}
 								paint={{
-									'line-color': vlColors[index],
-									'line-width': 7,
+									'line-color': '#ffffff',
+									'line-width': 3,
 									'line-opacity': 1
 								}}
 								filter={['==', ['get', 'status'], 'done']}

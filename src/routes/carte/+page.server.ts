@@ -1,5 +1,5 @@
 import type { PageServerLoad } from './$types';
-import communesLimit from '$lib/data/communes_limit.json';
+import communesLimit from '$lib/data/communes_limit_arrondissements.json';
 import clusterStationnements from '$lib/data/clusters-stationnements-200046977.geojson?raw';
 import clustersRouges from '$lib/data/clusters-rouges-200046977.geojson?raw';
 import pointsRouges from '$lib/data/points-rouges-200046977.geojson?raw';

@@ -38,7 +38,7 @@ export const matchTypeColorReseau = [
 	'Réseau de desserte',
 	'#5e5e5e',
 	'Réseau structurant et super structurant',
-	'#000000',
+	'#484848',
 	'#9ca3af'
 ] as any;
 
