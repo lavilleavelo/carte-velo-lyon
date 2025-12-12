@@ -10,7 +10,6 @@
 		AttributionControl,
 		GeolocateControl,
 		NavigationControl,
-		Popup,
 		SymbolLayer
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
@@ -24,6 +23,7 @@
 	import * as Collapsible from '$lib/components/ui/collapsible';
 	import Geocoder from '$lib/components/Geocoder.svelte';
 	import type { PageData } from './$types';
+	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
 
 	let { data }: { data: PageData } = $props();
 
@@ -45,21 +45,6 @@
 		pushHistory: false,
 		debounce: 100
 	});
-
-	const vlColors = [
-		'#60A75B', // Line 1
-		'#AC4D35', // Line 2
-		'#3B7B64', // Line 3
-		'#DC8953', // Line 4
-		'#AF7392', // Line 5
-		'#396083', // Line 6
-		'#75BCAE', // Line 7
-		'#7E6D98', // Line 8
-		'#EAAB50', // Line 9
-		'#9A8A4B', // Line 10
-		'#4DADC9', // Line 11
-		'#DBABB7' // Line 12
-	];
 
 	const availableLayers = [
 		{
@@ -138,6 +123,8 @@
 				)
 		)
 	);
+
+	const processedVLData = $derived(processVoiesLyonnaisesData(data.voiesLyonnaises));
 
 	const center = $derived.by(() => {
 		const [lng, lat] = params.center;
@@ -408,8 +395,9 @@
 					maxBounds={MAP_BOUNDS}
 					{cursor}
 					attributionControl={false}
-					onload={(ev: { target: maplibregl.Map }) => {
+					onload={async (ev) => {
 						map = ev.target;
+						await loadShieldIcons(map);
 					}}
 					onmoveend={handleMapMove}
 				>
@@ -632,14 +620,15 @@
 								visibility: isLayerVisible('parking') ? 'visible' : 'none'
 							}}
 							paint={{
+								'circle-opacity': 0.5,
 								'circle-radius': [
 									'interpolate',
 									['linear'],
 									['zoom'],
 									10,
-									3,
+									2,
 									12,
-									3,
+									2,
 									15,
 									3,
 									17,
@@ -724,48 +713,112 @@
 						/>
 					</GeoJSONSource>
 
-					{#each Array.from({ length: 12 }, (_, index) => index).reverse() as lineData, index}
-						{@const lineNumber = index}
+					{#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
 						{@const layerId = `vl-${lineNumber}`}
-						<GeoJSONSource
-							id={`vl-${lineNumber}-source`}
-							data={`https://raw.githubusercontent.com/lavilleavelo/cyclopolis/refs/heads/main/content/voies-cyclables/ligne-${lineNumber}.json`}
-						>
-							<LineLayer
-								id={`vl-${lineNumber}-line-contour`}
-								layout={{
-									'line-join': 'round',
-									'line-cap': 'round',
-									visibility: isLayerVisible(layerId) ? 'visible' : 'none'
-								}}
-								paint={{
-									'line-color': vlColors[index],
-									'line-width': 6,
-									'line-opacity': 1
-								}}
-								filter={['==', ['get', 'status'], 'done']}
-								onclick={(e) => handleFeatureClick(e, `vl-${lineNumber}`)}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-							<LineLayer
-								id={`vl-${lineNumber}-line`}
-								layout={{
-									'line-join': 'round',
-									'line-cap': 'round',
-									visibility: isLayerVisible(layerId) ? 'visible' : 'none'
-								}}
-								paint={{
-									'line-color': '#ffffff',
-									'line-width': 3,
-									'line-opacity': 1
-								}}
-								filter={['==', ['get', 'status'], 'done']}
-								onclick={(e) => handleFeatureClick(e, `vl-${lineNumber}`)}
-								onmouseenter={handleMouseEnter}
-								onmouseleave={handleMouseLeave}
-							/>
-						</GeoJSONSource>
+						{@const lineIndex = lineNumber - 1}
+						{#if processedVLData[lineNumber]}
+							<GeoJSONSource id={`vl-${lineNumber}-source`} data={processedVLData[lineNumber]}>
+								<LineLayer
+									id={`vl-${lineNumber}-line-contour`}
+									layout={{
+										'line-join': 'round',
+										'line-cap': 'round',
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+									}}
+									paint={{
+										'line-color': vlColors[lineIndex],
+										'line-width': 6,
+										'line-opacity': 1
+									}}
+									filter={['==', ['get', 'status'], 'done']}
+									onclick={(e) => handleFeatureClick(e, `vl-${lineNumber}`)}
+									onmouseenter={handleMouseEnter}
+									onmouseleave={handleMouseLeave}
+								/>
+								<LineLayer
+									id={`vl-${lineNumber}-line`}
+									layout={{
+										'line-join': 'round',
+										'line-cap': 'round',
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+									}}
+									paint={{
+										'line-color': '#ffffff',
+										'line-width': 3,
+										'line-opacity': 1
+									}}
+									filter={['==', ['get', 'status'], 'done']}
+									onclick={(e) => handleFeatureClick(e, `vl-${lineNumber}`)}
+									onmouseenter={handleMouseEnter}
+									onmouseleave={handleMouseLeave}
+								/>
+
+								<!-- Label layers for line numbers -->
+								<!-- Low zoom: only show on long segments -->
+								<SymbolLayer
+									id={`vl-${lineNumber}-labels-low`}
+									maxzoom={13}
+									filter={[
+										'all',
+										['==', ['get', 'status'], 'done'],
+										['>=', ['get', 'distance'], 900]
+									]}
+									layout={{
+										'icon-image': [
+											'coalesce',
+											['get', 'compositeIconName'],
+											['concat', 'line-shield-', lineNumber]
+										],
+										'icon-size': 0.3,
+										'symbol-spacing': 1000000,
+										'symbol-placement': 'line-center',
+										'icon-rotation-alignment': 'viewport',
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+									}}
+								/>
+
+								<!-- Medium zoom: show on medium-length segments -->
+								<SymbolLayer
+									id={`vl-${lineNumber}-labels-med`}
+									minzoom={13}
+									maxzoom={17}
+									filter={[
+										'all',
+										['==', ['get', 'status'], 'done'],
+										['>=', ['get', 'distance'], 300]
+									]}
+									layout={{
+										'icon-image': [
+											'coalesce',
+											['get', 'compositeIconName'],
+											['concat', 'line-shield-', lineNumber]
+										],
+										'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.3, 15, 0.3, 17, 0.4],
+										'symbol-spacing': 1000000,
+										'symbol-placement': 'line-center',
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+									}}
+								/>
+
+								<!-- High zoom: show all labels -->
+								<SymbolLayer
+									id={`vl-${lineNumber}-labels-high`}
+									minzoom={17}
+									filter={['==', ['get', 'status'], 'done']}
+									layout={{
+										'icon-image': [
+											'coalesce',
+											['get', 'compositeIconName'],
+											['concat', 'line-shield-', lineNumber]
+										],
+										'icon-size': 0.4,
+										'symbol-spacing': 1000000,
+										'symbol-placement': 'line-center',
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+									}}
+								/>
+							</GeoJSONSource>
+						{/if}
 					{/each}
 				</MapLibre>
 			</div>
