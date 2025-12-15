@@ -15,14 +15,4 @@
 	<div class="mt-10 mb-8 text-center text-2xl text-gray-600 hover:text-gray-800">
 		<a href="https://cyclopolis.fr">Cyclopolis</a>
 	</div>
-
-	<iframe
-		src="https://cyclopolis.fr/plan-officiel/embed"
-		title="Carte montrant la réalisation des voies lyonnaises pour 2026"
-		style="border-radius: 8px; border-color: #ccc; border-width: 1px"
-		width="100%"
-		height="800px"
-		frameborder="0"
-		allowfullscreen
-	></iframe>
 </div>
