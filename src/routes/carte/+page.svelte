@@ -247,13 +247,6 @@
 							<div class="flex items-center gap-2">
 								<Filter size={16} />
 								<span class="font-semibold">Filtres</span>
-								{#if (params.layers || []).length > 0}
-									<span class="rounded-full bg-brand-navy px-2 py-0.5 text-xs text-white">
-										{(params.layers || []).length} couche{(params.layers || []).length > 1
-											? 's'
-											: ''}
-									</span>
-								{/if}
 							</div>
 							<svg
 								class="h-4 w-4 transition-transform duration-200"
