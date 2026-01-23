@@ -12,6 +12,7 @@
 		NavigationControl,
 		SymbolLayer,
 		CustomControl,
+		ImageLoader,
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
@@ -25,6 +26,7 @@
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
 	import type { PageData } from './$types';
 	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
+	import velovDataUrl from '$lib/data/velov-data-grand-lyon.json?url';
 
 	let { data }: { data: PageData } = $props();
 
@@ -64,7 +66,7 @@
 		{
 			id: 'velov',
 			label: 'Stations Velov',
-			color: '#fbbf24',
+			color: '#EA2127FF',
 			category: 'Infrastructures Cyclables',
 		},
 		...Array.from({ length: 12 }, (_, i) => ({
@@ -238,11 +240,11 @@
 >
 	<div class="relative flex-1">
 		<div class="h-full overflow-hidden rounded-lg shadow-lg">
-			<div class="absolute top-4 left-4 z-10 flex flex-col gap-4">
+			<div class="absolute top-1 left-1 z-10 flex flex-col gap-2">
 				<div class="overflow-hidden rounded-lg bg-white shadow-lg">
 					<Collapsible.Root bind:open={filtersExpanded}>
 						<Collapsible.Trigger
-							class="flex w-full items-center justify-between rounded-none p-4 hover:bg-gray-50"
+							class="flex w-full min-w-40 items-center justify-between rounded-none px-4 py-2 hover:bg-gray-50"
 						>
 							<div class="flex items-center gap-2">
 								<Filter size={16} />
@@ -525,36 +527,34 @@
 						/>
 					</GeoJSONSource>
 
-					<GeoJSONSource
-						maxzoom={14}
-						id="velov-stations"
-						data="https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvostationvelov&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid"
-					>
-						<SymbolLayer
-							id="velov-stations-layer"
-							layout={{
-								visibility: isLayerVisible('velov') ? 'visible' : 'none',
-								'icon-image': 'bicycle',
-								'icon-size': [
-									'interpolate',
-									['linear'],
-									['zoom'],
-									10,
-									0.6,
-									14,
-									0.8,
-									18,
-									1.2,
-									22,
-									1.4,
-								],
-								'icon-allow-overlap': true,
-								'icon-ignore-placement': true,
-							}}
-							onclick={(e) => handleFeatureClick(e, 'velov')}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
+					<GeoJSONSource maxzoom={14} id="velov-stations-source" data={velovDataUrl}>
+						<ImageLoader images={{ velov: '/velov-station.png' }}>
+							<SymbolLayer
+								id="velov-stations-layer"
+								layout={{
+									visibility: isLayerVisible('velov') ? 'visible' : 'none',
+									'icon-image': 'velov',
+									'icon-size': [
+										'interpolate',
+										['linear'],
+										['zoom'],
+										10,
+										0.6,
+										14,
+										0.8,
+										18,
+										1.2,
+										22,
+										1.4,
+									],
+									'icon-allow-overlap': true,
+									'icon-ignore-placement': true,
+								}}
+								onclick={(e) => handleFeatureClick(e, 'velov')}
+								onmouseenter={handleMouseEnter}
+								onmouseleave={handleMouseLeave}
+							/>
+						</ImageLoader>
 					</GeoJSONSource>
 
 					{#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
