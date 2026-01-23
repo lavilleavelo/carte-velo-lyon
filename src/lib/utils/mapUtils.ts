@@ -82,39 +82,6 @@ export function createCompositeLineShieldIcon(
 	return canvas;
 }
 
-export function generateCompositeIconCombinations(totalLines: number): Set<string> {
-	const compositeIcons = new Set<string>();
-
-	// Generate 2-line combinations
-	for (let i = 1; i <= totalLines; i++) {
-		for (let j = i + 1; j <= totalLines; j++) {
-			compositeIcons.add(`${i}-${j}`);
-		}
-	}
-
-	// Generate 3-line combinations
-	for (let i = 1; i <= totalLines; i++) {
-		for (let j = i + 1; j <= totalLines; j++) {
-			for (let k = j + 1; k <= totalLines; k++) {
-				compositeIcons.add(`${i}-${j}-${k}`);
-			}
-		}
-	}
-
-	// Generate 4-line combinations
-	for (let i = 1; i <= totalLines; i++) {
-		for (let j = i + 1; j <= totalLines; j++) {
-			for (let k = j + 1; k <= totalLines; k++) {
-				for (let l = k + 1; l <= totalLines; l++) {
-					compositeIcons.add(`${i}-${j}-${k}-${l}`);
-				}
-			}
-		}
-	}
-
-	return compositeIcons;
-}
-
 export function normalizeLineDirection(coordinates: [number, number][]): [number, number][] {
 	if (coordinates.length < 2) {
 		return coordinates;
@@ -139,6 +106,35 @@ export function normalizeLineDirection(coordinates: [number, number][]): [number
 			: latDiff > 0; // If going north (positive latDiff), reverse
 
 	return shouldReverse ? [...coordinates].reverse() : coordinates;
+}
+
+export function getUsedCompositeIcons(features: any[]): Set<string> {
+	const sectionGroups = new Map<string, number[]>();
+
+	for (const feature of features) {
+		if (
+			feature.geometry.type !== 'LineString' ||
+			!('id' in feature.properties) ||
+			!feature.properties.id
+		) {
+			continue;
+		}
+
+		const sectionId = feature.properties.id;
+		if (!sectionGroups.has(sectionId)) {
+			sectionGroups.set(sectionId, []);
+		}
+		sectionGroups.get(sectionId)!.push(feature.properties.line);
+	}
+
+	const compositeIcons = new Set<string>();
+	for (const lines of sectionGroups.values()) {
+		const uniqueLines = [...new Set(lines)].sort((a, b) => a - b);
+		if (uniqueLines.length > 1) {
+			compositeIcons.add(uniqueLines.join('-'));
+		}
+	}
+	return compositeIcons;
 }
 
 export function addCompositeIconNames(features: any[]) {
@@ -177,27 +173,35 @@ export function addCompositeIconNames(features: any[]) {
 		return { ...feature };
 	});
 
-	sectionGroups.forEach((group) => {
-		group.sort((a, b) => a.line - b.line);
+	const compositeNamesByIndex = new Map<number, string>();
 
-		const lineNumbers = group.map((item) => item.line).sort((a, b) => a - b);
-		const compositeIconName = `line-shield-${lineNumbers.join('-')}`;
+	sectionGroups.forEach((group) => {
+		const uniqueLines = [...new Set(group.map((item) => item.line))].sort((a, b) => a - b);
+
+		if (uniqueLines.length <= 1) {
+			return;
+		}
+
+		const compositeIconName = `line-shield-${uniqueLines.join('-')}`;
 
 		group.forEach((item) => {
-			const feature = item.feature;
-			if (feature.geometry.type === 'LineString') {
-				const currentFeature = processedFeatures[item.index];
-				if (currentFeature && 'properties' in currentFeature) {
-					processedFeatures[item.index] = {
-						...currentFeature,
-						properties: { ...currentFeature.properties, compositeIconName }
-					};
-				}
-			}
+			compositeNamesByIndex.set(item.index, compositeIconName);
 		});
 	});
 
-	return processedFeatures;
+	return processedFeatures.map((feature, index) => {
+		const compositeIconName = compositeNamesByIndex.get(index);
+		if (compositeIconName) {
+			return {
+				...feature,
+				properties: {
+					...feature.properties,
+					compositeIconName
+				}
+			};
+		}
+		return feature;
+	});
 }
 
 export function calculateLineDistance(coordinates: [number, number][]): number {
@@ -227,12 +231,10 @@ export const vlColors = [
 	'#DBABB7' // Line 12
 ];
 
-/**
- * Process Voies Lyonnaises data to add distances and composite icon names for shared sections
- */
-export function processVoiesLyonnaisesData(
-	voiesLyonnaises: Record<number, any>
-): Record<number, any> {
+export function processVoiesLyonnaisesData(voiesLyonnaises: Record<number, any>): {
+	grouped: Record<number, any>;
+	allFeatures: any[];
+} {
 	const processed: Record<number, any> = {};
 	const allFeatures: any[] = [];
 
@@ -273,14 +275,10 @@ export function processVoiesLyonnaisesData(
 		processed[lineNumber].features.push(feature);
 	});
 
-	return processed;
+	return { grouped: processed, allFeatures: processedFeatures };
 }
 
-/**
- * Load all shield icons (individual and composite) into the map
- */
-export async function loadShieldIcons(mapInstance: any, totalLines: number = 12) {
-	// Load individual line shield icons
+export async function loadShieldIcons(mapInstance: any, features: any[], totalLines: number = 12) {
 	for (let line = 1; line <= totalLines; line++) {
 		const color = vlColors[line - 1];
 		const canvas = createLineShieldIcon(line, color);
@@ -290,8 +288,7 @@ export async function loadShieldIcons(mapInstance: any, totalLines: number = 12)
 		}
 	}
 
-	// Load composite icons for shared sections
-	const compositeIcons = generateCompositeIconCombinations(totalLines);
+	const compositeIcons = getUsedCompositeIcons(features);
 	compositeIcons.forEach((combo) => {
 		const lineNumbers = combo.split('-').map(Number);
 		const colors = lineNumbers.map((line) => vlColors[line - 1]);

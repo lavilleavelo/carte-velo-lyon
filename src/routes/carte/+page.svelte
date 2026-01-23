@@ -395,9 +395,10 @@
 					maxBounds={MAP_BOUNDS}
 					{cursor}
 					attributionControl={false}
+					maxZoom={22}
 					onload={async (ev) => {
 						map = ev.target;
-						await loadShieldIcons(map);
+						await loadShieldIcons(map, processedVLData.allFeatures);
 					}}
 					onmoveend={handleMapMove}
 				>
@@ -405,7 +406,7 @@
 					<GeolocateControl position="top-right" />
 					<AttributionControl compact={true} />
 
-					<GeoJSONSource id="arrondissements" data={data.arrondissementsLyon}>
+					<GeoJSONSource id="arrondissements" data={data.arrondissementsLyon} maxzoom={14}>
 						<LineLayer
 							id="arrondissements-line"
 							source="arrondissements"
@@ -420,7 +421,7 @@
 						/>
 					</GeoJSONSource>
 
-					<GeoJSONSource data={data.communesLimit} id="communes-source">
+					<GeoJSONSource maxzoom={14} data={data.communesLimit} id="communes-source">
 						<FillLayer
 							id="communes-fill"
 							layout={{
@@ -465,7 +466,7 @@
 						/>
 					</GeoJSONSource>
 
-					<GeoJSONSource data={data.voirieData} id="cycleways-source">
+					<GeoJSONSource maxzoom={14} data={data.voirieData} id="cycleways-source">
 						<LineLayer
 							id="cycleways-layer"
 							paint={{
@@ -482,7 +483,7 @@
 						/>
 					</GeoJSONSource>
 
-					<GeoJSONSource data={data.clustersRouges} id="clusters-red-source">
+					<GeoJSONSource maxzoom={14} data={data.clustersRouges} id="clusters-red-source">
 						<FillLayer
 							id="clusters-red-fill"
 							layout={{
@@ -512,7 +513,7 @@
 						/>
 					</GeoJSONSource>
 
-					<GeoJSONSource data={data.pointsRouges} id="points-red-source">
+					<GeoJSONSource maxzoom={14} data={data.pointsRouges} id="points-red-source">
 						<CircleLayer
 							id="points-red-layer"
 							layout={{
@@ -531,7 +532,7 @@
 						/>
 					</GeoJSONSource>
 
-					<GeoJSONSource data={data.clustersVerts} id="clusters-green-source">
+					<GeoJSONSource maxzoom={14} data={data.clustersVerts} id="clusters-green-source">
 						<FillLayer
 							id="clusters-green-fill"
 							layout={{
@@ -561,7 +562,7 @@
 						/>
 					</GeoJSONSource>
 
-					<GeoJSONSource data={data.pointsVerts} id="points-green-source">
+					<GeoJSONSource maxzoom={14} data={data.pointsVerts} id="points-green-source">
 						<CircleLayer
 							id="points-green-layer"
 							layout={{
@@ -580,7 +581,7 @@
 						/>
 					</GeoJSONSource>
 
-					<GeoJSONSource data={data.clusterStationnements} id="parking-demand-source">
+					<GeoJSONSource maxzoom={14} data={data.clusterStationnements} id="parking-demand-source">
 						<FillLayer
 							id="parking-demand-fill"
 							layout={{
@@ -611,7 +612,8 @@
 					</GeoJSONSource>
 
 					<GeoJSONSource
-						id="parking-source"
+						maxzoom={14}
+						id="parking-data"
 						data="https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvostationnementvelo&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid"
 					>
 						<CircleLayer
@@ -683,7 +685,8 @@
 					</GeoJSONSource>
 
 					<GeoJSONSource
-						id="velov-stations-source"
+						maxzoom={14}
+						id="velov-stations"
 						data="https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvostationvelov&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid"
 					>
 						<SymbolLayer
@@ -716,8 +719,11 @@
 					{#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
 						{@const layerId = `vl-${lineNumber}`}
 						{@const lineIndex = lineNumber - 1}
-						{#if processedVLData[lineNumber]}
-							<GeoJSONSource id={`vl-${lineNumber}-source`} data={processedVLData[lineNumber]}>
+						{#if processedVLData.grouped[lineNumber]}
+							<GeoJSONSource
+								id={`vl-${lineNumber}-source`}
+								data={processedVLData.grouped[lineNumber]}
+							>
 								<LineLayer
 									id={`vl-${lineNumber}-line-contour`}
 									layout={{
@@ -757,7 +763,7 @@
 								<!-- Low zoom: only show on long segments -->
 								<SymbolLayer
 									id={`vl-${lineNumber}-labels-low`}
-									maxzoom={13}
+									maxzoom={14}
 									filter={[
 										'all',
 										['==', ['get', 'status'], 'done'],
