@@ -11,6 +11,7 @@
 		GeolocateControl,
 		NavigationControl,
 		SymbolLayer,
+		CustomControl,
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
@@ -21,6 +22,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import * as Collapsible from '$lib/components/ui/collapsible';
 	import Geocoder from '$lib/components/Geocoder.svelte';
+	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
 	import type { PageData } from './$types';
 	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
 
@@ -33,11 +35,6 @@
 		commune: 'string = ""',
 		zoom: 'number = 11',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
-		showProblematic: 'boolean = true',
-		showParking: 'boolean = true',
-		showCycleways: 'boolean = true',
-		showCommunes: 'boolean = true',
-		dimBackground: 'boolean = false',
 	});
 
 	const params = useSearchParams(mapSearchParamsSchema, {
@@ -82,6 +79,11 @@
 	let filtersExpanded = $state(true);
 	let cursor: string | undefined = $state();
 	let selectedFeature: any = $state(null);
+
+	let geocoderHighlight: { lng: number; lat: number } | null = $state(null);
+	let geocoderHighlightFading = $state(false);
+	let geocoderHighlightTimeout: ReturnType<typeof setTimeout> | null = null;
+	let geocoderFadeTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	let collapsedCategories = $state(
 		new Set<string>(
@@ -192,13 +194,32 @@
 		params.zoom = map.getZoom();
 	}
 
-	function handleGeocoderSelect(coordinates: [number, number], name: string) {
+	function handleGeocoderSelect(coordinates: [number, number], _name: string) {
 		if (!map) return;
 		map.flyTo({
 			center: coordinates,
-			zoom: 14,
+			zoom: 16,
 			duration: 1500,
 		});
+
+		if (geocoderHighlightTimeout) {
+			clearTimeout(geocoderHighlightTimeout);
+		}
+		if (geocoderFadeTimeout) {
+			clearTimeout(geocoderFadeTimeout);
+		}
+
+		geocoderHighlightFading = false;
+		geocoderHighlight = { lng: coordinates[0], lat: coordinates[1] };
+
+		geocoderHighlightTimeout = setTimeout(() => {
+			geocoderHighlightFading = true;
+		}, 3000);
+
+		geocoderFadeTimeout = setTimeout(() => {
+			geocoderHighlight = null;
+			geocoderHighlightFading = false;
+		}, 4000);
 	}
 
 	const LYON_BOUNDS: [number, number, number, number] = [4.6, 45.5, 5.1, 46.0];
@@ -218,12 +239,6 @@
 	<div class="relative flex-1">
 		<div class="h-full overflow-hidden rounded-lg shadow-lg">
 			<div class="absolute top-4 left-4 z-10 flex flex-col gap-4">
-				<div class="overflow-hidden rounded-lg bg-white shadow-lg">
-					<div class="p-3">
-						<Geocoder onSelect={handleGeocoderSelect} bbox={LYON_BOUNDS} />
-					</div>
-				</div>
-
 				<div class="overflow-hidden rounded-lg bg-white shadow-lg">
 					<Collapsible.Root bind:open={filtersExpanded}>
 						<Collapsible.Trigger
@@ -378,6 +393,15 @@
 					<NavigationControl position="top-right" />
 					<GeolocateControl position="top-right" />
 					<AttributionControl compact={true} />
+					<CustomControl>
+						<div class="overflow-hidden">
+							<Geocoder onSelect={handleGeocoderSelect} bbox={LYON_BOUNDS} />
+						</div>
+					</CustomControl>
+
+					{#if geocoderHighlight}
+						<GeocoderMarker lnglat={geocoderHighlight} fading={geocoderHighlightFading} />
+					{/if}
 
 					<GeoJSONSource id="arrondissements" data={data.arrondissementsLyon} maxzoom={14}>
 						<LineLayer
@@ -414,27 +438,6 @@
 								'line-color': '#6b7280',
 								'line-width': 2,
 								'line-opacity': 0.5,
-							}}
-						/>
-						<SymbolLayer
-							id="communes-labels"
-							layout={{
-								'text-field': ['get', 'nom'],
-								'text-font': ['Noto Sans Regular'],
-								'text-max-width': 8,
-								'text-offset': [0, -0.1],
-								'text-size': ['interpolate', ['exponential', 1.2], ['zoom'], 4, 10, 7, 11, 11, 15],
-								'text-allow-overlap': false,
-								'text-ignore-placement': false,
-								'text-optional': true,
-								'symbol-spacing': 1e6,
-								visibility: isLayerVisible('communes') ? 'visible' : 'none',
-							}}
-							paint={{
-								'text-color': '#000',
-								'text-halo-blur': 1,
-								'text-halo-color': '#fff',
-								'text-halo-width': 1,
 							}}
 						/>
 					</GeoJSONSource>

@@ -113,16 +113,13 @@
 				role="combobox"
 				aria-expanded={open}
 				{...props}
-				class="w-full min-w-[200px] justify-between"
+				class="w-full justify-between"
 			>
-				<span class="truncate">
-					{selectedValue || 'Rechercher un lieu...'}
-				</span>
-				<SearchIcon class="ml-2 h-4 w-4 shrink-0 opacity-50" />
+				<SearchIcon class="ml-1.5 h-4 w-4 shrink-0" />
 			</Button>
 		{/snippet}
 	</Popover.Trigger>
-	<Popover.Content align="start">
+	<Popover.Content align="start" class={cn('mr-3 w-80 sm:w-96', className)}>
 		<Command.Root shouldFilter={false} class="[&_[data-slot=command-input-wrapper]]:pr-3">
 			<Command.Input placeholder="Rechercher un lieu..." bind:value={inputValue} />
 			<Command.List>
