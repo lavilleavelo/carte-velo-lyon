@@ -23,7 +23,7 @@
 
 <section class="mx-auto mt-18 max-w-6xl px-4">
 	<h2 class="mb-8 text-center text-2xl font-bold text-gray-800">
-		Retrouvez nos autres projets et outils
+		Retrouvez nos autres réalisations
 	</h2>
 
 	<div class="grid grid-cols-1 gap-8 md:grid-cols-3">
