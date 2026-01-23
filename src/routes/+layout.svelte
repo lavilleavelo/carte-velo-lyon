@@ -101,7 +101,7 @@
 							<Instagram class="h-6 w-6" aria-hidden="true" />
 						</a>
 						<a
-							href="https://github.com/lavilleavelo/cyclopolis"
+							href="https://github.com/lavilleavelo/carte-velo-lyon"
 							target="_blank"
 							class="text-gray-500 hover:text-gray-700"
 						>
