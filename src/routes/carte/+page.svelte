@@ -17,7 +17,6 @@
 	import positronStyleCustom from './positron-custom.json';
 
 	import { matchTypeColorReseau, matchTypeWidth } from '$lib/utils.ts';
-	import { Button } from '$lib/components/ui/button';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import * as Collapsible from '$lib/components/ui/collapsible';
@@ -77,41 +76,15 @@
 			color: vlColors[i],
 			category: 'Voies Lyonnaises',
 		})),
-		{
-			category: 'Baromètre Cyclable FUB',
-			id: 'problematic-red',
-			label: 'Zones prioritaires',
-			color: '#ef4444',
-		},
-		{
-			id: 'problematic-green',
-			label: "Zones d'amélioration",
-			color: '#22c55e',
-			category: 'Baromètre Cyclable FUB',
-		},
-		{
-			id: 'parking-demand',
-			label: 'Zones de demande de stationnements',
-			color: '#0595d3',
-			category: 'Baromètre Cyclable FUB',
-		},
 	] as const;
-
-	const numFormatter = new Intl.NumberFormat('fr-FR', {
-		style: 'decimal',
-		minimumFractionDigits: 2,
-		maximumFractionDigits: 2,
-	});
 
 	let map: maplibregl.Map | undefined = $state();
 	let filtersExpanded = $state(true);
 	let cursor: string | undefined = $state();
 	let selectedFeature: any = $state(null);
-	let hoveredCommune: any = $state(null);
-	let hoverLngLat = $state.raw(new maplibregl.LngLat(0, 0));
+
 	let collapsedCategories = $state(
 		new Set<string>(
-			// Initially collapse all categories if no layer from that category is active
 			availableLayers
 				.map((layer) => layer.category)
 				.filter(
@@ -478,134 +451,6 @@
 								visibility: isLayerVisible('cycleways') ? 'visible' : 'none',
 							}}
 							onclick={(e) => handleFeatureClick(e, 'cycleway')}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
-					</GeoJSONSource>
-
-					<GeoJSONSource maxzoom={14} data={data.clustersRouges} id="clusters-red-source">
-						<FillLayer
-							id="clusters-red-fill"
-							layout={{
-								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none',
-							}}
-							paint={{
-								'fill-color': '#ef4444',
-								'fill-opacity': 0.5,
-							}}
-							onclick={(e) => handleFeatureClick(e, 'cluster-red')}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
-						<LineLayer
-							id="clusters-red-border"
-							layout={{
-								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none',
-							}}
-							paint={{
-								'line-color': '#b91c1c',
-								'line-width': 2,
-								'line-opacity': 0.8,
-							}}
-							onclick={(e) => handleFeatureClick(e, 'cluster-red')}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
-					</GeoJSONSource>
-
-					<GeoJSONSource maxzoom={14} data={data.pointsRouges} id="points-red-source">
-						<CircleLayer
-							id="points-red-layer"
-							layout={{
-								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none',
-							}}
-							paint={{
-								'circle-color': '#ef4444',
-								'circle-radius': 2,
-								'circle-opacity': 0.8,
-								'circle-stroke-width': 0.5,
-								'circle-stroke-color': '#fff',
-							}}
-							onclick={(e) => handleFeatureClick(e, 'point-red')}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
-					</GeoJSONSource>
-
-					<GeoJSONSource maxzoom={14} data={data.clustersVerts} id="clusters-green-source">
-						<FillLayer
-							id="clusters-green-fill"
-							layout={{
-								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none',
-							}}
-							paint={{
-								'fill-color': '#22c55e',
-								'fill-opacity': 0.5,
-							}}
-							onclick={(e) => handleFeatureClick(e, 'cluster-green')}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
-						<LineLayer
-							id="clusters-green-border"
-							layout={{
-								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none',
-							}}
-							paint={{
-								'line-color': '#16a34a',
-								'line-width': 2,
-								'line-opacity': 0.8,
-							}}
-							onclick={(e) => handleFeatureClick(e, 'cluster-green')}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
-					</GeoJSONSource>
-
-					<GeoJSONSource maxzoom={14} data={data.pointsVerts} id="points-green-source">
-						<CircleLayer
-							id="points-green-layer"
-							layout={{
-								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none',
-							}}
-							paint={{
-								'circle-color': '#22c55e',
-								'circle-radius': 2,
-								'circle-opacity': 0.8,
-								'circle-stroke-width': 0.5,
-								'circle-stroke-color': '#fff',
-							}}
-							onclick={(e) => handleFeatureClick(e, 'point-green')}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
-					</GeoJSONSource>
-
-					<GeoJSONSource maxzoom={14} data={data.clusterStationnements} id="parking-demand-source">
-						<FillLayer
-							id="parking-demand-fill"
-							layout={{
-								visibility: isLayerVisible('parking-demand') ? 'visible' : 'none',
-							}}
-							paint={{
-								'fill-color': '#0595d3',
-								'fill-opacity': 0.5,
-							}}
-							onclick={(e) => handleFeatureClick(e, 'parking-demand')}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
-						<LineLayer
-							id="parking-demand-line"
-							layout={{
-								visibility: isLayerVisible('parking-demand') ? 'visible' : 'none',
-							}}
-							paint={{
-								'line-color': '#0595d3',
-								'line-width': 2,
-								'line-opacity': 0.8,
-							}}
-							onclick={(e) => handleFeatureClick(e, 'parking-demand')}
 							onmouseenter={handleMouseEnter}
 							onmouseleave={handleMouseLeave}
 						/>
