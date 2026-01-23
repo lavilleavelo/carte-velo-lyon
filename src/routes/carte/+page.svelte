@@ -389,7 +389,7 @@
 			<div class="h-[calc(100vh-60px)] transition-all duration-300 ease-in-out">
 				<MapLibre
 					class="h-[calc(100vh-60px)] w-full"
-					style={positronStyleCustom}
+					style="https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json"
 					center={[center.lng, center.lat]}
 					zoom={params.zoom}
 					maxBounds={MAP_BOUNDS}
@@ -743,7 +743,7 @@
 										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
 									}}
 									paint={{
-										'line-color': '#ffffff',
+										'line-color': '#000000',
 										'line-width': 3,
 										'line-opacity': 1
 									}}
