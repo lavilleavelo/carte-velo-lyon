@@ -13,7 +13,7 @@
 		queryKey: ['compteurs'],
 		queryFn: async () => {
 			const res = await fetch(
-				'https://grist.lavilleavelo.org/o/lavilleavelo/api/docs/kZrMpcuc7DV9HApGfHAVEh/download/csv?viewSection=1&tableId=Compteurs_donnees&activeSortSpec=%5B%5D&filters=%5B%5D&linkingFilter=%7B%22filters%22%3A%7B%7D%2C%22operations%22%3A%7B%7D%7D'
+				'https://grist.lavilleavelo.org/o/lavilleavelo/api/docs/kZrMpcuc7DV9HApGfHAVEh/download/csv?viewSection=1&tableId=Compteurs_donnees&activeSortSpec=%5B%5D&filters=%5B%5D&linkingFilter=%7B%22filters%22%3A%7B%7D%2C%22operations%22%3A%7B%7D%7D',
 			);
 			if (!res.ok) {
 				throw new Error('Failed to fetch compteur data');
@@ -22,9 +22,9 @@
 			const csvText = await res.text();
 			return parse(csvText, {
 				skipFirstRow: true,
-				columns: ['lat', 'lon', 'nom_compteur', '2024', '2025']
+				columns: ['lat', 'lon', 'nom_compteur', '2024', '2025'],
 			});
-		}
+		},
 	}));
 
 	const mapCenter = $derived.by(() => {
@@ -50,19 +50,19 @@
 			type: 'Feature' as const,
 			geometry: {
 				type: 'Point' as const,
-				coordinates: [parseFloat(row.lon), parseFloat(row.lat)]
+				coordinates: [parseFloat(row.lon), parseFloat(row.lat)],
 			},
 			properties: {
 				name: row.nom_compteur,
 				count_2024: parseFloat(row['2024']) || 0,
 				count_2025: parseFloat(row['2025']) || 0,
-				circleRadius: 5 + ((parseFloat(row['2025']) || 0) / maxValue) * 25
-			}
+				circleRadius: 5 + ((parseFloat(row['2025']) || 0) / maxValue) * 25,
+			},
 		}));
 
 		return {
 			type: 'FeatureCollection' as const,
-			features
+			features,
 		};
 	});
 
@@ -80,7 +80,7 @@
 			selectedCompteur = features[0];
 			popupLngLat = new maplibregl.LngLat(
 				features[0].geometry.coordinates[0],
-				features[0].geometry.coordinates[1]
+				features[0].geometry.coordinates[1],
 			);
 		}
 	}
@@ -95,14 +95,14 @@
 	const numFormatter = new Intl.NumberFormat('fr-FR', {
 		style: 'decimal',
 		minimumFractionDigits: 0,
-		maximumFractionDigits: 0
+		maximumFractionDigits: 0,
 	});
 
 	const percentFormatter = new Intl.NumberFormat('fr-FR', {
 		style: 'decimal',
 		minimumFractionDigits: 1,
 		maximumFractionDigits: 1,
-		signDisplay: 'always'
+		signDisplay: 'always',
 	});
 
 	function calculateEvolution(count2024: string, count2025: string): number | null {
@@ -137,7 +137,7 @@
 							'circle-color': '#3b82f6',
 							'circle-opacity': 0.7,
 							'circle-stroke-width': 2,
-							'circle-stroke-color': '#1e40af'
+							'circle-stroke-color': '#1e40af',
 						}}
 						onclick={handleCompteurClick}
 					/>
@@ -148,12 +148,12 @@
 							'text-font': ['Open Sans Regular', 'Arial Unicode MS Regular'],
 							'text-offset': [0, 0],
 							'text-anchor': 'left',
-							'text-size': 12
+							'text-size': 12,
 						}}
 						paint={{
 							'text-color': '#1f2937',
 							'text-halo-color': '#ffffff',
-							'text-halo-width': 2
+							'text-halo-width': 2,
 						}}
 					/>
 				</GeoJSONSource>

@@ -23,11 +23,11 @@ export const matchTypeWidth = [
 		'Double sens cyclable': 1,
 		'Couloir bus vélo non élargi': 1,
 		'Chaussée à voie centrale banalisée (CVCB)': 1,
-		'Goulotte ou rampe': 0.5
+		'Goulotte ou rampe': 0.5,
 	})
 		.map(([type, width]) => [type, width])
 		.flat(),
-	0.5
+	0.5,
 ] as any;
 
 export const matchTypeColorReseau = [
@@ -39,7 +39,7 @@ export const matchTypeColorReseau = [
 	'#5e5e5e',
 	'Réseau structurant et super structurant',
 	'#484848',
-	'#9ca3af'
+	'#9ca3af',
 ] as any;
 
 export function getScore(value: string | number | undefined): number | null {
@@ -56,19 +56,19 @@ export function getCommuneUrl(communeName: string): string {
 export const villesPlusFormatter = new Intl.NumberFormat('fr-FR', {
 	style: 'decimal',
 	minimumFractionDigits: 0,
-	maximumFractionDigits: 1
+	maximumFractionDigits: 1,
 });
 
 export const numFormatter = new Intl.NumberFormat('fr-FR', {
 	style: 'decimal',
 	minimumFractionDigits: 2,
-	maximumFractionDigits: 2
+	maximumFractionDigits: 2,
 });
 
 export const percentFormatter = new Intl.NumberFormat('fr-FR', {
 	style: 'percent',
 	minimumFractionDigits: 0,
-	maximumFractionDigits: 0
+	maximumFractionDigits: 0,
 });
 
 export const LYON_INSEE_CODES = [
@@ -82,5 +82,5 @@ export const LYON_INSEE_CODES = [
 	'69386',
 	'69387',
 	'69388',
-	'69389'
+	'69389',
 ];

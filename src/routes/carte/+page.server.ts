@@ -34,7 +34,7 @@ export const load: PageServerLoad = async () => {
 			}
 			return acc;
 		},
-		{} as Record<number, any>
+		{} as Record<number, any>,
 	);
 
 	return {
@@ -46,6 +46,6 @@ export const load: PageServerLoad = async () => {
 		clustersVerts: JSON.parse(clustersVerts),
 		pointsVerts: JSON.parse(pointsVerts),
 		voirieData: voirieData,
-		voiesLyonnaises
+		voiesLyonnaises,
 	};
 };

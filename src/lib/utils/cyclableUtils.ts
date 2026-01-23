@@ -32,7 +32,7 @@ export interface CyclableFeature {
 
 export const isSecureInfrastructure = (
 	feature: CyclableFeature,
-	{ isVille30 = false }: { isVille30?: boolean }
+	{ isVille30 = false }: { isVille30?: boolean },
 ) => {
 	const type = feature.properties.typeamenagement;
 	const zone30 = feature.properties.zonecirculationapaisee;
@@ -54,7 +54,7 @@ export const isSecureInfrastructure = (
 
 export function calculateSecureLength(
 	features: CyclableFeature[],
-	{ isVille30 = false } = {}
+	{ isVille30 = false } = {},
 ): number {
 	return features
 		.filter((f) => isSecureInfrastructure(f, { isVille30 }))
@@ -64,7 +64,7 @@ export function calculateSecureLength(
 export function calculateSecureLengthPer1000Inhabitants(
 	features: CyclableFeature[],
 	population: number,
-	{ isVille30 = false } = {}
+	{ isVille30 = false } = {},
 ): number {
 	if (population === 0) return 0;
 	const secureLength = calculateSecureLength(features, { isVille30 });
@@ -74,7 +74,7 @@ export function calculateSecureLengthPer1000Inhabitants(
 
 export function getSecureLengthByType(
 	features: CyclableFeature[],
-	{ isVille30 = false } = {}
+	{ isVille30 = false } = {},
 ): Record<string, number> {
 	return features
 		.filter((f) => isSecureInfrastructure(f, { isVille30 }))
@@ -85,6 +85,6 @@ export function getSecureLengthByType(
 				acc[type] = (acc[type] || 0) + length;
 				return acc;
 			},
-			{} as Record<string, number>
+			{} as Record<string, number>,
 		);
 }

@@ -10,7 +10,7 @@
 		AttributionControl,
 		GeolocateControl,
 		NavigationControl,
-		SymbolLayer
+		SymbolLayer,
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
@@ -29,7 +29,7 @@
 
 	const mapSearchParamsSchema = type({
 		layers: type('string[]').default(() =>
-			['communes', 'cycleways', Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`)].flat()
+			['communes', 'cycleways', Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`)].flat(),
 		),
 		commune: 'string = ""',
 		zoom: 'number = 11',
@@ -38,12 +38,12 @@
 		showParking: 'boolean = true',
 		showCycleways: 'boolean = true',
 		showCommunes: 'boolean = true',
-		dimBackground: 'boolean = false'
+		dimBackground: 'boolean = false',
 	});
 
 	const params = useSearchParams(mapSearchParamsSchema, {
 		pushHistory: false,
-		debounce: 100
+		debounce: 100,
 	});
 
 	const availableLayers = [
@@ -51,56 +51,56 @@
 			id: 'communes',
 			label: 'Limites des communes',
 			color: '#6b7280',
-			category: 'Communes'
+			category: 'Communes',
 		},
 		{
 			id: 'cycleways',
 			label: 'Aménagements cyclables',
 			color: '#19181a',
-			category: 'Infrastructures Cyclables'
+			category: 'Infrastructures Cyclables',
 		},
 		{
 			id: 'parking',
 			label: 'Stationnements vélos',
 			color: '#0944f3',
-			category: 'Infrastructures Cyclables'
+			category: 'Infrastructures Cyclables',
 		},
 		{
 			id: 'velov',
 			label: 'Stations Velov',
 			color: '#fbbf24',
-			category: 'Infrastructures Cyclables'
+			category: 'Infrastructures Cyclables',
 		},
 		...Array.from({ length: 12 }, (_, i) => ({
 			id: `vl-${i + 1}`,
 			label: `${i + 1}`,
 			color: vlColors[i],
-			category: 'Voies Lyonnaises'
+			category: 'Voies Lyonnaises',
 		})),
 		{
 			category: 'Baromètre Cyclable FUB',
 			id: 'problematic-red',
 			label: 'Zones prioritaires',
-			color: '#ef4444'
+			color: '#ef4444',
 		},
 		{
 			id: 'problematic-green',
 			label: "Zones d'amélioration",
 			color: '#22c55e',
-			category: 'Baromètre Cyclable FUB'
+			category: 'Baromètre Cyclable FUB',
 		},
 		{
 			id: 'parking-demand',
 			label: 'Zones de demande de stationnements',
 			color: '#0595d3',
-			category: 'Baromètre Cyclable FUB'
-		}
+			category: 'Baromètre Cyclable FUB',
+		},
 	] as const;
 
 	const numFormatter = new Intl.NumberFormat('fr-FR', {
 		style: 'decimal',
 		minimumFractionDigits: 2,
-		maximumFractionDigits: 2
+		maximumFractionDigits: 2,
 	});
 
 	let map: maplibregl.Map | undefined = $state();
@@ -119,9 +119,9 @@
 						self.indexOf(category) === index &&
 						!availableLayers
 							.filter((layer) => layer.category === category)
-							.some((layer) => (params.layers || []).includes(layer.id))
-				)
-		)
+							.some((layer) => (params.layers || []).includes(layer.id)),
+				),
+		),
 	);
 
 	const processedVLData = $derived(processVoiesLyonnaisesData(data.voiesLyonnaises));
@@ -224,14 +224,14 @@
 		map.flyTo({
 			center: coordinates,
 			zoom: 14,
-			duration: 1500
+			duration: 1500,
 		});
 	}
 
 	const LYON_BOUNDS: [number, number, number, number] = [4.6, 45.5, 5.1, 46.0];
 	const MAP_BOUNDS: [[number, number], [number, number]] = [
 		[4.2, 45.4],
-		[5.5, 46.1]
+		[5.5, 46.1],
 	];
 </script>
 
@@ -411,12 +411,12 @@
 							id="arrondissements-line"
 							source="arrondissements"
 							layout={{
-								visibility: isLayerVisible('communes') ? 'visible' : 'none'
+								visibility: isLayerVisible('communes') ? 'visible' : 'none',
 							}}
 							paint={{
 								'line-color': '#2563eb',
 								'line-width': 2,
-								'line-opacity': 0.3
+								'line-opacity': 0.3,
 							}}
 						/>
 					</GeoJSONSource>
@@ -425,22 +425,22 @@
 						<FillLayer
 							id="communes-fill"
 							layout={{
-								visibility: isLayerVisible('communes') ? 'visible' : 'none'
+								visibility: isLayerVisible('communes') ? 'visible' : 'none',
 							}}
 							paint={{
 								'fill-color': '#6b7280',
-								'fill-opacity': 0.05
+								'fill-opacity': 0.05,
 							}}
 						/>
 						<LineLayer
 							id="communes-layer"
 							layout={{
-								visibility: isLayerVisible('communes') ? 'visible' : 'none'
+								visibility: isLayerVisible('communes') ? 'visible' : 'none',
 							}}
 							paint={{
 								'line-color': '#6b7280',
 								'line-width': 2,
-								'line-opacity': 0.5
+								'line-opacity': 0.5,
 							}}
 						/>
 						<SymbolLayer
@@ -455,13 +455,13 @@
 								'text-ignore-placement': false,
 								'text-optional': true,
 								'symbol-spacing': 1e6,
-								visibility: isLayerVisible('communes') ? 'visible' : 'none'
+								visibility: isLayerVisible('communes') ? 'visible' : 'none',
 							}}
 							paint={{
 								'text-color': '#000',
 								'text-halo-blur': 1,
 								'text-halo-color': '#fff',
-								'text-halo-width': 1
+								'text-halo-width': 1,
 							}}
 						/>
 					</GeoJSONSource>
@@ -472,10 +472,10 @@
 							paint={{
 								'line-color': matchTypeColorReseau,
 								'line-width': matchTypeWidth,
-								'line-opacity': 0.8
+								'line-opacity': 0.8,
 							}}
 							layout={{
-								visibility: isLayerVisible('cycleways') ? 'visible' : 'none'
+								visibility: isLayerVisible('cycleways') ? 'visible' : 'none',
 							}}
 							onclick={(e) => handleFeatureClick(e, 'cycleway')}
 							onmouseenter={handleMouseEnter}
@@ -487,11 +487,11 @@
 						<FillLayer
 							id="clusters-red-fill"
 							layout={{
-								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none'
+								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none',
 							}}
 							paint={{
 								'fill-color': '#ef4444',
-								'fill-opacity': 0.5
+								'fill-opacity': 0.5,
 							}}
 							onclick={(e) => handleFeatureClick(e, 'cluster-red')}
 							onmouseenter={handleMouseEnter}
@@ -500,12 +500,12 @@
 						<LineLayer
 							id="clusters-red-border"
 							layout={{
-								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none'
+								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none',
 							}}
 							paint={{
 								'line-color': '#b91c1c',
 								'line-width': 2,
-								'line-opacity': 0.8
+								'line-opacity': 0.8,
 							}}
 							onclick={(e) => handleFeatureClick(e, 'cluster-red')}
 							onmouseenter={handleMouseEnter}
@@ -517,14 +517,14 @@
 						<CircleLayer
 							id="points-red-layer"
 							layout={{
-								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none'
+								visibility: isLayerVisible('problematic-red') ? 'visible' : 'none',
 							}}
 							paint={{
 								'circle-color': '#ef4444',
 								'circle-radius': 2,
 								'circle-opacity': 0.8,
 								'circle-stroke-width': 0.5,
-								'circle-stroke-color': '#fff'
+								'circle-stroke-color': '#fff',
 							}}
 							onclick={(e) => handleFeatureClick(e, 'point-red')}
 							onmouseenter={handleMouseEnter}
@@ -536,11 +536,11 @@
 						<FillLayer
 							id="clusters-green-fill"
 							layout={{
-								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none'
+								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none',
 							}}
 							paint={{
 								'fill-color': '#22c55e',
-								'fill-opacity': 0.5
+								'fill-opacity': 0.5,
 							}}
 							onclick={(e) => handleFeatureClick(e, 'cluster-green')}
 							onmouseenter={handleMouseEnter}
@@ -549,12 +549,12 @@
 						<LineLayer
 							id="clusters-green-border"
 							layout={{
-								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none'
+								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none',
 							}}
 							paint={{
 								'line-color': '#16a34a',
 								'line-width': 2,
-								'line-opacity': 0.8
+								'line-opacity': 0.8,
 							}}
 							onclick={(e) => handleFeatureClick(e, 'cluster-green')}
 							onmouseenter={handleMouseEnter}
@@ -566,14 +566,14 @@
 						<CircleLayer
 							id="points-green-layer"
 							layout={{
-								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none'
+								visibility: isLayerVisible('problematic-green') ? 'visible' : 'none',
 							}}
 							paint={{
 								'circle-color': '#22c55e',
 								'circle-radius': 2,
 								'circle-opacity': 0.8,
 								'circle-stroke-width': 0.5,
-								'circle-stroke-color': '#fff'
+								'circle-stroke-color': '#fff',
 							}}
 							onclick={(e) => handleFeatureClick(e, 'point-green')}
 							onmouseenter={handleMouseEnter}
@@ -585,11 +585,11 @@
 						<FillLayer
 							id="parking-demand-fill"
 							layout={{
-								visibility: isLayerVisible('parking-demand') ? 'visible' : 'none'
+								visibility: isLayerVisible('parking-demand') ? 'visible' : 'none',
 							}}
 							paint={{
 								'fill-color': '#0595d3',
-								'fill-opacity': 0.5
+								'fill-opacity': 0.5,
 							}}
 							onclick={(e) => handleFeatureClick(e, 'parking-demand')}
 							onmouseenter={handleMouseEnter}
@@ -598,12 +598,12 @@
 						<LineLayer
 							id="parking-demand-line"
 							layout={{
-								visibility: isLayerVisible('parking-demand') ? 'visible' : 'none'
+								visibility: isLayerVisible('parking-demand') ? 'visible' : 'none',
 							}}
 							paint={{
 								'line-color': '#0595d3',
 								'line-width': 2,
-								'line-opacity': 0.8
+								'line-opacity': 0.8,
 							}}
 							onclick={(e) => handleFeatureClick(e, 'parking-demand')}
 							onmouseenter={handleMouseEnter}
@@ -619,7 +619,7 @@
 						<CircleLayer
 							id="parking-layer-small"
 							layout={{
-								visibility: isLayerVisible('parking') ? 'visible' : 'none'
+								visibility: isLayerVisible('parking') ? 'visible' : 'none',
 							}}
 							paint={{
 								'circle-opacity': 0.5,
@@ -638,11 +638,11 @@
 									20,
 									14,
 									22,
-									20
+									20,
 								],
 								'circle-color': '#0944f3',
 								'circle-stroke-color': '#ffffff',
-								'circle-stroke-width': 0.5
+								'circle-stroke-width': 0.5,
 							}}
 							onclick={(e) => handleFeatureClick(e, 'parking')}
 							onmouseenter={handleMouseEnter}
@@ -656,8 +656,8 @@
 								[
 									'in',
 									['get', 'mobiliervelo'],
-									['literal', ['Consigne collective', 'Box', 'Consigne individuelle']]
-								]
+									['literal', ['Consigne collective', 'Box', 'Consigne individuelle']],
+								],
 							]}
 							layout={{
 								visibility: isLayerVisible('parking') ? 'visible' : 'none',
@@ -673,10 +673,10 @@
 									18,
 									1.1,
 									22,
-									1.3
+									1.3,
 								],
 								'icon-allow-overlap': true,
-								'icon-ignore-placement': true
+								'icon-ignore-placement': true,
 							}}
 							onclick={(e) => handleFeatureClick(e, 'parking')}
 							onmouseenter={handleMouseEnter}
@@ -705,10 +705,10 @@
 									18,
 									1.2,
 									22,
-									1.4
+									1.4,
 								],
 								'icon-allow-overlap': true,
-								'icon-ignore-placement': true
+								'icon-ignore-placement': true,
 							}}
 							onclick={(e) => handleFeatureClick(e, 'velov')}
 							onmouseenter={handleMouseEnter}
@@ -729,12 +729,12 @@
 									layout={{
 										'line-join': 'round',
 										'line-cap': 'round',
-										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none',
 									}}
 									paint={{
 										'line-color': vlColors[lineIndex],
 										'line-width': 6,
-										'line-opacity': 1
+										'line-opacity': 1,
 									}}
 									filter={['==', ['get', 'status'], 'done']}
 									onclick={(e) => handleFeatureClick(e, `vl-${lineNumber}`)}
@@ -746,12 +746,12 @@
 									layout={{
 										'line-join': 'round',
 										'line-cap': 'round',
-										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none',
 									}}
 									paint={{
 										'line-color': '#000000',
 										'line-width': 3,
-										'line-opacity': 1
+										'line-opacity': 1,
 									}}
 									filter={['==', ['get', 'status'], 'done']}
 									onclick={(e) => handleFeatureClick(e, `vl-${lineNumber}`)}
@@ -767,19 +767,19 @@
 									filter={[
 										'all',
 										['==', ['get', 'status'], 'done'],
-										['>=', ['get', 'distance'], 900]
+										['>=', ['get', 'distance'], 900],
 									]}
 									layout={{
 										'icon-image': [
 											'coalesce',
 											['get', 'compositeIconName'],
-											['concat', 'line-shield-', lineNumber]
+											['concat', 'line-shield-', lineNumber],
 										],
 										'icon-size': 0.3,
 										'symbol-spacing': 1000000,
 										'symbol-placement': 'line-center',
 										'icon-rotation-alignment': 'viewport',
-										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none',
 									}}
 								/>
 
@@ -791,18 +791,18 @@
 									filter={[
 										'all',
 										['==', ['get', 'status'], 'done'],
-										['>=', ['get', 'distance'], 300]
+										['>=', ['get', 'distance'], 300],
 									]}
 									layout={{
 										'icon-image': [
 											'coalesce',
 											['get', 'compositeIconName'],
-											['concat', 'line-shield-', lineNumber]
+											['concat', 'line-shield-', lineNumber],
 										],
 										'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.3, 15, 0.3, 17, 0.4],
 										'symbol-spacing': 1000000,
 										'symbol-placement': 'line-center',
-										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none',
 									}}
 								/>
 
@@ -815,12 +815,12 @@
 										'icon-image': [
 											'coalesce',
 											['get', 'compositeIconName'],
-											['concat', 'line-shield-', lineNumber]
+											['concat', 'line-shield-', lineNumber],
 										],
 										'icon-size': 0.4,
 										'symbol-spacing': 1000000,
 										'symbol-placement': 'line-center',
-										visibility: isLayerVisible(layerId) ? 'visible' : 'none'
+										visibility: isLayerVisible(layerId) ? 'visible' : 'none',
 									}}
 								/>
 							</GeoJSONSource>

@@ -37,7 +37,7 @@ export function createLineShieldIcon(lineNumber: number, color: string): HTMLCan
 
 export function createCompositeLineShieldIcon(
 	lineNumbers: number[],
-	colors: string[]
+	colors: string[],
 ): HTMLCanvasElement {
 	const canvas = document.createElement('canvas');
 	const iconSize = 64;
@@ -156,7 +156,7 @@ export function addCompositeIconNames(features: any[]) {
 		sectionGroups.get(sectionId)!.push({
 			line: feature.properties.line,
 			feature,
-			index
+			index,
 		});
 	});
 
@@ -166,8 +166,8 @@ export function addCompositeIconNames(features: any[]) {
 				...feature,
 				geometry: {
 					...feature.geometry,
-					coordinates: normalizeLineDirection(feature.geometry.coordinates as [number, number][])
-				}
+					coordinates: normalizeLineDirection(feature.geometry.coordinates as [number, number][]),
+				},
 			};
 		}
 		return { ...feature };
@@ -196,8 +196,8 @@ export function addCompositeIconNames(features: any[]) {
 				...feature,
 				properties: {
 					...feature.properties,
-					compositeIconName
-				}
+					compositeIconName,
+				},
 			};
 		}
 		return feature;
@@ -228,7 +228,7 @@ export const vlColors = [
 	'#EAAB50', // Line 9
 	'#9A8A4B', // Line 10
 	'#4DADC9', // Line 11
-	'#DBABB7' // Line 12
+	'#DBABB7', // Line 12
 ];
 
 export function processVoiesLyonnaisesData(voiesLyonnaises: Record<number, any>): {
@@ -254,8 +254,8 @@ export function processVoiesLyonnaisesData(voiesLyonnaises: Record<number, any>)
 						properties: {
 							...feature.properties,
 							distance,
-							line: lineNumber
-						}
+							line: lineNumber,
+						},
 					});
 				}
 			});
@@ -269,7 +269,7 @@ export function processVoiesLyonnaisesData(voiesLyonnaises: Record<number, any>)
 		if (!processed[lineNumber]) {
 			processed[lineNumber] = {
 				type: 'FeatureCollection',
-				features: []
+				features: [],
 			};
 		}
 		processed[lineNumber].features.push(feature);

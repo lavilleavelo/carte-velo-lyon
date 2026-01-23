@@ -68,7 +68,7 @@
 				return true;
 			});
 		},
-		enabled: debouncedQuery.current.length >= 2
+		enabled: debouncedQuery.current.length >= 2,
 	}));
 
 	const results = $derived(geocoderQuery.data ?? []);
@@ -136,7 +136,7 @@
 							<Check
 								class={cn(
 									'mr-2 h-4 w-4',
-									selectedValue === result.properties.name ? 'opacity-100' : 'opacity-0'
+									selectedValue === result.properties.name ? 'opacity-100' : 'opacity-0',
 								)}
 							/>
 							<div class="flex flex-col">
