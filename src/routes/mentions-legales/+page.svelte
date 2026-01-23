@@ -36,7 +36,7 @@
 				<p>
 					Toute réutilisation brute des données du site doivent faire systématiquement mention du
 					nom de l’association contributrice « La Ville à Vélo » (avec lien vers
-					<a href="'https://lavilleavelo.org" target="_blank">https://lavilleavelo.org</a>).
+					<a href="https://lavilleavelo.org" target="_blank">https://lavilleavelo.org</a>).
 				</p>
 
 				<h2>Limitation de responsabilité</h2>
