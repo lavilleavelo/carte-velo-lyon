@@ -17,6 +17,7 @@
 	import maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
 	import positronStyleCustom from './positron-custom.json';
+	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
 
 	import { matchTypeColorReseau, matchTypeWidth } from '$lib/utils.ts';
 	import { Checkbox } from '$lib/components/ui/checkbox';
@@ -86,6 +87,14 @@
 	let geocoderHighlightFading = $state(false);
 	let geocoderHighlightTimeout: ReturnType<typeof setTimeout> | null = null;
 	let geocoderFadeTimeout: ReturnType<typeof setTimeout> | null = null;
+
+	let contextMenuVisible = $state(false);
+	let contextMenuX = $state(0);
+	let contextMenuY = $state(0);
+	let contextMenuLngLat: { lng: number; lat: number } | null = $state(null);
+
+	let touchTimeout: ReturnType<typeof setTimeout> | null = null;
+	let touchStartPoint: { x: number; y: number } | null = null;
 
 	let collapsedCategories = $state(
 		new Set<string>(
@@ -224,6 +233,58 @@
 		}, 4000);
 	}
 
+	function handleMapContextMenu(event: any) {
+		event.preventDefault();
+		const e = event.originalEvent as MouseEvent;
+		contextMenuVisible = true;
+		contextMenuX = e.clientX;
+		contextMenuY = e.clientY;
+		contextMenuLngLat = {
+			lng: event.lngLat.lng,
+			lat: event.lngLat.lat,
+		};
+	}
+
+	function closeContextMenu() {
+		contextMenuVisible = false;
+		contextMenuLngLat = null;
+	}
+
+	function handleTouchStart(e: any) {
+		if (e.points.length !== 1) return;
+		const point = e.point;
+		const lngLat = e.lngLat;
+
+		touchStartPoint = point;
+		touchTimeout = setTimeout(() => {
+			contextMenuVisible = true;
+			contextMenuX = e.originalEvent.touches[0].clientX;
+			contextMenuY = e.originalEvent.touches[0].clientY;
+			contextMenuLngLat = lngLat;
+		}, 500);
+	}
+
+	function handleTouchMove(e: any) {
+		if (!touchStartPoint) return;
+		const point = e.point;
+		const dist = Math.sqrt(
+			Math.pow(point.x - touchStartPoint.x, 2) + Math.pow(point.y - touchStartPoint.y, 2),
+		);
+		if (dist > 10) {
+			if (touchTimeout) clearTimeout(touchTimeout);
+			touchTimeout = null;
+			touchStartPoint = null;
+		}
+	}
+
+	function handleTouchEnd() {
+		if (touchTimeout) {
+			clearTimeout(touchTimeout);
+			touchTimeout = null;
+		}
+		touchStartPoint = null;
+	}
+
 	const LYON_BOUNDS: [number, number, number, number] = [4.6, 45.5, 5.1, 46.0];
 	const MAP_BOUNDS: [[number, number], [number, number]] = [
 		[4.2, 45.4],
@@ -234,7 +295,7 @@
 <div
 	class="
 	 flex
-	 h-[calc(100vh-60px)]
+	 h-[calc(100vh)]
 	 w-screen flex-col"
 	style="position: relative; left: 50%; transform: translateX(-50%); max-width: none; margin-top: -30px"
 >
@@ -369,9 +430,9 @@
 				</div>
 			{/if}
 
-			<div class="h-[calc(100vh-60px)] transition-all duration-300 ease-in-out">
+			<div class="h-[calc(100vh)] transition-all duration-300 ease-in-out">
 				<MapLibre
-					class="h-[calc(100vh-60px)] w-full"
+					class="h-[calc(100vh)] w-full"
 					style="https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json"
 					center={[center.lng, center.lat]}
 					zoom={params.zoom}
@@ -384,6 +445,10 @@
 						await loadShieldIcons(map, processedVLData.allFeatures);
 					}}
 					onmoveend={handleMapMove}
+					oncontextmenu={handleMapContextMenu}
+					ontouchstart={handleTouchStart}
+					ontouchmove={handleTouchMove}
+					ontouchend={handleTouchEnd}
 				>
 					<NavigationControl position="top-right" />
 					<GeolocateControl position="top-right" />
@@ -671,6 +736,13 @@
 			</div>
 		</div>
 	</div>
+	<MapContextMenu
+		visible={contextMenuVisible}
+		x={contextMenuX}
+		y={contextMenuY}
+		lngLat={contextMenuLngLat}
+		onClose={closeContextMenu}
+	/>
 </div>
 
 <style>

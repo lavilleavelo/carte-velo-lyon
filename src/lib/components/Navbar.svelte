@@ -1,5 +1,5 @@
 <script lang="ts">
-	let { currentPath = '/', communes = [] } = $props<{ currentPath?: string; communes?: any[] }>();
+	let { currentPath = '/' } = $props<{ currentPath?: string }>();
 </script>
 
 <nav class="text-brand-navy shadow-lg">
@@ -21,7 +21,7 @@
 							? 'pb-1 text-brand-navy'
 							: 'text-brand-navy'}"
 					>
-						carte
+						Carte
 					</a>
 				</div>
 			</div>
