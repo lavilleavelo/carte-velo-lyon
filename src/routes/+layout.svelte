@@ -34,7 +34,7 @@
 	{/if}
 
 	<div class="flex min-h-screen flex-col">
-		<main class="mx-auto w-full max-w-7xl flex-1 px-4 py-8 sm:px-6 lg:px-8">
+		<main class="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8">
 			{@render children()}
 		</main>
 	</div>
