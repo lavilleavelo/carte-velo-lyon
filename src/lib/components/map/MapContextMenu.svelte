@@ -15,9 +15,10 @@
 		lngLat: { lng: number; lat: number } | null;
 		zoom?: number;
 		onClose: () => void;
+		onPhotoFound?: (coordinates: { lng: number; lat: number }) => void;
 	}
 
-	let { visible, x, y, lngLat, zoom = 13, onClose }: Props = $props();
+	let { visible, x, y, lngLat, zoom = 13, onClose, onPhotoFound }: Props = $props();
 
 	let showPanoramaxViewer = $state(false);
 	let menuElement: HTMLDivElement | undefined = $state();
@@ -51,8 +52,18 @@
 			return await searchPanoramaxPhoto([lngLat.lng, lngLat.lat]);
 		},
 		enabled: visible && lngLat !== null,
+		enabled: visible && lngLat !== null,
 		retry: 1,
 	}));
+
+	$effect(() => {
+		if (panoramaxQuery.data?.coordinates && onPhotoFound) {
+			onPhotoFound({
+				lng: panoramaxQuery.data.coordinates[0],
+				lat: panoramaxQuery.data.coordinates[1],
+			});
+		}
+	});
 
 	function openPanoramaxViewer() {
 		showPanoramaxViewer = true;

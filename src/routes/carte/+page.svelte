@@ -93,7 +93,9 @@
 	let contextMenuVisible = $state(false);
 	let contextMenuX = $state(0);
 	let contextMenuY = $state(0);
+
 	let contextMenuLngLat: { lng: number; lat: number } | null = $state(null);
+	let contextMenuPhotoLocation: { lng: number; lat: number } | null = $state(null);
 	let innerWidth = $state(0);
 	let bearing = $state(0);
 	let pitch = $state(0);
@@ -315,12 +317,15 @@
 			lng: event.lngLat.lng,
 			lat: event.lngLat.lat,
 		};
+		contextMenuPhotoLocation = null;
 	}
 
 	function closeContextMenu() {
 		contextMenuVisible = false;
 		contextMenuLngLat = null;
+		contextMenuPhotoLocation = null;
 	}
+
 
 	function handleTouchStart(e: any) {
 		if (e.points.length !== 1) return;
@@ -447,6 +452,10 @@
 
 			{#if geocoderHighlight}
 				<GeocoderMarker lnglat={geocoderHighlight} fading={geocoderHighlightFading} />
+			{/if}
+
+			{#if contextMenuPhotoLocation}
+				<GeocoderMarker lnglat={contextMenuPhotoLocation} />
 			{/if}
 
 			<GeoJSONSource id="arrondissements" data={data.arrondissementsLyon} maxzoom={14}>
@@ -734,12 +743,14 @@
 		{/if}
 	</div>
 
+
 	<MapContextMenu
 		visible={contextMenuVisible}
 		x={contextMenuX}
 		y={contextMenuY}
 		lngLat={contextMenuLngLat}
 		onClose={closeContextMenu}
+		onPhotoFound={(loc) => (contextMenuPhotoLocation = loc)}
 	/>
 </div>
 

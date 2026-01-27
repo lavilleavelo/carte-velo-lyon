@@ -6,6 +6,7 @@ export async function searchPanoramaxPhoto(coordinates: [number, number]): Promi
 	sdPicture: string;
 	hdPicture: string;
 	datetime: string | null;
+	coordinates: [number, number];
 } | null> {
 	const [lon, lat] = coordinates;
 	const offset = 0.0004; // approximately 50-60 meters
@@ -33,6 +34,7 @@ export async function searchPanoramaxPhoto(coordinates: [number, number]): Promi
 			linkSelf: feature.assets.thumb.href,
 			sequence: feature.collection,
 			picture: feature.id,
+			coordinates: feature.geometry.coordinates,
 		};
 	}
 
