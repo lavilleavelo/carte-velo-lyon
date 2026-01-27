@@ -94,6 +94,9 @@
 	let contextMenuX = $state(0);
 	let contextMenuY = $state(0);
 	let contextMenuLngLat: { lng: number; lat: number } | null = $state(null);
+	let innerWidth = $state(0);
+	let bearing = $state(0);
+	let pitch = $state(0);
 
 	let touchTimeout: ReturnType<typeof setTimeout> | null = null;
 	let touchStartPoint: { x: number; y: number } | null = null;
@@ -361,12 +364,16 @@
 	];
 </script>
 
+<svelte:window bind:innerWidth />
+
 <div
 	class="relative flex h-[calc(100vh)] w-[100vw] flex-row overflow-hidden"
 	style="margin-left: calc(50% - 50vw); width: 100vw;"
 >
 	<div class="relative h-full flex-1">
-		<div class="absolute top-4 left-1/2 z-20 w-full max-w-sm -translate-x-1/2 px-4 md:max-w-md">
+		<div
+			class="absolute top-4 left-1/2 z-20 w-full max-w-xs -translate-x-1/2 px-4 sm:max-w-sm md:max-w-md"
+		>
 			<div class="rounded-lg shadow-md">
 				<Geocoder onSelect={handleGeocoderSelect} bbox={LYON_BOUNDS} />
 			</div>
@@ -384,7 +391,7 @@
 		{/if}
 
 		<button
-			class="absolute right-4 bottom-24 z-20 rounded-full bg-white p-3 shadow-lg md:hidden"
+			class="absolute bottom-12 left-4 z-20 rounded-full bg-white p-3 shadow-lg md:hidden"
 			onclick={() => (showMobileFilters = true)}
 			aria-label="Filtres"
 		>
@@ -397,6 +404,8 @@
 			bind:map
 			bind:zoom
 			bind:center
+			bind:bearing
+			bind:pitch
 			maxBounds={MAP_BOUNDS}
 			{cursor}
 			attributionControl={false}
@@ -424,9 +433,17 @@
 				params.center = [center.lng, center.lat];
 			}}
 		>
-			<NavigationControl position="top-right" />
-			<GeolocateControl position="top-right" />
 			<AttributionControl compact={true} />
+
+			{#if innerWidth >= 768}
+				<GeolocateControl position="top-right" />
+			{:else}
+				<GeolocateControl position="bottom-right" />
+			{/if}
+
+			{#if innerWidth >= 768}
+				<NavigationControl position="top-right" showCompass={bearing !== 0 || pitch !== 0} />
+			{/if}
 
 			{#if geocoderHighlight}
 				<GeocoderMarker lnglat={geocoderHighlight} fading={geocoderHighlightFading} />
@@ -681,9 +698,7 @@
 		</div>
 	</div>
 
-	<!-- Mobile Components (Hidden on Desktop) -->
 	<div class="md:hidden">
-		<!-- Mobile Filters Drawer -->
 		<MobileDrawer bind:open={showMobileFilters} snapPoints={[0.4, 0.9]} initialSnapPoint={0}>
 			<div class="p-4">
 				<h2 class="mb-4 text-lg font-bold">Filtres</h2>
