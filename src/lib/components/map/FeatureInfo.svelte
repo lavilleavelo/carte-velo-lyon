@@ -3,6 +3,8 @@
 	import ParkingDetails from './details/ParkingDetails.svelte';
 	import VoieLyonnaiseDetails from './details/VoieLyonnaiseDetails.svelte';
 	import CyclewayDetails from './details/CyclewayDetails.svelte';
+	import PumpDetails from './details/PumpDetails.svelte';
+	import WaterFountainDetails from './details/WaterFountainDetails.svelte';
 	import DefaultDetails from './details/DefaultDetails.svelte';
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
@@ -20,6 +22,8 @@
 		if (type === 'velov') return VelovDetails;
 		if (type === 'parking') return ParkingDetails;
 		if (type === 'cycleway') return CyclewayDetails;
+		if (type === 'pump') return PumpDetails;
+		if (type === 'water-fountain') return WaterFountainDetails;
 		if (type && type.startsWith('vl-')) return VoieLyonnaiseDetails;
 		return DefaultDetails;
 	}

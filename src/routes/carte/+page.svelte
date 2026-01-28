@@ -28,6 +28,8 @@
 	import parkingVelostationIcon from '$lib/assets/icons/parking-velostation.png';
 	import parkingSecureIcon from '$lib/assets/icons/box_securisee_velo.png';
 	import parkingLpaIcon from '$lib/assets/icons/parking-lpa.png';
+	import pumpIcon from '$lib/assets/icons/pump.png';
+	import fountainIcon from '$lib/assets/icons/fontaine.png';
 
 	import MetroLayer from '$lib/components/map/layers/MetroLayer.svelte';
 	import TramLayer from '$lib/components/map/layers/TramLayer.svelte';
@@ -37,6 +39,8 @@
 	import CommunesLayer from '$lib/components/map/layers/CommunesLayer.svelte';
 	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
 	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
+	import PumpLayer from '$lib/components/map/layers/PumpLayer.svelte';
+	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -133,6 +137,20 @@
 			label: 'Bus',
 			color: '#a3a3a3',
 			category: 'Transports en commun',
+		},
+		{
+			id: 'pumps',
+			label: 'Pompe',
+			color: '#e11d48',
+			icon: pumpIcon,
+			category: 'Aires de service',
+		},
+		{
+			id: 'water-fountains',
+			label: 'Borne fontaine à eau',
+			color: '#3b82f6',
+			icon: fountainIcon,
+			category: 'Aires de service',
 		},
 		{
 			id: 'communes',
@@ -325,6 +343,13 @@
 			}
 		});
 
+		if (isLayerVisible('pumps')) {
+			interactableLayerIds.push('pumps-layer');
+		}
+		if (isLayerVisible('water-fountains')) {
+			interactableLayerIds.push('fountains-layer');
+		}
+
 		return interactableLayerIds;
 	}
 
@@ -366,6 +391,12 @@
 					}
 					if (f.layer.id.startsWith('vl-')) {
 						return { ...f, type: f.layer.id.split('-line')[0] };
+					}
+					if (f.layer.id === 'pumps-layer') {
+						return { ...f, type: 'pump' };
+					}
+					if (f.layer.id === 'fountains-layer') {
+						return { ...f, type: 'water-fountain' };
 					}
 					return { ...f, type: 'default' };
 				});
@@ -596,6 +627,10 @@
 				{handleMouseLeave}
 				{processedVLData}
 			/>
+
+			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
+
+			<WaterFountainLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 		</MapLibre>
 	</div>
 
