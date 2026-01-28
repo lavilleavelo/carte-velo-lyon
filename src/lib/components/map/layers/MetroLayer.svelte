@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
+	import { GeoJSONSource, LineLayer, SymbolLayer, CircleLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { processTransportData, loadTransportShieldIcons } from '$lib/utils/mapUtils';
 
@@ -77,3 +77,20 @@
 		}}
 	/>
 </GeoJSONSource>
+
+<CircleLayer
+	id="metro-stops"
+	source="openmaptiles"
+	source-layer="poi"
+	filter={['all', ['==', 'class', 'railway'], ['==', 'subclass', 'subway']]}
+	minzoom={13}
+	layout={{
+		visibility: isLayerVisible('metro') ? 'visible' : 'none',
+	}}
+	paint={{
+		'circle-color': '#FFFFFF',
+		'circle-radius': 5,
+		'circle-stroke-width': 2,
+		'circle-stroke-color': '#D53032',
+	}}
+/>
