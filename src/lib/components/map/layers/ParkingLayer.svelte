@@ -4,7 +4,7 @@
 	import { processParkingData, processLPAParkingData } from '$lib/utils/parkingUtils';
 	import parkingCoveredIcon from '$lib/assets/icons/arceau_couvert.png?url';
 	import parkingVelostationIcon from '$lib/assets/icons/parking-velostation.png?url';
-	import parkingSecureIcon from '$lib/assets/icons/box_securisee_velo.png?url';
+	import parkingBoxIcon from '$lib/assets/icons/box_securisee_velo.png?url';
 	import parkingLpaIcon from '$lib/assets/icons/parking-lpa.png?url';
 
 	let { isLayerVisible, handleMouseEnter, handleMouseLeave } = $props();
@@ -57,7 +57,7 @@
 					pixelRatio: 2,
 				},
 			],
-			'parking-box': parkingSecureIcon,
+			'parking-box': parkingBoxIcon,
 			'parking-velostation': parkingVelostationIcon,
 			'parking-lpa': parkingLpaIcon,
 		}}
@@ -120,8 +120,8 @@
 			filter={['==', ['get', 'type'], 'box']}
 			layout={{
 				visibility: isLayerVisible('parking-box') ? 'visible' : 'none',
-				'icon-image': 'parking-secure',
-				'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.2, 17, 0.4],
+				'icon-image': 'parking-box',
+				'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.2, 17, 0.3],
 				'icon-allow-overlap': true,
 			}}
 			onmouseenter={handleMouseEnter}
