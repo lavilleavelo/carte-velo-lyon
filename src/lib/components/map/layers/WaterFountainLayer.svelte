@@ -49,7 +49,7 @@
 				visibility: isLayerVisible('water-fountains') ? 'visible' : 'none',
 				'text-field': 'Borne fontaine à eau',
 				'text-font': ['Open Sans Bold'],
-				'text-size': 12,
+				'text-size': ['interpolate', ['linear'], ['zoom'], 15, 12, 18, 14],
 				'text-offset': [0, 1.5],
 				'text-anchor': 'top',
 			}}
