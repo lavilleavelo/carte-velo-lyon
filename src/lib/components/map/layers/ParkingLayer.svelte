@@ -23,33 +23,83 @@
 		},
 		staleTime: Infinity,
 	}));
+
+	const visibleFeatures = $derived(parkingQuery.data?.features || []);
+
+	const clusterFeatures = $derived(visibleFeatures.filter((f) => f.properties.type === 'arceaux'));
+
+	const unclusterFeatures = $derived(
+		visibleFeatures.filter((f) => f.properties.type !== 'arceaux'),
+	);
 </script>
 
-<GeoJSONSource
-	maxzoom={20}
-	id="parking-data"
-	data={{
-		type: 'FeatureCollection',
-		features: [...(parkingQuery.data?.features || [])],
+<ImageLoader
+	images={{
+		velov: '/velov-station.png',
+		'parking-covered': [
+			parkingCoveredIcon,
+			{
+				pixelRatio: 2,
+			},
+		],
+		'parking-box': parkingBoxIcon,
+		'parking-velostation': parkingVelostationIcon,
+		'parking-lpa': parkingLpaIcon,
 	}}
 >
-	<ImageLoader
-		images={{
-			velov: '/velov-station.png',
-			'parking-covered': [
-				parkingCoveredIcon,
-				{
-					pixelRatio: 2,
-				},
-			],
-			'parking-box': parkingBoxIcon,
-			'parking-velostation': parkingVelostationIcon,
-			'parking-lpa': parkingLpaIcon,
+	<GeoJSONSource
+		id="parking-arceaux-source"
+		data={{
+			type: 'FeatureCollection',
+			features: clusterFeatures,
 		}}
+		cluster={true}
+		clusterMaxZoom={14}
+		clusterRadius={50}
 	>
 		<CircleLayer
+			id="parking-cluster-circle"
+			filter={['has', 'point_count']}
+			layout={{
+				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
+			}}
+			minzoom={13}
+			paint={{
+				'circle-color': [
+					'step',
+					['get', 'point_count'],
+					'#4ade80',
+					20,
+					'#22c55e',
+					50,
+					'#16a34a',
+					100,
+					'#15803d',
+				],
+				'circle-radius': ['step', ['get', 'point_count'], 12, 10, 18, 12, 25, 20, 15],
+				'circle-opacity': 0.7,
+				'circle-stroke-width': 1,
+				'circle-stroke-color': '#fff',
+			}}
+		/>
+
+		<SymbolLayer
+			id="parking-cluster-count"
+			filter={['has', 'point_count']}
+			layout={{
+				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
+				'text-field': '{point_count_abbreviated}',
+				'text-size': 10,
+				'text-font': ['Open Sans Bold'],
+			}}
+			paint={{
+				'text-color': '#ffffff',
+			}}
+		/>
+
+		<CircleLayer
 			id="parking-layer-circles"
-			filter={['==', ['get', 'type'], 'arceaux']}
+			filter={['!', ['has', 'point_count']]}
 			layout={{
 				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
 			}}
@@ -66,7 +116,7 @@
 
 		<SymbolLayer
 			id="parking-layer-capacity"
-			filter={['all', ['==', ['get', 'type'], 'arceaux'], ['has', 'capacite']]}
+			filter={['all', ['!', ['has', 'point_count']], ['has', 'capacite']]}
 			minzoom={16}
 			layout={{
 				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
@@ -82,7 +132,15 @@
 				'text-halo-width': 1,
 			}}
 		/>
+	</GeoJSONSource>
 
+	<GeoJSONSource
+		id="parking-others-source"
+		data={{
+			type: 'FeatureCollection',
+			features: unclusterFeatures,
+		}}
+	>
 		<SymbolLayer
 			id="parking-layer-roof"
 			filter={['==', ['get', 'type'], 'arceaux-couverts']}
@@ -148,5 +206,5 @@
 			onmouseenter={handleMouseEnter}
 			onmouseleave={handleMouseLeave}
 		/>
-	</ImageLoader>
-</GeoJSONSource>
+	</GeoJSONSource>
+</ImageLoader>
