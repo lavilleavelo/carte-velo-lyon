@@ -2,14 +2,25 @@
 	import { GeoJSONSource, LineLayer } from 'svelte-maplibre-gl';
 	import { matchTypeColorReseau, matchTypeWidth } from '$lib/utils.ts';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave, data } = $props();
+	let { isLayerVisible, handleMouseEnter, handleMouseLeave, data, mapStyle } = $props();
 </script>
 
 <GeoJSONSource maxzoom={14} data={data.voirieData} id="cycleways-source">
 	<LineLayer
+		id="cycleways-layer-casing"
+		paint={{
+			'line-color': '#ffffff',
+			'line-width': ['+', matchTypeWidth, 2],
+			'line-opacity': 0.5,
+		}}
+		layout={{
+			visibility: isLayerVisible('cycleways') && mapStyle === 'hybrid' ? 'visible' : 'none',
+		}}
+	/>
+	<LineLayer
 		id="cycleways-layer"
 		paint={{
-			'line-color': matchTypeColorReseau,
+			'line-color': mapStyle === 'hybrid' ? '#ef4444' : matchTypeColorReseau,
 			'line-width': matchTypeWidth,
 			'line-opacity': 0.8,
 		}}

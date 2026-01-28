@@ -614,7 +614,13 @@
 
 			<CommunesLayer {isLayerVisible} {data} />
 
-			<CyclewayLayer {isLayerVisible} {data} {handleMouseEnter} {handleMouseLeave} />
+			<CyclewayLayer
+				{isLayerVisible}
+				{data}
+				{handleMouseEnter}
+				{handleMouseLeave}
+				mapStyle={mapStyleState.mapStyle}
+			/>
 
 			<VelovLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
