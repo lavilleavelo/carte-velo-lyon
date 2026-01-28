@@ -7,15 +7,9 @@
 
 	import {
 		MapLibre,
-		GeoJSONSource,
-		FillLayer,
-		LineLayer,
-		CircleLayer,
 		AttributionControl,
 		GeolocateControl,
 		NavigationControl,
-		SymbolLayer,
-		ImageLoader,
 		Marker,
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
@@ -26,12 +20,23 @@
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 
-	import { matchTypeColorReseau, matchTypeWidth } from '$lib/utils.ts';
 	import Geocoder from '$lib/components/Geocoder.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
 	import type { PageData } from './$types';
 	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
-	import velovDataUrl from '$lib/data/velov-data-grand-lyon.json?url';
+	import parkingCoveredIcon from '$lib/assets/icons/arceau_couvert.png';
+	import parkingVelostationIcon from '$lib/assets/icons/parking-velostation.png';
+	import parkingSecureIcon from '$lib/assets/icons/box_securisee_velo.png';
+	import parkingLpaIcon from '$lib/assets/icons/parking-lpa.png';
+
+	import MetroLayer from '$lib/components/map/layers/MetroLayer.svelte';
+	import TramLayer from '$lib/components/map/layers/TramLayer.svelte';
+	import BusLayer from '$lib/components/map/layers/BusLayer.svelte';
+	import ParkingLayer from '$lib/components/map/layers/ParkingLayer.svelte';
+	import VelovLayer from '$lib/components/map/layers/VelovLayer.svelte';
+	import CommunesLayer from '$lib/components/map/layers/CommunesLayer.svelte';
+	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
+	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -58,15 +63,44 @@
 			category: 'Infrastructures Cyclables',
 		},
 		{
-			id: 'parking',
-			label: 'Stationnements vélos',
-			color: '#0944f3',
+			id: 'parking-arceaux',
+			label: 'Arceaux',
+			color: '#4ade80',
+			category: 'Stationnements',
+		},
+		{
+			id: 'parking-couverts',
+			label: 'Arceaux couverts',
+			color: '#4ade80',
+			icon: parkingCoveredIcon,
+			category: 'Stationnements',
+		},
+		{
+			id: 'parking-box',
+			label: 'Box sécurisée vélo',
+			color: '#4ade80',
+			icon: parkingSecureIcon,
+			category: 'Stationnements',
+		},
+		{
+			id: 'parking-velostation',
+			label: 'Vélostations',
+			color: '#10b981',
+			icon: parkingVelostationIcon,
+			category: 'Stationnements',
+		},
+		{
+			id: 'parking-lpa',
+			label: 'Parking LPA / P+R',
+			color: '#3b82f6',
+			icon: parkingLpaIcon,
 			category: 'Stationnements',
 		},
 		{
 			id: 'velov',
 			label: 'Stations Velov',
 			color: '#EA2127FF',
+			icon: '/velov-station.png',
 			category: 'Vélov',
 		},
 		...Array.from({ length: 12 }, (_, i) => ({
@@ -75,6 +109,31 @@
 			color: vlColors[i],
 			category: 'Voies Lyonnaises',
 		})),
+
+		{
+			id: 'metro',
+			label: 'Métro',
+			color: '#D53032',
+			category: 'Transports en commun',
+		},
+		{
+			id: 'tram',
+			label: 'Tramway',
+			color: '#933591',
+			category: 'Transports en commun',
+		},
+		{
+			id: 'bus-tb',
+			label: 'Tram-Bus (BHNS)',
+			color: '#933591',
+			category: 'Transports en commun',
+		},
+		{
+			id: 'bus-std',
+			label: 'Bus',
+			color: '#a3a3a3',
+			category: 'Transports en commun',
+		},
 		{
 			id: 'communes',
 			label: 'Limites des communes',
@@ -221,12 +280,43 @@
 			interactableLayerIds.push('cycleways-layer');
 		}
 
-		if (isLayerVisible('parking')) {
-			interactableLayerIds.push('parking-layer-small', 'parking-layer');
+		if (isLayerVisible('parking-arceaux')) {
+			interactableLayerIds.push('parking-layer-circles');
+		}
+		if (isLayerVisible('parking-couverts')) {
+			interactableLayerIds.push('parking-layer-roof');
+		}
+		if (isLayerVisible('parking-box')) {
+			interactableLayerIds.push('parking-layer-box');
+		}
+		if (isLayerVisible('parking-lpa')) {
+			interactableLayerIds.push('parking-layer-lpa');
+		}
+		if (isLayerVisible('parking-secure')) {
+			interactableLayerIds.push('parking-layer-secure');
+		}
+		if (isLayerVisible('parking-velostation')) {
+			interactableLayerIds.push('parking-layer-velostation');
+		}
+		if (isLayerVisible('parking-lpa')) {
+			interactableLayerIds.push('parking-layer-lpa');
 		}
 
 		if (isLayerVisible('velov')) {
 			interactableLayerIds.push('velov-stations-layer');
+		}
+
+		if (isLayerVisible('metro')) {
+			interactableLayerIds.push('metro-layer');
+		}
+		if (isLayerVisible('tram')) {
+			interactableLayerIds.push('tram-layer');
+		}
+		if (isLayerVisible('bus-tb')) {
+			interactableLayerIds.push('bus-layer-tb');
+		}
+		if (isLayerVisible('bus-std')) {
+			interactableLayerIds.push('bus-layer-std');
 		}
 
 		Array.from({ length: 12 }, (_, i) => i + 1).forEach((num) => {
@@ -256,10 +346,27 @@
 						),
 				)
 				.map((f) => {
-					if (f.layer.id === 'cycleways-layer') return { ...f, type: 'cycleway' };
-					if (f.layer.id.startsWith('parking-')) return { ...f, type: 'parking' };
-					if (f.layer.id === 'velov-stations-layer') return { ...f, type: 'velov' };
-					if (f.layer.id.startsWith('vl-')) return { ...f, type: f.layer.id.split('-line')[0] };
+					if (f.layer.id === 'cycleways-layer') {
+						return { ...f, type: 'cycleway' };
+					}
+					if (f.layer.id.startsWith('parking-layer')) {
+						return { ...f, type: 'parking' };
+					}
+					if (f.layer.id === 'velov-stations-layer') {
+						return { ...f, type: 'velov' };
+					}
+					if (f.layer.id === 'metro-layer') {
+						return { ...f, type: 'metro' };
+					}
+					if (f.layer.id === 'tram-layer') {
+						return { ...f, type: 'tram' };
+					}
+					if (f.layer.id === 'bus-layer-tb' || f.layer.id === 'bus-layer-std') {
+						return { ...f, type: 'bus' };
+					}
+					if (f.layer.id.startsWith('vl-')) {
+						return { ...f, type: f.layer.id.split('-line')[0] };
+					}
 					return { ...f, type: 'default' };
 				});
 			selectedLngLat = lngLat;
@@ -453,10 +560,6 @@
 				<GeolocateControl position="bottom-right" />
 			{/if}
 
-			{#if innerWidth >= 768}
-				<NavigationControl position="top-right" showCompass={bearing !== 0 || pitch !== 0} />
-			{/if}
-
 			{#if geocoderHighlight}
 				<GeocoderMarker lnglat={geocoderHighlight} fading={geocoderHighlightFading} />
 			{/if}
@@ -473,232 +576,26 @@
 				<GeocoderMarker lnglat={hoveredPhotoLocation} pulse={false} />
 			{/if}
 
-			<GeoJSONSource id="arrondissements" data={data.arrondissementsLyon} maxzoom={14}>
-				<LineLayer
-					id="arrondissements-line"
-					source="arrondissements"
-					layout={{
-						visibility: isLayerVisible('communes') ? 'visible' : 'none',
-					}}
-					paint={{
-						'line-color': '#2563eb',
-						'line-width': 2,
-						'line-opacity': 0.3,
-					}}
-				/>
-			</GeoJSONSource>
+			<CommunesLayer {isLayerVisible} {data} />
 
-			<GeoJSONSource maxzoom={14} data={data.communesLimit} id="communes-source">
-				<LineLayer
-					id="communes-layer"
-					layout={{
-						visibility: isLayerVisible('communes') ? 'visible' : 'none',
-					}}
-					paint={{
-						'line-color': '#6b7280',
-						'line-width': 2,
-						'line-opacity': 0.5,
-					}}
-				/>
-			</GeoJSONSource>
+			<CyclewayLayer {isLayerVisible} {data} {handleMouseEnter} {handleMouseLeave} />
 
-			<GeoJSONSource maxzoom={14} data={data.voirieData} id="cycleways-source">
-				<LineLayer
-					id="cycleways-layer"
-					paint={{
-						'line-color': matchTypeColorReseau,
-						'line-width': matchTypeWidth,
-						'line-opacity': 0.8,
-					}}
-					layout={{
-						visibility: isLayerVisible('cycleways') ? 'visible' : 'none',
-					}}
-					onmouseenter={handleMouseEnter}
-					onmouseleave={handleMouseLeave}
-				/>
-			</GeoJSONSource>
+			<VelovLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
-			<GeoJSONSource
-				maxzoom={14}
-				id="parking-data"
-				data="https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvostationnementvelo&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid"
-			>
-				<CircleLayer
-					id="parking-layer-small"
-					layout={{
-						visibility: isLayerVisible('parking') ? 'visible' : 'none',
-					}}
-					paint={{
-						'circle-opacity': 0.5,
-						'circle-radius': [
-							'interpolate',
-							['linear'],
-							['zoom'],
-							10,
-							2,
-							12,
-							2,
-							15,
-							3,
-							17,
-							8,
-							20,
-							14,
-							22,
-							20,
-						],
-						'circle-color': '#0944f3',
-						'circle-stroke-color': '#ffffff',
-						'circle-stroke-width': 0.5,
-					}}
-					onmouseenter={handleMouseEnter}
-					onmouseleave={handleMouseLeave}
-				/>
-				<SymbolLayer
-					id="parking-layer"
-					filter={[
-						'all',
-						['==', ['get', 'validite'], 'Validé'],
-						[
-							'in',
-							['get', 'mobiliervelo'],
-							['literal', ['Consigne collective', 'Box', 'Consigne individuelle']],
-						],
-					]}
-					layout={{
-						visibility: isLayerVisible('parking') ? 'visible' : 'none',
-						'icon-image': 'parking',
-						'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.5, 14, 0.7, 18, 1.1, 22, 1.3],
-						'icon-allow-overlap': true,
-						'icon-ignore-placement': true,
-					}}
-					onmouseenter={handleMouseEnter}
-					onmouseleave={handleMouseLeave}
-				/>
-			</GeoJSONSource>
+			<ParkingLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
-			<GeoJSONSource maxzoom={14} id="velov-stations-source" data={velovDataUrl}>
-				<ImageLoader images={{ velov: '/velov-station.png' }}>
-					<SymbolLayer
-						id="velov-stations-layer"
-						layout={{
-							visibility: isLayerVisible('velov') ? 'visible' : 'none',
-							'icon-image': 'velov',
-							'icon-size': [
-								'interpolate',
-								['linear'],
-								['zoom'],
-								10,
-								0.6,
-								14,
-								0.8,
-								18,
-								1.2,
-								22,
-								1.4,
-							],
-							'icon-allow-overlap': true,
-							'icon-ignore-placement': true,
-						}}
-						onmouseenter={handleMouseEnter}
-						onmouseleave={handleMouseLeave}
-					/>
-				</ImageLoader>
-			</GeoJSONSource>
+			<BusLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
-			{#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
-				{@const layerId = `vl-${lineNumber}`}
-				{@const lineIndex = lineNumber - 1}
-				{#if processedVLData.grouped[lineNumber]}
-					<GeoJSONSource id={`vl-${lineNumber}-source`} data={processedVLData.grouped[lineNumber]}>
-						<LineLayer
-							id={`vl-${lineNumber}-line-contour`}
-							layout={{
-								'line-join': 'round',
-								'line-cap': 'round',
-								visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-							}}
-							paint={{
-								'line-color': vlColors[lineIndex],
-								'line-width': 6,
-								'line-opacity': 1,
-							}}
-							filter={['==', ['get', 'status'], 'done']}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
-						<LineLayer
-							id={`vl-${lineNumber}-line`}
-							layout={{
-								'line-join': 'round',
-								'line-cap': 'round',
-								visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-							}}
-							paint={{
-								'line-color': '#000000',
-								'line-width': 3,
-								'line-opacity': 1,
-							}}
-							filter={['==', ['get', 'status'], 'done']}
-							onmouseenter={handleMouseEnter}
-							onmouseleave={handleMouseLeave}
-						/>
+			<MetroLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
-						<SymbolLayer
-							id={`vl-${lineNumber}-labels-low`}
-							maxzoom={14}
-							filter={['all', ['==', ['get', 'status'], 'done'], ['>=', ['get', 'distance'], 900]]}
-							layout={{
-								'icon-image': [
-									'coalesce',
-									['get', 'compositeIconName'],
-									['concat', 'line-shield-', lineNumber],
-								],
-								'icon-size': 0.3,
-								'symbol-spacing': 1000000,
-								'symbol-placement': 'line-center',
-								'icon-rotation-alignment': 'viewport',
-								visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-							}}
-						/>
+			<TramLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
-						<SymbolLayer
-							id={`vl-${lineNumber}-labels-med`}
-							minzoom={13}
-							maxzoom={17}
-							filter={['all', ['==', ['get', 'status'], 'done'], ['>=', ['get', 'distance'], 300]]}
-							layout={{
-								'icon-image': [
-									'coalesce',
-									['get', 'compositeIconName'],
-									['concat', 'line-shield-', lineNumber],
-								],
-								'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.3, 15, 0.3, 17, 0.4],
-								'symbol-spacing': 1000000,
-								'symbol-placement': 'line-center',
-								visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-							}}
-						/>
-
-						<SymbolLayer
-							id={`vl-${lineNumber}-labels-high`}
-							minzoom={17}
-							filter={['==', ['get', 'status'], 'done']}
-							layout={{
-								'icon-image': [
-									'coalesce',
-									['get', 'compositeIconName'],
-									['concat', 'line-shield-', lineNumber],
-								],
-								'icon-size': 0.4,
-								'symbol-spacing': 1000000,
-								'symbol-placement': 'line-center',
-								visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-							}}
-						/>
-					</GeoJSONSource>
-				{/if}
-			{/each}
+			<VoiesLyonnaisesLayer
+				{isLayerVisible}
+				{handleMouseEnter}
+				{handleMouseLeave}
+				{processedVLData}
+			/>
 		</MapLibre>
 	</div>
 

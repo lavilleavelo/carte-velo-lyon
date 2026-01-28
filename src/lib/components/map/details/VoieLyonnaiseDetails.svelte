@@ -1,5 +1,6 @@
 <script lang="ts">
 	import MapPin from '@lucide/svelte/icons/map-pin';
+	import voiesLyonnaisesLogo from '$lib/assets/icons/voies-lyonnaises.svg?url';
 	import { vlColors } from '$lib/utils/mapUtils';
 
 	let { properties } = $props();
@@ -11,7 +12,7 @@
 <div class="flex flex-col gap-2">
 	<div class="flex items-center gap-2 text-brand-navy">
 		<div class="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600">
-			<MapPin size={18} />
+			<img src={voiesLyonnaisesLogo} class="h-6 w-6" alt="Logo des voies lyonnaises" />
 		</div>
 		<h3 class="text-sm font-bold tracking-wide uppercase">Voie Lyonnaise</h3>
 	</div>
@@ -26,13 +27,13 @@
 			</div>
 		{/if}
 		<div class="flex flex-col">
-			<h4 class="text-lg font-bold text-gray-900">Ligne {lineNumber}</h4>
+			<h4 class="text-lg font-bold text-gray-900">VL {lineNumber}</h4>
 		</div>
 	</div>
 
 	{#if properties.name}
 		<div class="flex flex-col rounded-lg p-1">
-			<span class="text-[10px] font-bold text-gray-400 uppercase">Nom de la voie</span>
+			<span class="text-[10px] font-bold text-gray-400 uppercase">Tronçon</span>
 			<a
 				href={'https://cyclopolis.fr' + properties.link}
 				target="_blank"

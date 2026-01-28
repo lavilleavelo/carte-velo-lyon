@@ -1,4 +1,4 @@
-export function createLineShieldIcon(lineNumber: number, color: string): HTMLCanvasElement {
+export function createLineShieldIcon(label: string | number, color: string): HTMLCanvasElement {
 	const canvas = document.createElement('canvas');
 	const size = 64;
 
@@ -25,14 +25,38 @@ export function createLineShieldIcon(lineNumber: number, color: string): HTMLCan
 	ctx.lineWidth = 3;
 	ctx.stroke();
 
-	// line number
+	// label
 	ctx.fillStyle = '#ffffff';
 	ctx.font = 'bold 28px sans-serif';
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
-	ctx.fillText(String(lineNumber), centerX, centerY + 3);
+	ctx.fillText(String(label), centerX, centerY + 3);
 
 	return canvas;
+}
+
+export async function loadTransportShieldIcons(mapInstance: any, features: any[], prefix: string) {
+	const uniqueLines = new Map<string, string>(); // label -> color
+
+	features.forEach((f) => {
+		const label = f.properties.ligne;
+		let color = f.properties.color;
+
+		if (label && color) {
+			uniqueLines.set(label, color);
+		}
+	});
+
+	uniqueLines.forEach((color, label) => {
+		const iconId = `${prefix}-shield-${label}`;
+		if (!mapInstance.hasImage(iconId)) {
+			const canvas = createLineShieldIcon(label, color);
+			const imageData = canvas.getContext('2d')?.getImageData(0, 0, canvas.width, canvas.height);
+			if (imageData) {
+				mapInstance.addImage(iconId, imageData);
+			}
+		}
+	});
 }
 
 export function createCompositeLineShieldIcon(
@@ -298,4 +322,44 @@ export async function loadShieldIcons(mapInstance: any, features: any[], totalLi
 			mapInstance.addImage(`line-shield-${combo}`, imageData);
 		}
 	});
+}
+
+export function processBusData(features: any[]) {
+	return {
+		type: 'FeatureCollection',
+		features: features.map((f) => {
+			const ligne = f.properties.ligne || '';
+			const isTB = ligne.startsWith('TB');
+			const color = isTB ? '#E0C233' : '#a3a3a3';
+
+			return {
+				...f,
+				properties: {
+					...f.properties,
+					color,
+					type: isTB ? 'bus-tb' : 'bus-std',
+				},
+			};
+		}),
+	};
+}
+
+export function processTransportData(features: any[]) {
+	return {
+		type: 'FeatureCollection',
+		features: features.map((f) => {
+			let color = null;
+			if (f.properties && f.properties.couleur) {
+				const c = f.properties.couleur.split(' ').join(', ');
+				color = `rgb(${c})`;
+			}
+			return {
+				...f,
+				properties: {
+					...f.properties,
+					color,
+				},
+			};
+		}),
+	};
 }

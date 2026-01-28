@@ -137,7 +137,7 @@
 			{/if}
 
 			{#if coordinates}
-				<div class="mt-6 border-t pt-3">
+				<div class="mt-2 pt-2">
 					<a
 						href={`https://www.openstreetmap.org/query?lat=${coordinates.lat}&lon=${coordinates.lng}&mlat=${coordinates.lat}&mlon=${coordinates.lng}#map=19/${coordinates.lat}/${coordinates.lng}`}
 						target="_blank"
