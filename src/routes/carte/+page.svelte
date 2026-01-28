@@ -91,7 +91,7 @@
 		},
 		{
 			id: 'parking-lpa',
-			label: 'Parking LPA / P+R',
+			label: 'Parking LPA / En ouvrage',
 			color: '#3b82f6',
 			icon: parkingLpaIcon,
 			category: 'Stationnements',
