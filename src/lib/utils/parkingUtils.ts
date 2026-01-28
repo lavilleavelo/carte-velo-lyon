@@ -43,6 +43,9 @@ export function processParkingData(
 			if (localisation === 'Parc relais en ouvrage') {
 				type = 'velostation';
 				icon = 'velostation';
+			} else if (localisation === 'Parking en ouvrage') {
+				type = 'lpa';
+				icon = 'lpa';
 			} else if (mv === 'Box' || mv === 'Consigne individuelle' || mv === 'Consigne collective') {
 				type = 'box';
 				icon = 'lock';

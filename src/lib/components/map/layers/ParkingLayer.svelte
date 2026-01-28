@@ -23,21 +23,6 @@
 		},
 		staleTime: Infinity,
 	}));
-
-	const parkingLpaQuery = createQuery(() => ({
-		queryKey: ['parking-lpa'],
-		queryFn: async () => {
-			const response = await fetch(
-				'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvoparking&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
-			);
-			if (!response.ok) {
-				throw new Error('Failed to fetch parking LPA data');
-			}
-			const data = await response.json();
-			return processLPAParkingData(data.features);
-		},
-		staleTime: Infinity,
-	}));
 </script>
 
 <GeoJSONSource
@@ -45,7 +30,7 @@
 	id="parking-data"
 	data={{
 		type: 'FeatureCollection',
-		features: [...(parkingQuery.data?.features || []), ...(parkingLpaQuery.data?.features || [])],
+		features: [...(parkingQuery.data?.features || [])],
 	}}
 >
 	<ImageLoader
