@@ -19,6 +19,8 @@
 	import FeatureInfo from '$lib/components/map/FeatureInfo.svelte';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
+	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
+	import { createMapStyleState } from '$lib/utils/mapStyleToggle.svelte';
 
 	import Geocoder from '$lib/components/Geocoder.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
@@ -163,6 +165,8 @@
 	let map: maplibregl.Map | undefined = $state();
 	let showMobileFilters = $state(false);
 	let cursor: string | undefined = $state();
+
+	const mapStyleState = createMapStyleState();
 
 	let geocoderHighlight: { lng: number; lat: number } | null = $state(null);
 	let geocoderHighlightFading = $state(false);
@@ -550,7 +554,7 @@
 
 		<MapLibre
 			class="h-full w-full"
-			style="https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json"
+			style={mapStyleState.getMapStyleUrl()}
 			bind:map
 			bind:zoom
 			bind:center
@@ -584,6 +588,7 @@
 			}}
 		>
 			<AttributionControl compact={true} />
+			<MapStyleToggle onToggle={mapStyleState.toggleMapStyle} />
 
 			{#if innerWidth >= 768}
 				<GeolocateControl position="top-right" />

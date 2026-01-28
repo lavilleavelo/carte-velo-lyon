@@ -1,0 +1,31 @@
+{
+	"version": 8,
+	"name": "Satellite-Hybrid",
+	"metadata": {},
+	"center": [0, 45],
+	"zoom": 14,
+	"bearing": 0,
+	"pitch": 0,
+	"sources": {
+		"ortho": {
+			"type": "raster",
+			"tiles": ["https://data.geopf.fr/tms/1.0.0/ORTHOIMAGERY.ORTHOPHOTOS/{z}/{x}/{y}.jpeg"],
+			"tileSize": 256,
+			"attribution": "IGN - BD ORTHO"
+		},
+		"openmaptiles": {
+			"type": "vector",
+			"url": "https://openmaptiles.data.gouv.fr/data/planet-vector.json"
+		}
+	},
+	"sprite": "https://tiles.openfreemap.org/sprites/ofm_f384/ofm",
+	"glyphs": "https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf",
+	"layers": [
+		{
+			"id": "ortho",
+			"type": "raster",
+			"source": "ortho"
+		}
+	],
+	"id": "satellite-hybrid"
+}

@@ -9,7 +9,7 @@
 		queryKey: ['fountains'],
 		queryFn: async () => {
 			const response = await fetch(
-				'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:adr_voie_lieu.adrbornefontaine_latest&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid'
+				'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:adr_voie_lieu.adrbornefontaine_latest&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
 			);
 			if (!response.ok) {
 				throw new Error('Failed to fetch fountain data');
@@ -27,7 +27,7 @@
 		id="fountains-source"
 		data={{
 			type: 'FeatureCollection',
-			features: features
+			features: features,
 		}}
 	>
 		<SymbolLayer
@@ -41,7 +41,7 @@
 			onmouseenter={handleMouseEnter}
 			onmouseleave={handleMouseLeave}
 		/>
-		
+
 		<SymbolLayer
 			id="fountains-label"
 			minzoom={15}
@@ -51,12 +51,12 @@
 				'text-font': ['Open Sans Bold'],
 				'text-size': 12,
 				'text-offset': [0, 1.5],
-				'text-anchor': 'top'
+				'text-anchor': 'top',
 			}}
 			paint={{
 				'text-color': '#1d4ed8',
 				'text-halo-color': '#ffffff',
-				'text-halo-width': 2
+				'text-halo-width': 2,
 			}}
 		/>
 	</GeoJSONSource>
