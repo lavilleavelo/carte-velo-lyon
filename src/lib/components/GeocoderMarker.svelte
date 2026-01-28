@@ -4,16 +4,19 @@
 	interface Props {
 		lnglat: { lng: number; lat: number };
 		fading?: boolean;
+		pulse?: boolean;
 	}
 
-	let { lnglat, fading = false }: Props = $props();
+	let { lnglat, fading = false, pulse = true }: Props = $props();
 </script>
 
 <Marker {lnglat}>
 	{#snippet content()}
 		<div class="geocoder-marker" class:fading>
-			<div class="pulse-ring"></div>
-			<div class="pulse-ring delay"></div>
+			{#if pulse}
+				<div class="pulse-ring"></div>
+				<div class="pulse-ring delay"></div>
+			{/if}
 			<div class="marker-dot"></div>
 		</div>
 	{/snippet}

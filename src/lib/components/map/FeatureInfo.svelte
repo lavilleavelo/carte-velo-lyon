@@ -11,7 +11,7 @@
 	import { searchPanoramaxPhoto } from '$lib/utils/panoramax';
 	import { createQuery } from '@tanstack/svelte-query';
 
-	let { features = [], coordinates, onClose, onOpenPanoramax } = $props();
+	let { features = [], coordinates, onClose, onOpenPanoramax, onPhotoHover } = $props();
 
 	let currentIndex = $state(0);
 	let selectedFeature = $derived(features[currentIndex]);
@@ -45,6 +45,12 @@
 		enabled: !!coordinates,
 		retry: false,
 	}));
+
+	$effect(() => {
+		return () => {
+			if (onPhotoHover) onPhotoHover(null);
+		};
+	});
 </script>
 
 <div
@@ -53,6 +59,17 @@
 	{#if panoramaxQuery.data}
 		<button
 			onclick={onOpenPanoramax}
+			onmouseenter={() => {
+				if (onPhotoHover && panoramaxQuery.data?.coordinates) {
+					onPhotoHover({
+						lng: panoramaxQuery.data.coordinates[0],
+						lat: panoramaxQuery.data.coordinates[1],
+					});
+				}
+			}}
+			onmouseleave={() => {
+				if (onPhotoHover) onPhotoHover(null);
+			}}
 			class="group relative h-40 w-full shrink-0 overflow-hidden bg-gray-100"
 		>
 			<img

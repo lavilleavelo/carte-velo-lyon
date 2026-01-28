@@ -4,6 +4,7 @@
 	import { goto } from '$app/navigation';
 	import { type } from 'arktype';
 	import { useSearchParams } from 'runed/kit';
+
 	import {
 		MapLibre,
 		GeoJSONSource,
@@ -15,6 +16,7 @@
 		NavigationControl,
 		SymbolLayer,
 		ImageLoader,
+		Marker,
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
@@ -96,6 +98,7 @@
 
 	let contextMenuLngLat: { lng: number; lat: number } | null = $state(null);
 	let contextMenuPhotoLocation: { lng: number; lat: number } | null = $state(null);
+	let hoveredPhotoLocation: { lng: number; lat: number } | null = $state(null);
 	let innerWidth = $state(0);
 	let bearing = $state(0);
 	let pitch = $state(0);
@@ -263,6 +266,7 @@
 		} else {
 			selectedFeatures = [];
 			selectedLngLat = null;
+			hoveredPhotoLocation = null;
 		}
 	}
 
@@ -325,7 +329,6 @@
 		contextMenuLngLat = null;
 		contextMenuPhotoLocation = null;
 	}
-
 
 	function handleTouchStart(e: any) {
 		if (e.points.length !== 1) return;
@@ -390,7 +393,11 @@
 					features={selectedFeatures}
 					coordinates={selectedLngLat}
 					onOpenPanoramax={() => (showPanoramax = true)}
-					onClose={() => (selectedFeatures = [])}
+					onClose={() => {
+						selectedFeatures = [];
+						hoveredPhotoLocation = null;
+					}}
+					onPhotoHover={(loc) => (hoveredPhotoLocation = loc)}
 				/>
 			</div>
 		{/if}
@@ -454,8 +461,16 @@
 				<GeocoderMarker lnglat={geocoderHighlight} fading={geocoderHighlightFading} />
 			{/if}
 
+			{#if selectedLngLat}
+				<Marker lnglat={selectedLngLat} />
+			{/if}
+
 			{#if contextMenuPhotoLocation}
-				<GeocoderMarker lnglat={contextMenuPhotoLocation} />
+				<GeocoderMarker pulse={false} lnglat={contextMenuPhotoLocation} />
+			{/if}
+
+			{#if hoveredPhotoLocation}
+				<GeocoderMarker lnglat={hoveredPhotoLocation} pulse={false} />
 			{/if}
 
 			<GeoJSONSource id="arrondissements" data={data.arrondissementsLyon} maxzoom={14}>
@@ -736,13 +751,16 @@
 						features={selectedFeatures}
 						coordinates={selectedLngLat}
 						onOpenPanoramax={() => (showPanoramax = true)}
-						onClose={() => (selectedFeatures = [])}
+						onClose={() => {
+							selectedFeatures = [];
+							hoveredPhotoLocation = null;
+						}}
+						onPhotoHover={(loc) => (hoveredPhotoLocation = loc)}
 					/>
 				</div>
 			</MobileDrawer>
 		{/if}
 	</div>
-
 
 	<MapContextMenu
 		visible={contextMenuVisible}
