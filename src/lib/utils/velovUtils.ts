@@ -24,8 +24,7 @@ export interface VelovAPIResponse {
 	values: VelovStationAvailability[];
 }
 
-export const VELOV_API_URL =
-	'https://data.grandlyon.com/fr/datapusher/ws/rdata/jcd_jcdecaux.jcdvelov/all.json?maxfeatures=1000&start=1';
+export const VELOV_API_URL = '/api/grandlyon/velov';
 
 export async function fetchVelovAvailability(): Promise<Map<number, VelovStationAvailability>> {
 	try {

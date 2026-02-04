@@ -8,9 +8,7 @@
 	const fountainsQuery = createQuery(() => ({
 		queryKey: ['fountains'],
 		queryFn: async () => {
-			const response = await fetch(
-				'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:adr_voie_lieu.adrbornefontaine_latest&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
-			);
+			const response = await fetch('/api/grandlyon/fountains');
 			if (!response.ok) {
 				throw new Error('Failed to fetch fountain data');
 			}

@@ -8,9 +8,7 @@
 	const metroQuery = createQuery(() => ({
 		queryKey: ['metro'],
 		queryFn: async () => {
-			const response = await fetch(
-				'https://data.grandlyon.com/geoserver/sytral/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=sytral:tcl_sytral.tcllignemf_2_0_0&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
-			);
+			const response = await fetch('/api/grandlyon/metro');
 			if (!response.ok) {
 				throw new Error('Failed to fetch metro data');
 			}

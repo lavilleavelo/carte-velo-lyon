@@ -12,9 +12,7 @@
 	const parkingQuery = createQuery(() => ({
 		queryKey: ['parking'],
 		queryFn: async () => {
-			const response = await fetch(
-				'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvostationnementvelo&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
-			);
+			const response = await fetch('/api/grandlyon/parking');
 			if (!response.ok) {
 				throw new Error('Failed to fetch parking data');
 			}

@@ -8,9 +8,7 @@
 	const busQuery = createQuery(() => ({
 		queryKey: ['bus'],
 		queryFn: async () => {
-			const response = await fetch(
-				'https://data.grandlyon.com/geoserver/sytral/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=sytral:tcl_sytral.tcllignebus_2_0_0&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
-			);
+			const response = await fetch('/api/grandlyon/bus');
 			if (!response.ok) {
 				throw new Error('Failed to fetch bus data');
 			}
