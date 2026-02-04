@@ -59,6 +59,21 @@
 			'line-width': 1.5,
 			'line-opacity': 0.6,
 		}}
+	/>
+
+	<LineLayer
+		id="bus-layer-std-hitarea"
+		filter={['==', ['get', 'type'], 'bus-std']}
+		layout={{
+			'line-join': 'round',
+			'line-cap': 'round',
+			visibility: isLayerVisible('bus-std') ? 'visible' : 'none',
+		}}
+		paint={{
+			'line-color': 'transparent',
+			'line-width': 16,
+			'line-opacity': 0,
+		}}
 		onmouseenter={handleMouseEnter}
 		onmouseleave={handleMouseLeave}
 	/>
@@ -90,6 +105,21 @@
 			'line-color': ['get', 'color'],
 			'line-width': 3,
 			'line-opacity': 0.9,
+		}}
+	/>
+
+	<LineLayer
+		id="bus-layer-tb-hitarea"
+		filter={['==', ['get', 'type'], 'bus-tb']}
+		layout={{
+			'line-join': 'round',
+			'line-cap': 'round',
+			visibility: isLayerVisible('bus-tb') ? 'visible' : 'none',
+		}}
+		paint={{
+			'line-color': 'transparent',
+			'line-width': 20,
+			'line-opacity': 0,
 		}}
 		onmouseenter={handleMouseEnter}
 		onmouseleave={handleMouseLeave}

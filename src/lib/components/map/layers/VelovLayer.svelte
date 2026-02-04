@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { GeoJSONSource, SymbolLayer, ImageLoader } from 'svelte-maplibre-gl';
+	import { GeoJSONSource, SymbolLayer, CircleLayer, ImageLoader } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import velovDataUrl from '$lib/data/velov-data-grand-lyon.json?url';
 	import { fetchVelovAvailability } from '$lib/utils/velovUtils';
@@ -81,6 +81,18 @@
 			paint={{
 				'text-halo-color': '#d61016',
 				'text-halo-width': 2,
+			}}
+		/>
+
+		<CircleLayer
+			id="velov-stations-layer-hitarea"
+			layout={{
+				visibility: isLayerVisible('velov') ? 'visible' : 'none',
+			}}
+			paint={{
+				'circle-opacity': 0,
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 10, 14, 20, 18, 28, 22, 32],
+				'circle-color': 'transparent',
 			}}
 			onmouseenter={handleMouseEnter}
 			onmouseleave={handleMouseLeave}

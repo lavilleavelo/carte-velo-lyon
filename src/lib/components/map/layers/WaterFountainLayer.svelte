@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { GeoJSONSource, SymbolLayer, ImageLoader } from 'svelte-maplibre-gl';
+	import { GeoJSONSource, SymbolLayer, CircleLayer, ImageLoader } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import FountainIcon from '$lib/assets/icons/fontaine.png?url';
 
@@ -35,6 +35,18 @@
 				'icon-image': 'fountain',
 				'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.2, 17, 0.5],
 				'icon-allow-overlap': true,
+			}}
+		/>
+
+		<CircleLayer
+			id="fountains-layer-hitarea"
+			layout={{
+				visibility: isLayerVisible('water-fountains') ? 'visible' : 'none',
+			}}
+			paint={{
+				'circle-opacity': 0,
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 12, 15, 18, 18, 24],
+				'circle-color': 'transparent',
 			}}
 			onmouseenter={handleMouseEnter}
 			onmouseleave={handleMouseLeave}

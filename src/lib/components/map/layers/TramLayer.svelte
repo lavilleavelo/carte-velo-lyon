@@ -55,6 +55,20 @@
 			'line-width': 3,
 			'line-opacity': 0.8,
 		}}
+	/>
+
+	<LineLayer
+		id="tram-layer-hitarea"
+		layout={{
+			'line-join': 'round',
+			'line-cap': 'round',
+			visibility: isLayerVisible('tram') ? 'visible' : 'none',
+		}}
+		paint={{
+			'line-color': 'transparent',
+			'line-width': 20,
+			'line-opacity': 0,
+		}}
 		onmouseenter={handleMouseEnter}
 		onmouseleave={handleMouseLeave}
 	/>

@@ -20,6 +20,7 @@
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import { createMapStyleState, type MapStyle } from '$lib/utils/mapStyleToggle.svelte';
+	import { getInteractableLayerIds, createLayerToFeatureTypeMap } from '$lib/config/layers';
 
 	import Geocoder from '$lib/components/Geocoder.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
@@ -44,6 +45,8 @@
 	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
 
 	let { data }: { data: PageData } = $props();
+
+	const layerToFeatureType = createLayerToFeatureTypeMap();
 
 	const mapSearchParamsSchema = type({
 		layers: type('string[]').default(() =>
@@ -308,73 +311,11 @@
 	let selectedLngLat: { lng: number; lat: number } | null = $state(null);
 	let showPanoramax = $state(false);
 
-	function getInteractableLayers(): string[] {
-		const interactableLayerIds: string[] = [];
-
-		if (isLayerVisible('cycleways')) {
-			interactableLayerIds.push('cycleways-layer');
-		}
-
-		if (isLayerVisible('parking-arceaux')) {
-			interactableLayerIds.push('parking-layer-circles');
-		}
-		if (isLayerVisible('parking-couverts')) {
-			interactableLayerIds.push('parking-layer-roof');
-		}
-		if (isLayerVisible('parking-box')) {
-			interactableLayerIds.push('parking-layer-box');
-		}
-		if (isLayerVisible('parking-lpa')) {
-			interactableLayerIds.push('parking-layer-lpa');
-		}
-		if (isLayerVisible('parking-secure')) {
-			interactableLayerIds.push('parking-layer-secure');
-		}
-		if (isLayerVisible('parking-velostation')) {
-			interactableLayerIds.push('parking-layer-velostation');
-		}
-		if (isLayerVisible('parking-lpa')) {
-			interactableLayerIds.push('parking-layer-lpa');
-		}
-
-		if (isLayerVisible('velov')) {
-			interactableLayerIds.push('velov-stations-layer');
-		}
-
-		if (isLayerVisible('metro')) {
-			interactableLayerIds.push('metro-layer');
-		}
-		if (isLayerVisible('tram')) {
-			interactableLayerIds.push('tram-layer');
-		}
-		if (isLayerVisible('bus-tb')) {
-			interactableLayerIds.push('bus-layer-tb');
-		}
-		if (isLayerVisible('bus-std')) {
-			interactableLayerIds.push('bus-layer-std');
-		}
-
-		Array.from({ length: 12 }, (_, i) => i + 1).forEach((num) => {
-			if (isLayerVisible(`vl-${num}`)) {
-				interactableLayerIds.push(`vl-${num}-line`, `vl-${num}-line-contour`);
-			}
-		});
-
-		if (isLayerVisible('pumps')) {
-			interactableLayerIds.push('pumps-layer');
-		}
-		if (isLayerVisible('water-fountains')) {
-			interactableLayerIds.push('fountains-layer');
-		}
-
-		return interactableLayerIds;
-	}
-
 	function selectFeaturesAt(point: { x: number; y: number }, lngLat: { lng: number; lat: number }) {
 		if (!map) return;
 
-		const interactableLayerIds = getInteractableLayers();
-		const features = map.queryRenderedFeatures(point, { layers: interactableLayerIds });
+		const interactableLayers = getInteractableLayerIds(isLayerVisible);
+		const features = map.queryRenderedFeatures(point, { layers: interactableLayers });
 
 		if (features.length > 0) {
 			selectedFeatures = features
@@ -388,34 +329,10 @@
 						),
 				)
 				.map((f) => {
-					if (f.layer.id === 'cycleways-layer') {
-						return { ...f, type: 'cycleway' };
-					}
-					if (f.layer.id.startsWith('parking-layer')) {
-						return { ...f, type: 'parking' };
-					}
-					if (f.layer.id === 'velov-stations-layer') {
-						return { ...f, type: 'velov' };
-					}
-					if (f.layer.id === 'metro-layer') {
-						return { ...f, type: 'metro' };
-					}
-					if (f.layer.id === 'tram-layer') {
-						return { ...f, type: 'tram' };
-					}
-					if (f.layer.id === 'bus-layer-tb' || f.layer.id === 'bus-layer-std') {
-						return { ...f, type: 'bus' };
-					}
-					if (f.layer.id.startsWith('vl-')) {
-						return { ...f, type: f.layer.id.split('-line')[0] };
-					}
-					if (f.layer.id === 'pumps-layer') {
-						return { ...f, type: 'pump' };
-					}
-					if (f.layer.id === 'fountains-layer') {
-						return { ...f, type: 'water-fountain' };
-					}
-					return { ...f, type: 'default' };
+					const baseLayerId = f.layer.id.replace('-hitarea', '');
+					const featureType =
+						layerToFeatureType.get(f.layer.id) || layerToFeatureType.get(baseLayerId) || 'default';
+					return { ...f, type: featureType };
 				});
 			selectedLngLat = lngLat;
 		} else {

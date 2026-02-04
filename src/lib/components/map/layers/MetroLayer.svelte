@@ -55,6 +55,20 @@
 			'line-width': 4,
 			'line-opacity': 0.8,
 		}}
+	/>
+
+	<LineLayer
+		id="metro-layer-hitarea"
+		layout={{
+			'line-join': 'round',
+			'line-cap': 'round',
+			visibility: isLayerVisible('metro') ? 'visible' : 'none',
+		}}
+		paint={{
+			'line-color': 'transparent',
+			'line-width': 20,
+			'line-opacity': 0,
+		}}
 		onmouseenter={handleMouseEnter}
 		onmouseleave={handleMouseLeave}
 	/>

@@ -27,6 +27,18 @@
 		layout={{
 			visibility: isLayerVisible('cycleways') ? 'visible' : 'none',
 		}}
+	/>
+
+	<LineLayer
+		id="cycleways-layer-hitarea"
+		paint={{
+			'line-color': 'transparent',
+			'line-width': 20,
+			'line-opacity': 0,
+		}}
+		layout={{
+			visibility: isLayerVisible('cycleways') ? 'visible' : 'none',
+		}}
 		onmouseenter={handleMouseEnter}
 		onmouseleave={handleMouseLeave}
 	/>

@@ -36,6 +36,18 @@
 				'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.3, 17, 0.7],
 				'icon-allow-overlap': true,
 			}}
+		/>
+
+		<CircleLayer
+			id="pumps-layer-hitarea"
+			layout={{
+				visibility: isLayerVisible('pumps') ? 'visible' : 'none',
+			}}
+			paint={{
+				'circle-opacity': 0,
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 12, 15, 18, 18, 24],
+				'circle-color': 'transparent',
+			}}
 			onmouseenter={handleMouseEnter}
 			onmouseleave={handleMouseLeave}
 		/>

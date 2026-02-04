@@ -23,8 +23,6 @@
 					'line-opacity': 1,
 				}}
 				filter={['==', ['get', 'status'], 'done']}
-				onmouseenter={handleMouseEnter}
-				onmouseleave={handleMouseLeave}
 			/>
 			<LineLayer
 				id={`vl-${lineNumber}-line`}
@@ -37,6 +35,21 @@
 					'line-color': '#000000',
 					'line-width': 3,
 					'line-opacity': 1,
+				}}
+				filter={['==', ['get', 'status'], 'done']}
+			/>
+
+			<LineLayer
+				id={`vl-${lineNumber}-line-hitarea`}
+				layout={{
+					'line-join': 'round',
+					'line-cap': 'round',
+					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+				}}
+				paint={{
+					'line-color': 'transparent',
+					'line-width': 20,
+					'line-opacity': 0,
 				}}
 				filter={['==', ['get', 'status'], 'done']}
 				onmouseenter={handleMouseEnter}
