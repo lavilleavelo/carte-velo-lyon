@@ -16,7 +16,7 @@
 			<div class="flex items-center gap-6">
 				<div class="hidden items-center gap-6 md:flex">
 					<a
-						href="/carte"
+						href="/"
 						class="text-sm font-medium transition-colors hover:text-brand-teal {currentPath === '/'
 							? 'pb-1 text-brand-navy'
 							: 'text-brand-navy'}"
