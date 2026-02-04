@@ -45,7 +45,7 @@
 			minzoom={15}
 			layout={{
 				visibility: isLayerVisible('water-fountains') ? 'visible' : 'none',
-				'text-field': 'Borne fontaine à eau',
+				'text-field': 'fontaine',
 				'text-font': ['Open Sans Bold'],
 				'text-size': ['interpolate', ['linear'], ['zoom'], 15, 12, 18, 14],
 				'text-offset': [0, 1.5],

@@ -19,7 +19,7 @@
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
-	import { createMapStyleState } from '$lib/utils/mapStyleToggle.svelte';
+	import { createMapStyleState, type MapStyle } from '$lib/utils/mapStyleToggle.svelte';
 
 	import Geocoder from '$lib/components/Geocoder.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
@@ -53,6 +53,9 @@
 		zoom: 'number = 11',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
 		selected: type('number[]').default(() => []),
+		mapStyle: type('"positron" | "osm-bright" | "hybrid" | "cyclosm"').default(
+			() => 'osm-bright' as MapStyle,
+		),
 	});
 
 	const params = useSearchParams(mapSearchParamsSchema, {
@@ -165,7 +168,9 @@
 	let showMobileFilters = $state(false);
 	let cursor: string | undefined = $state();
 
-	const mapStyleState = createMapStyleState();
+	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
+		params.mapStyle = style;
+	});
 
 	let geocoderHighlight: { lng: number; lat: number } | null = $state(null);
 	let geocoderHighlightFading = $state(false);
@@ -222,6 +227,15 @@
 			}
 			if (Math.abs(pLng - center.lng) > 0.0001 || Math.abs(pLat - center.lat) > 0.0001) {
 				center = { lng: pLng, lat: pLat };
+			}
+		});
+	});
+
+	$effect(() => {
+		const pMapStyle = params.mapStyle;
+		untrack(() => {
+			if (pMapStyle !== mapStyleState.mapStyle) {
+				mapStyleState.mapStyle = pMapStyle;
 			}
 		});
 	});
