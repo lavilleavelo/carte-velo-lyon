@@ -3,6 +3,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import Eye from '@lucide/svelte/icons/eye';
 	import EyeOff from '@lucide/svelte/icons/eye-off';
+	import type { Snippet } from 'svelte';
 
 	let {
 		layersByCategory,
@@ -12,6 +13,16 @@
 		toggleCategoryCollapse,
 		toggleLayer,
 		isLayerVisible,
+		layerSubFilters,
+	}: {
+		layersByCategory: Map<string, any[]>;
+		isCategoryVisible: (category: string) => boolean;
+		isCategoryCollapsed: (category: string) => boolean;
+		toggleCategory: (category: string) => void;
+		toggleCategoryCollapse: (category: string) => void;
+		toggleLayer: (layerId: string) => void;
+		isLayerVisible: (layerId: string) => boolean;
+		layerSubFilters?: Snippet<[string]>;
 	} = $props();
 </script>
 
@@ -24,7 +35,7 @@
 			<div class="flex items-center justify-between">
 				<button
 					onclick={() => toggleCategoryCollapse(category)}
-					class="group flex items-center gap-2 text-xs font-bold tracking-wide text-gray-500 uppercase transition-colors hover:text-brand-navy"
+					class="group flex items-center gap-2 text-[10px] font-bold tracking-wide whitespace-nowrap text-gray-500 uppercase transition-colors hover:text-brand-navy"
 				>
 					<div class="rounded-full bg-gray-200 p-1 transition-colors group-hover:bg-gray-300">
 						<svg
@@ -113,6 +124,10 @@
 										{layer.label}
 									</Label>
 								</div>
+
+								{#if layerSubFilters && isLayerVisible(layer.id)}
+									{@render layerSubFilters(layer.id)}
+								{/if}
 							{/each}
 						</div>
 					{/if}

@@ -43,6 +43,7 @@
 	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
 	import PumpLayer from '$lib/components/map/layers/PumpLayer.svelte';
 	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
+	import CyclewayFilters from '$lib/components/map/filters/CyclewayFilters.svelte';
 
 	let { data }: { data: PageData } = $props();
 
@@ -59,6 +60,9 @@
 		mapStyle: type('"positron" | "osm-bright" | "hybrid" | "cyclosm"').default(
 			() => 'osm-bright' as MapStyle,
 		),
+		cyclewayReseau: type('string[]').default(() => []),
+		cyclewayType: type('string[]').default(() => []),
+		cyclewayLocalisation: type('string[]').default(() => []),
 	});
 
 	const params = useSearchParams(mapSearchParamsSchema, {
@@ -66,12 +70,40 @@
 		debounce: 100,
 	});
 
+	const cyclewayFilterOptions = {
+		reseau: [
+			{ id: 'Réseau structurant et super structurant', label: 'Structurant', color: '#484848' },
+			{ id: 'Réseau secondaire', label: 'Secondaire', color: '#a2a2a2' },
+			{ id: 'Réseau de desserte', label: 'Desserte', color: '#5e5e5e' },
+		],
+		typeamenagement: [
+			{ id: 'Piste Cyclable', label: 'Piste Cyclable', color: '#22c55e' },
+			{ id: 'Voie verte', label: 'Voie verte', color: '#16a34a' },
+			{ id: 'Bande Cyclable', label: 'Bande Cyclable', color: '#84cc16' },
+			{ id: 'Couloir bus vélo élargi', label: 'Couloir bus vélo élargi', color: '#eab308' },
+			{ id: 'Couloir bus vélo non élargi', label: 'Couloir bus vélo non élargi', color: '#f59e0b' },
+			{ id: 'Double sens cyclable', label: 'Double sens cyclable', color: '#06b6d4' },
+			{
+				id: 'Chaussée à voie centrale banalisée (CVCB)',
+				label: 'CVCB',
+				color: '#8b5cf6',
+			},
+			{ id: 'Goulotte ou rampe', label: 'Goulotte ou rampe', color: '#ec4899' },
+		],
+		localisation: [
+			{ id: 'Sur chaussée', label: 'Sur chaussée', color: '#64748b' },
+			{ id: 'Sur trottoir', label: 'Sur trottoir', color: '#94a3b8' },
+			{ id: 'Sans objet', label: 'Sans objet', color: '#cbd5e1' },
+		],
+	};
+
 	const availableLayers = [
 		{
 			id: 'cycleways',
 			label: 'Aménagements cyclables',
 			color: '#19181a',
 			category: 'Infrastructures Cyclables',
+			hasSubFilters: true,
 		},
 		{
 			id: 'parking-arceaux',
@@ -198,13 +230,7 @@
 		new Set<string>(
 			availableLayers
 				.map((layer) => layer.category)
-				.filter(
-					(category, index, self) =>
-						self.indexOf(category) === index &&
-						!availableLayers
-							.filter((layer) => layer.category === category)
-							.some((layer) => (params.layers || []).includes(layer.id)),
-				),
+				.filter((category, index, self) => self.indexOf(category) === index),
 		),
 	);
 
@@ -306,6 +332,92 @@
 		}
 		collapsedCategories = new Set(collapsedCategories);
 	}
+
+	function toggleCyclewayReseau(value: string) {
+		const current = [...(params.cyclewayReseau || [])];
+		const index = current.indexOf(value);
+		if (index >= 0) {
+			current.splice(index, 1);
+		} else {
+			current.push(value);
+		}
+		params.cyclewayReseau = current;
+	}
+
+	function toggleCyclewayType(value: string) {
+		const current = [...(params.cyclewayType || [])];
+		const index = current.indexOf(value);
+		if (index >= 0) {
+			current.splice(index, 1);
+		} else {
+			current.push(value);
+		}
+		params.cyclewayType = current;
+	}
+
+	function toggleCyclewayLocalisation(value: string) {
+		const current = [...(params.cyclewayLocalisation || [])];
+		const index = current.indexOf(value);
+		if (index >= 0) {
+			current.splice(index, 1);
+		} else {
+			current.push(value);
+		}
+		params.cyclewayLocalisation = current;
+	}
+
+	function isCyclewayReseauSelected(value: string): boolean {
+		return (params.cyclewayReseau || []).includes(value);
+	}
+
+	function isCyclewayTypeSelected(value: string): boolean {
+		return (params.cyclewayType || []).includes(value);
+	}
+
+	function isCyclewayLocalisationSelected(value: string): boolean {
+		return (params.cyclewayLocalisation || []).includes(value);
+	}
+
+	const filteredVoirieData = $derived.by(() => {
+		if (!data?.voirieData) {
+			return data?.voirieData;
+		}
+
+		const reseauFilters = params.cyclewayReseau || [];
+		const typeFilters = params.cyclewayType || [];
+		const localisationFilters = params.cyclewayLocalisation || [];
+
+		if (
+			reseauFilters.length === 0 &&
+			typeFilters.length === 0 &&
+			localisationFilters.length === 0
+		) {
+			return data.voirieData;
+		}
+
+		const filteredFeatures = data.voirieData.features.filter((feature: any) => {
+			const props = feature.properties;
+
+			if (reseauFilters.length > 0 && !reseauFilters.includes(props.reseau)) {
+				return false;
+			}
+
+			if (typeFilters.length > 0 && !typeFilters.includes(props.typeamenagement)) {
+				return false;
+			}
+
+			if (localisationFilters.length > 0 && !localisationFilters.includes(props.localisation)) {
+				return false;
+			}
+
+			return true;
+		});
+
+		return {
+			...data.voirieData,
+			features: filteredFeatures,
+		};
+	});
 
 	let selectedFeatures: any[] = $state([]);
 	let selectedLngLat: { lng: number; lat: number } | null = $state(null);
@@ -555,7 +667,7 @@
 
 			<CyclewayLayer
 				{isLayerVisible}
-				{data}
+				voirieData={filteredVoirieData}
 				{handleMouseEnter}
 				{handleMouseLeave}
 				mapStyle={mapStyleState.mapStyle}
@@ -612,7 +724,21 @@
 				{toggleCategoryCollapse}
 				{toggleLayer}
 				{isLayerVisible}
-			/>
+			>
+				{#snippet layerSubFilters(layerId: string)}
+					{#if layerId === 'cycleways'}
+						<CyclewayFilters
+							filterOptions={cyclewayFilterOptions}
+							toggleReseau={toggleCyclewayReseau}
+							toggleType={toggleCyclewayType}
+							toggleLocalisation={toggleCyclewayLocalisation}
+							isReseauSelected={isCyclewayReseauSelected}
+							isTypeSelected={isCyclewayTypeSelected}
+							isLocalisationSelected={isCyclewayLocalisationSelected}
+						/>
+					{/if}
+				{/snippet}
+			</FilterPanel>
 		</div>
 	</div>
 
@@ -628,7 +754,21 @@
 					{toggleCategory}
 					{toggleCategoryCollapse}
 					{toggleLayer}
-				/>
+				>
+					{#snippet layerSubFilters(layerId: string)}
+						{#if layerId === 'cycleways'}
+							<CyclewayFilters
+								filterOptions={cyclewayFilterOptions}
+								toggleReseau={toggleCyclewayReseau}
+								toggleType={toggleCyclewayType}
+								toggleLocalisation={toggleCyclewayLocalisation}
+								isReseauSelected={isCyclewayReseauSelected}
+								isTypeSelected={isCyclewayTypeSelected}
+								isLocalisationSelected={isCyclewayLocalisationSelected}
+							/>
+						{/if}
+					{/snippet}
+				</FilterPanel>
 				<div class="mt-6 border-t pt-4">
 					<a
 						href="/a-propos"

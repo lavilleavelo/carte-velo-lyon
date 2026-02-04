@@ -2,10 +2,10 @@
 	import { GeoJSONSource, LineLayer } from 'svelte-maplibre-gl';
 	import { matchTypeColorReseau, matchTypeWidth } from '$lib/utils.ts';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave, data, mapStyle } = $props();
+	let { isLayerVisible, handleMouseEnter, handleMouseLeave, voirieData, mapStyle } = $props();
 </script>
 
-<GeoJSONSource maxzoom={14} data={data.voirieData} id="cycleways-source">
+<GeoJSONSource maxzoom={14} data={voirieData} id="cycleways-source">
 	<LineLayer
 		id="cycleways-layer-casing"
 		paint={{
