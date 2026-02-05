@@ -568,7 +568,7 @@
 <svelte:window bind:innerWidth />
 
 <div
-	class="relative flex h-[calc(100vh)] w-[100vw] flex-row overflow-hidden"
+	class="relative flex h-[100dvh] w-[100vw] flex-row overflow-hidden"
 	style="margin-left: calc(50% - 50vw); width: 100vw;"
 >
 	<div class="relative h-full flex-1">
@@ -596,7 +596,7 @@
 		{/if}
 
 		<button
-			class="absolute bottom-16 left-4 z-20 rounded-full bg-white p-3 shadow-lg md:hidden"
+			class="absolute bottom-14 left-4 z-20 rounded-full bg-white p-3 shadow-lg md:hidden"
 			onclick={() => (showMobileFilters = true)}
 			aria-label="Filtres"
 		>
@@ -639,12 +639,13 @@
 			}}
 		>
 			<AttributionControl compact={true} position="bottom-left" />
-			<MapStyleToggle onToggle={mapStyleState.toggleMapStyle} />
 
 			{#if innerWidth >= 768}
 				<GeolocateControl position="top-right" />
+				<MapStyleToggle onToggle={mapStyleState.toggleMapStyle} position="top-right" />
 			{:else}
 				<GeolocateControl position="bottom-right" />
+				<MapStyleToggle onToggle={mapStyleState.toggleMapStyle} position="bottom-right" />
 			{/if}
 
 			{#if geocoderHighlight}
@@ -831,5 +832,10 @@
 	:global(.maplibregl-popup-close-button) {
 		font-size: 20px;
 		padding: 0 8px;
+	}
+
+	:global(.maplibregl-ctrl-bottom-left),
+	:global(.maplibregl-ctrl-bottom-right) {
+		bottom: max(16px, env(safe-area-inset-bottom));
 	}
 </style>
