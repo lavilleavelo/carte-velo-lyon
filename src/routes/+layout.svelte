@@ -4,6 +4,7 @@
 	import { onNavigate } from '$app/navigation';
 	import { navigating } from '$app/state';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+	import { onMount } from 'svelte';
 	let { children }: { children: any } = $props();
 
 	const queryClient = new QueryClient();
@@ -19,10 +20,20 @@
 			});
 		});
 	});
+
+	onMount(() => {
+		if ('serviceWorker' in navigator) {
+			navigator.serviceWorker.register('/service-worker.js').catch(() => {
+				// ignore
+			});
+		}
+	});
 </script>
 
 <svelte:head>
 	<link rel="icon" href={favicon} />
+	<link rel="manifest" href="/manifest.webmanifest" />
+	<meta name="theme-color" content="#0f172a" />
 	<title>Carte des aménagements cyclables dans la Métropole de Lyon</title>
 </svelte:head>
 
