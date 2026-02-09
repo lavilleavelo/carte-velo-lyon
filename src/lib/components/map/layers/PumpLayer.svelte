@@ -15,6 +15,7 @@
 			return await response.json();
 		},
 		staleTime: Infinity,
+		enabled: isLayerVisible('pumps'),
 	}));
 
 	const features = $derived(pumpsQuery.data?.features || []);

@@ -1,8 +1,8 @@
 import { createCache } from 'async-cache-dedupe';
 
 const cache = createCache({
-	ttl: 60,
-	stale: 60,
+	ttl: 300,
+	stale: 300,
 	storage: { type: 'memory' },
 });
 
@@ -19,6 +19,8 @@ const GRAND_LYON_URLS = {
 		'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:adr_voie_lieu.adrbornefontaine_latest&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
 	velov:
 		'https://data.grandlyon.com/fr/datapusher/ws/rdata/jcd_jcdecaux.jcdvelov/all.json?maxfeatures=1000&start=1',
+	voirie:
+		'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvoamenagementcyclable&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
 } as const;
 
 export type GrandLyonDataType = keyof typeof GRAND_LYON_URLS;

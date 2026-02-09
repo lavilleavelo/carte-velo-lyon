@@ -15,7 +15,7 @@ export const GET: RequestHandler = async ({ params }) => {
 		const data = await getCachedGrandLyonData(type as GrandLyonDataType);
 		return json(data, {
 			headers: {
-				'Cache-Control': 'public, max-age=60, stale-while-revalidate=60',
+				'Cache-Control': 'public, max-age=300, stale-while-revalidate=300',
 			},
 		});
 	} catch (error) {

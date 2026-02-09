@@ -16,6 +16,7 @@
 			return processBusData(data.features);
 		},
 		staleTime: Infinity,
+		enabled: isLayerVisible('bus-std') || isLayerVisible('bus-tb'),
 	}));
 
 	$effect(() => {

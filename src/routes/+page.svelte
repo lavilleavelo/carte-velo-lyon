@@ -26,7 +26,7 @@
 	import Geocoder from '$lib/components/Geocoder.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
 	import { vlColors } from '$lib/utils/mapUtils';
-	import voirieDataUrl from '$lib/data/metropole-de-lyon_pvo_patrimoine_voirie.pvoamenagementcyclable.json?url';
+
 	import parkingCoveredIcon from '$lib/assets/icons/arceau_couvert.png';
 	import parkingVelostationIcon from '$lib/assets/icons/parking-velostation.png';
 	import parkingSecureIcon from '$lib/assets/icons/box_securisee_velo.png';
@@ -49,7 +49,7 @@
 	const voirieQuery = createQuery(() => ({
 		queryKey: ['voirie-data'],
 		queryFn: async () => {
-			const response = await fetch(voirieDataUrl);
+			const response = await fetch('/api/grandlyon/voirie');
 			if (!response.ok) {
 				throw new Error('Failed to fetch voirie data');
 			}

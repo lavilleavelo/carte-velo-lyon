@@ -15,6 +15,7 @@
 			return await response.json();
 		},
 		staleTime: Infinity,
+		enabled: isLayerVisible('water-fountains'),
 	}));
 
 	const features = $derived(fountainsQuery.data?.features || []);

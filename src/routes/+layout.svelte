@@ -34,6 +34,9 @@
 	<link rel="icon" href={favicon} />
 	<link rel="manifest" href="/manifest.webmanifest" />
 	<meta name="theme-color" content="#0f172a" />
+	<link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin="anonymous" />
+	<link rel="preconnect" href="https://openmaptiles.geo.data.gouv.fr" crossorigin="anonymous" />
+	<link rel="preconnect" href="https://data.grandlyon.com" crossorigin="anonymous" />
 	<title>Carte des aménagements cyclables dans la Métropole de Lyon</title>
 </svelte:head>
 

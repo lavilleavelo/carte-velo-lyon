@@ -20,6 +20,12 @@
 			return processParkingData(data.features);
 		},
 		staleTime: Infinity,
+		enabled:
+			isLayerVisible('parking-arceaux') ||
+			isLayerVisible('parking-couverts') ||
+			isLayerVisible('parking-box') ||
+			isLayerVisible('parking-velostation') ||
+			isLayerVisible('parking-lpa'),
 	}));
 
 	const visibleFeatures = $derived(parkingQuery.data?.features || []);

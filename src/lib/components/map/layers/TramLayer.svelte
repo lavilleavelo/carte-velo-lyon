@@ -16,6 +16,7 @@
 			return processTransportData(data.features);
 		},
 		staleTime: Infinity,
+		enabled: isLayerVisible('tram'),
 	}));
 
 	$effect(() => {
