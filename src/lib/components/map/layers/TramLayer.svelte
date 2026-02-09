@@ -26,7 +26,7 @@
 </script>
 
 <GeoJSONSource
-	maxzoom={16}
+	maxzoom={13}
 	id="tram-data"
 	data={tramQuery.data || { type: 'FeatureCollection', features: [] }}
 >

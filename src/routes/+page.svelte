@@ -22,10 +22,11 @@
 	import { createMapStyleState, type MapStyle } from '$lib/utils/mapStyleToggle.svelte';
 	import { getInteractableLayerIds, createLayerToFeatureTypeMap } from '$lib/config/layers';
 
+	import { createQuery } from '@tanstack/svelte-query';
 	import Geocoder from '$lib/components/Geocoder.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
-	import type { PageData } from './$types';
-	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
+	import { vlColors } from '$lib/utils/mapUtils';
+	import voirieDataUrl from '$lib/data/metropole-de-lyon_pvo_patrimoine_voirie.pvoamenagementcyclable.json?url';
 	import parkingCoveredIcon from '$lib/assets/icons/arceau_couvert.png';
 	import parkingVelostationIcon from '$lib/assets/icons/parking-velostation.png';
 	import parkingSecureIcon from '$lib/assets/icons/box_securisee_velo.png';
@@ -45,7 +46,18 @@
 	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
 	import CyclewayFilters from '$lib/components/map/filters/CyclewayFilters.svelte';
 
-	let { data }: { data: PageData } = $props();
+	const voirieQuery = createQuery(() => ({
+		queryKey: ['voirie-data'],
+		queryFn: async () => {
+			const response = await fetch(voirieDataUrl);
+			if (!response.ok) {
+				throw new Error('Failed to fetch voirie data');
+			}
+			return response.json();
+		},
+		staleTime: Infinity,
+		refetchOnWindowFocus: false,
+	}));
 
 	const layerToFeatureType = createLayerToFeatureTypeMap();
 
@@ -234,12 +246,6 @@
 		),
 	);
 
-	const processedVLData = $derived(
-		data?.voiesLyonnaises
-			? processVoiesLyonnaisesData(data.voiesLyonnaises)
-			: { grouped: {}, allFeatures: [] },
-	);
-
 	let zoom = $state(params.zoom);
 	let center = $state<{ lng: number; lat: number }>({
 		lng: params.center[0],
@@ -379,8 +385,9 @@
 	}
 
 	const filteredVoirieData = $derived.by(() => {
-		if (!data?.voirieData) {
-			return data?.voirieData;
+		const voirieData = voirieQuery.data;
+		if (!voirieData) {
+			return undefined;
 		}
 
 		const reseauFilters = params.cyclewayReseau || [];
@@ -392,10 +399,10 @@
 			typeFilters.length === 0 &&
 			localisationFilters.length === 0
 		) {
-			return data.voirieData;
+			return voirieData;
 		}
 
-		const filteredFeatures = data.voirieData.features.filter((feature: any) => {
+		const filteredFeatures = voirieData.features.filter((feature: any) => {
 			const props = feature.properties;
 
 			if (reseauFilters.length > 0 && !reseauFilters.includes(props.reseau)) {
@@ -414,7 +421,7 @@
 		});
 
 		return {
-			...data.voirieData,
+			...voirieData,
 			features: filteredFeatures,
 		};
 	});
@@ -617,7 +624,6 @@
 			maxZoom={22}
 			onload={async () => {
 				if (map) {
-					await loadShieldIcons(map, processedVLData.allFeatures);
 					if (params.selected && params.selected.length === 2) {
 						setTimeout(() => {
 							if (!map) return;
@@ -664,7 +670,7 @@
 				<GeocoderMarker lnglat={hoveredPhotoLocation} pulse={false} />
 			{/if}
 
-			<CommunesLayer {isLayerVisible} {data} />
+			<CommunesLayer {isLayerVisible} />
 
 			<CyclewayLayer
 				{isLayerVisible}
@@ -684,12 +690,7 @@
 
 			<TramLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
-			<VoiesLyonnaisesLayer
-				{isLayerVisible}
-				{handleMouseEnter}
-				{handleMouseLeave}
-				{processedVLData}
-			/>
+			<VoiesLyonnaisesLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 

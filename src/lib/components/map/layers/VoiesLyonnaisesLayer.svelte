@@ -1,15 +1,47 @@
 <script lang="ts">
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
-	import { vlColors } from '$lib/utils/mapUtils';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
+	import type maplibregl from 'maplibre-gl';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave, processedVLData } = $props();
+	let {
+		isLayerVisible,
+		handleMouseEnter,
+		handleMouseLeave,
+		map,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		handleMouseEnter: () => void;
+		handleMouseLeave: () => void;
+		map: maplibregl.Map | undefined;
+	} = $props();
+
+	const vlQuery = createQuery(() => ({
+		queryKey: ['voies-lyonnaises'],
+		queryFn: async () => {
+			const response = await fetch('/api/voies-lyonnaises');
+			if (!response.ok) {
+				throw new Error('Failed to fetch voies lyonnaises data');
+			}
+			const data = await response.json();
+			return processVoiesLyonnaisesData(data);
+		},
+		staleTime: Infinity,
+		refetchOnWindowFocus: false,
+	}));
+
+	$effect(() => {
+		if (map && vlQuery.data) {
+			loadShieldIcons(map, vlQuery.data.allFeatures);
+		}
+	});
 </script>
 
 {#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
 	{@const layerId = `vl-${lineNumber}`}
 	{@const lineIndex = lineNumber - 1}
-	{#if processedVLData.grouped[lineNumber]}
-		<GeoJSONSource id={`vl-${lineNumber}-source`} data={processedVLData.grouped[lineNumber]}>
+	{#if vlQuery.data?.grouped[lineNumber]}
+		<GeoJSONSource id={`vl-${lineNumber}-source`} data={vlQuery.data.grouped[lineNumber]}>
 			<LineLayer
 				id={`vl-${lineNumber}-line-contour`}
 				layout={{

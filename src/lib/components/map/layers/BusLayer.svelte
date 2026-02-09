@@ -27,7 +27,7 @@
 </script>
 
 <GeoJSONSource
-	maxzoom={16}
+	maxzoom={13}
 	id="bus-data"
 	data={busQuery.data || { type: 'FeatureCollection', features: [] }}
 >

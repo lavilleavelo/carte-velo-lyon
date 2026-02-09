@@ -1,10 +1,12 @@
 <script lang="ts">
 	import { GeoJSONSource, LineLayer } from 'svelte-maplibre-gl';
+	import communesLimitUrl from '$lib/data/communes_limit_arrondissements.json?url';
+	import arrondissementsLyonUrl from '$lib/data/metropole-de-lyon_adr_voie_lieu.adrarrond.json?url';
 
-	let { isLayerVisible, data } = $props();
+	let { isLayerVisible } = $props();
 </script>
 
-<GeoJSONSource id="arrondissements" data={data.arrondissementsLyon} maxzoom={14}>
+<GeoJSONSource id="arrondissements" data={arrondissementsLyonUrl} maxzoom={13}>
 	<LineLayer
 		id="arrondissements-line"
 		source="arrondissements"
@@ -19,7 +21,7 @@
 	/>
 </GeoJSONSource>
 
-<GeoJSONSource maxzoom={14} data={data.communesLimit} id="communes-source">
+<GeoJSONSource maxzoom={13} data={communesLimitUrl} id="communes-source">
 	<LineLayer
 		id="communes-layer"
 		layout={{

@@ -47,3 +47,53 @@ export async function getCachedGrandLyonData(type: GrandLyonDataType): Promise<u
 }
 
 export { GRAND_LYON_URLS };
+
+async function fetchVoieLyonnaise(lineNumber: number) {
+	const url = `https://raw.githubusercontent.com/lavilleavelo/cyclopolis/refs/heads/main/content/voies-cyclables/ligne-${lineNumber}.json`;
+	try {
+		const response = await fetch(url);
+		if (!response.ok) {
+			console.error(`Failed to fetch VL ${lineNumber}: ${response.statusText}`);
+			return null;
+		}
+		return await response.json();
+	} catch (error) {
+		console.error(`Error fetching VL ${lineNumber}:`, error);
+		return null;
+	}
+}
+
+async function fetchAllVoiesLyonnaises(): Promise<Record<number, any>> {
+	const vlPromises = Array.from({ length: 12 }, (_, i) => fetchVoieLyonnaise(i + 1));
+	const vlData = await Promise.all(vlPromises);
+
+	return vlData.reduce(
+		(acc, data, index) => {
+			if (data) {
+				acc[index + 1] = data;
+			}
+			return acc;
+		},
+		{} as Record<number, any>,
+	);
+}
+
+const vlCache = createCache({
+	ttl: 300,
+	stale: 300,
+	storage: { type: 'memory' },
+});
+
+vlCache.define('voiesLyonnaises', async () => {
+	return fetchAllVoiesLyonnaises();
+});
+
+interface VLCache {
+	voiesLyonnaises: () => Promise<Record<number, any>>;
+}
+
+const typedVlCache = vlCache as unknown as VLCache;
+
+export async function getCachedVoiesLyonnaisesData(): Promise<Record<number, any>> {
+	return typedVlCache.voiesLyonnaises();
+}

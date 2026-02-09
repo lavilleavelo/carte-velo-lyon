@@ -26,7 +26,7 @@
 </script>
 
 <GeoJSONSource
-	maxzoom={16}
+	maxzoom={13}
 	id="metro-data"
 	data={metroQuery.data || { type: 'FeatureCollection', features: [] }}
 >

@@ -5,7 +5,11 @@
 	let { isLayerVisible, handleMouseEnter, handleMouseLeave, voirieData, mapStyle } = $props();
 </script>
 
-<GeoJSONSource maxzoom={14} data={voirieData} id="cycleways-source">
+<GeoJSONSource
+	maxzoom={13}
+	data={voirieData ?? { type: 'FeatureCollection', features: [] }}
+	id="cycleways-source"
+>
 	<LineLayer
 		id="cycleways-layer-casing"
 		paint={{
