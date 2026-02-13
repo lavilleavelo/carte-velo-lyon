@@ -89,7 +89,6 @@
 
 	const params = useSearchParams(mapSearchParamsSchema, {
 		pushHistory: false,
-		debounce: 100,
 	});
 
 	const cyclewayFilterOptions = {
@@ -300,11 +299,15 @@
 		lat: params.center[1],
 	});
 
+	let lastMapMoveTime = 0;
+
 	$effect(() => {
 		const pZoom = params.zoom;
 		const [pLng, pLat] = params.center;
 
 		untrack(() => {
+			if (Date.now() - lastMapMoveTime < 500) return;
+
 			if (Math.abs(pZoom - zoom) > 0.001) {
 				zoom = pZoom;
 			}
@@ -648,6 +651,15 @@
 		cursor = undefined;
 	}
 
+	function handleMapMoveStart() {
+		if (hoverTimeout) {
+			clearTimeout(hoverTimeout);
+			hoverTimeout = null;
+		}
+		hoverPopupFeatures = null;
+		cursor = undefined;
+	}
+
 	function handleMapClick(e: any) {
 		params.selected = [e.lngLat.lng, e.lngLat.lat];
 		selectFeaturesAt(e.point, e.lngLat);
@@ -828,7 +840,10 @@
 			ontouchstart={handleTouchStart}
 			ontouchmove={handleTouchMove}
 			ontouchend={handleTouchEnd}
+			onmovestart={handleMapMoveStart}
+			onzoomstart={handleMapMoveStart}
 			onmoveend={() => {
+				lastMapMoveTime = Date.now();
 				params.zoom = zoom;
 				params.center = [center.lng, center.lat];
 			}}
