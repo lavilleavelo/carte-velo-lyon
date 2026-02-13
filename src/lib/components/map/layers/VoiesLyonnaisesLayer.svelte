@@ -4,16 +4,30 @@
 	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
 	import type maplibregl from 'maplibre-gl';
 
+	type ProjectVLSubLayer = {
+		id: string;
+		label: string;
+		statuses: readonly string[];
+		customStyle: {
+			color: string;
+			dashArray: readonly number[];
+		};
+	};
+
 	let {
 		isLayerVisible,
 		handleMouseEnter,
 		handleMouseLeave,
 		map,
+		projectVLStatuses = ['wip', 'planned', 'variante'],
+		projectVLSubLayers = [],
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		handleMouseEnter: () => void;
 		handleMouseLeave: () => void;
 		map: maplibregl.Map | undefined;
+		projectVLStatuses?: string[];
+		projectVLSubLayers?: readonly ProjectVLSubLayer[];
 	} = $props();
 
 	const vlQuery = createQuery(() => ({
@@ -34,6 +48,34 @@
 		if (map && vlQuery.data) {
 			loadShieldIcons(map, vlQuery.data.allFeatures);
 		}
+	});
+
+	const activeProjectStatuses = $derived.by(() => {
+		return projectVLSubLayers
+			.filter((l) => projectVLStatuses.includes(l.id))
+			.flatMap((l) => l.statuses);
+	});
+
+	const colorExpression = $derived.by(() => {
+		const expression: any[] = ['match', ['get', 'status']];
+		projectVLSubLayers.forEach((layer) => {
+			layer.statuses.forEach((status) => {
+				expression.push(status, layer.customStyle.color);
+			});
+		});
+		expression.push('#000000');
+		return expression as maplibregl.DataDrivenPropertyValueSpecification<string>;
+	});
+
+	const dashArrayExpression = $derived.by(() => {
+		const expression: any[] = ['match', ['get', 'status']];
+		projectVLSubLayers.forEach((layer) => {
+			layer.statuses.forEach((status) => {
+				expression.push(status, ['literal', layer.customStyle.dashArray]);
+			});
+		});
+		expression.push(['literal', [1, 0]]);
+		return expression as maplibregl.DataDrivenPropertyValueSpecification<number[]>;
 	});
 </script>
 
@@ -139,6 +181,45 @@
 					'symbol-placement': 'line-center',
 					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
 				}}
+			/>
+		</GeoJSONSource>
+	{/if}
+{/each}
+
+{#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
+	{@const layerId = 'project-vl'}
+	{#if vlQuery.data?.grouped[lineNumber]}
+		<GeoJSONSource id={`vl-project-${lineNumber}-source`} data={vlQuery.data.grouped[lineNumber]}>
+			<LineLayer
+				id={`vl-project-${lineNumber}-casing`}
+				beforeId={`vl-project-${lineNumber}-line`}
+				paint={{
+					'line-color': '#ffffff',
+					'line-width': 4,
+					'line-opacity': 0.8,
+				}}
+				layout={{
+					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+					'line-join': 'round',
+					'line-cap': 'round',
+				}}
+				filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
+			/>
+
+			<LineLayer
+				id={`vl-project-${lineNumber}-line`}
+				layout={{
+					'line-join': 'round',
+					'line-cap': 'round',
+					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+				}}
+				paint={{
+					'line-color': colorExpression,
+					'line-width': 3,
+					'line-opacity': 0.9,
+					'line-dasharray': dashArrayExpression,
+				}}
+				filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
 			/>
 		</GeoJSONSource>
 	{/if}

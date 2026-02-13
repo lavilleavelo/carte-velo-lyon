@@ -45,6 +45,9 @@
 	import PumpLayer from '$lib/components/map/layers/PumpLayer.svelte';
 	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
 	import CyclewayFilters from '$lib/components/map/filters/CyclewayFilters.svelte';
+	import TargetNetworkLayer from '$lib/components/map/layers/TargetNetworkLayer.svelte';
+	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
+	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
 
 	const voirieQuery = createQuery(() => ({
 		queryKey: ['voirie-data'],
@@ -75,6 +78,8 @@
 		cyclewayReseau: type('string[]').default(() => []),
 		cyclewayType: type('string[]').default(() => []),
 		cyclewayLocalisation: type('string[]').default(() => []),
+		targetNetworkHorizons: type('string[]').default(() => ['2030', '2035', '2040']),
+		projectVLStatuses: type('string[]').default(() => ['wip', 'planned', 'postponed']),
 	});
 
 	const params = useSearchParams(mapSearchParamsSchema, {
@@ -208,6 +213,41 @@
 			label: 'Limites des communes',
 			color: '#6b7280',
 			category: 'Communes',
+		},
+		{
+			id: 'target-network',
+			label: 'Réseau Cible 2040',
+			color: '#9333ea',
+			category: 'Projets',
+			hasSubFilters: true,
+		},
+		{
+			id: 'project-vl',
+			label: 'Voies Lyonnaises (Projet)',
+			color: '#19181a',
+			category: 'Projets',
+			hasSubFilters: true,
+		},
+	] as const;
+
+	const projectVLSubLayers = [
+		{
+			id: 'wip',
+			label: 'En travaux',
+			statuses: ['wip', 'tested'],
+			customStyle: {
+				color: '#152B68',
+				dashArray: [3, 1],
+			},
+		},
+		{
+			id: 'planned',
+			label: 'Prévu pour 2026',
+			statuses: ['planned', 'variante'],
+			customStyle: {
+				color: '#8B7FA0',
+				dashArray: [2, 2],
+			},
 		},
 	] as const;
 
@@ -370,6 +410,28 @@
 			current.push(value);
 		}
 		params.cyclewayLocalisation = current;
+	}
+
+	function toggleTargetNetworkHorizon(value: string) {
+		const current = [...(params.targetNetworkHorizons || [])];
+		const index = current.indexOf(value);
+		if (index >= 0) {
+			current.splice(index, 1);
+		} else {
+			current.push(value);
+		}
+		params.targetNetworkHorizons = current;
+	}
+
+	function toggleProjectVLStatus(value: string) {
+		const current = [...(params.projectVLStatuses || [])];
+		const index = current.indexOf(value);
+		if (index >= 0) {
+			current.splice(index, 1);
+		} else {
+			current.push(value);
+		}
+		params.projectVLStatuses = current;
 	}
 
 	function isCyclewayReseauSelected(value: string): boolean {
@@ -680,6 +742,8 @@
 				mapStyle={mapStyleState.mapStyle}
 			/>
 
+			<TargetNetworkLayer {isLayerVisible} targetNetworkHorizons={params.targetNetworkHorizons} />
+
 			<VelovLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<ParkingLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
@@ -690,7 +754,14 @@
 
 			<TramLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
-			<VoiesLyonnaisesLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
+			<VoiesLyonnaisesLayer
+				{isLayerVisible}
+				{handleMouseEnter}
+				{handleMouseLeave}
+				{map}
+				projectVLStatuses={params.projectVLStatuses}
+				{projectVLSubLayers}
+			/>
 
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
@@ -738,6 +809,17 @@
 							isTypeSelected={isCyclewayTypeSelected}
 							isLocalisationSelected={isCyclewayLocalisationSelected}
 						/>
+					{:else if layerId === 'target-network'}
+						<TargetNetworkFilters
+							targetNetworkHorizons={params.targetNetworkHorizons}
+							toggleHorizon={toggleTargetNetworkHorizon}
+						/>
+					{:else if layerId === 'project-vl'}
+						<ProjectVLFilters
+							subLayers={projectVLSubLayers}
+							selectedStatuses={params.projectVLStatuses || []}
+							toggleStatus={toggleProjectVLStatus}
+						/>
 					{/if}
 				{/snippet}
 			</FilterPanel>
@@ -767,6 +849,17 @@
 								isReseauSelected={isCyclewayReseauSelected}
 								isTypeSelected={isCyclewayTypeSelected}
 								isLocalisationSelected={isCyclewayLocalisationSelected}
+							/>
+						{:else if layerId === 'target-network'}
+							<TargetNetworkFilters
+								targetNetworkHorizons={params.targetNetworkHorizons}
+								toggleHorizon={toggleTargetNetworkHorizon}
+							/>
+						{:else if layerId === 'project-vl'}
+							<ProjectVLFilters
+								subLayers={projectVLSubLayers}
+								selectedStatuses={params.projectVLStatuses || []}
+								toggleStatus={toggleProjectVLStatus}
 							/>
 						{/if}
 					{/snippet}
