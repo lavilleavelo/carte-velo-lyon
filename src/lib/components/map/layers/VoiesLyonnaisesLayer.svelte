@@ -192,7 +192,6 @@
 		<GeoJSONSource id={`vl-project-${lineNumber}-source`} data={vlQuery.data.grouped[lineNumber]}>
 			<LineLayer
 				id={`vl-project-${lineNumber}-casing`}
-				beforeId={`vl-project-${lineNumber}-line`}
 				paint={{
 					'line-color': '#ffffff',
 					'line-width': 4,
@@ -220,6 +219,23 @@
 					'line-dasharray': dashArrayExpression,
 				}}
 				filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
+			/>
+
+			<LineLayer
+				id={`vl-project-${lineNumber}-line-hitarea`}
+				paint={{
+					'line-color': 'transparent',
+					'line-width': 20,
+					'line-opacity': 0,
+				}}
+				layout={{
+					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+					'line-join': 'round',
+					'line-cap': 'round',
+				}}
+				filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
+				onmouseenter={handleMouseEnter}
+				onmouseleave={handleMouseLeave}
 			/>
 		</GeoJSONSource>
 	{/if}

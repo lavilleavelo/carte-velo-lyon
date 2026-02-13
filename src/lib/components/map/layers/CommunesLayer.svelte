@@ -3,7 +3,7 @@
 	import communesLimitUrl from '$lib/data/communes_limit_arrondissements.json?url';
 	import arrondissementsLyonUrl from '$lib/data/metropole-de-lyon_adr_voie_lieu.adrarrond.json?url';
 
-	let { isLayerVisible } = $props();
+	let { isLayerVisible, handleMouseEnter, handleMouseLeave } = $props();
 </script>
 
 <GeoJSONSource id="arrondissements" data={arrondissementsLyonUrl} maxzoom={13}>
@@ -32,5 +32,18 @@
 			'line-width': 2,
 			'line-opacity': 0.5,
 		}}
+	/>
+	<LineLayer
+		id="communes-layer-hitarea"
+		layout={{
+			visibility: isLayerVisible('communes') ? 'visible' : 'none',
+		}}
+		paint={{
+			'line-color': 'transparent',
+			'line-width': 20,
+			'line-opacity': 0,
+		}}
+		onmouseenter={handleMouseEnter}
+		onmouseleave={handleMouseLeave}
 	/>
 </GeoJSONSource>

@@ -31,7 +31,6 @@
 <GeoJSONSource {data} id="target-network-source">
 	<LineLayer
 		id="target-network-casing"
-		beforeId="target-network-layer"
 		paint={{
 			'line-color': '#ffffff',
 			'line-width': 4,
@@ -111,5 +110,22 @@
 			'text-halo-width': 2,
 		}}
 		filter={['in', ['get', 'horizon'], ['literal', targetNetworkHorizons]]}
+	/>
+
+	<LineLayer
+		id="target-network-hitarea"
+		paint={{
+			'line-color': 'transparent',
+			'line-width': 20,
+			'line-opacity': 0,
+		}}
+		layout={{
+			visibility: isLayerVisible('target-network') ? 'visible' : 'none',
+			'line-join': 'round',
+			'line-cap': 'round',
+		}}
+		filter={['in', ['get', 'horizon'], ['literal', targetNetworkHorizons]]}
+		onmouseenter={() => {}}
+		onmouseleave={() => {}}
 	/>
 </GeoJSONSource>

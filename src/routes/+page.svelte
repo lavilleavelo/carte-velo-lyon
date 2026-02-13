@@ -10,6 +10,7 @@
 		GeolocateControl,
 		NavigationControl,
 		Marker,
+		Popup,
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
@@ -20,7 +21,11 @@
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import { createMapStyleState, type MapStyle } from '$lib/utils/mapStyleToggle.svelte';
-	import { getInteractableLayerIds, createLayerToFeatureTypeMap } from '$lib/config/layers';
+	import {
+		getAllLayerConfigs,
+		getInteractableLayerIds,
+		createLayerToFeatureTypeMap,
+	} from '$lib/config/layers';
 
 	import { createQuery } from '@tanstack/svelte-query';
 	import Geocoder from '$lib/components/Geocoder.svelte';
@@ -271,6 +276,8 @@
 	let contextMenuLngLat: { lng: number; lat: number } | null = $state(null);
 	let contextMenuPhotoLocation: { lng: number; lat: number } | null = $state(null);
 	let hoveredPhotoLocation: { lng: number; lat: number } | null = $state(null);
+	let hoverPopupFeatures: { features: any[]; lngLat: { lng: number; lat: number } } | null =
+		$state(null);
 	let innerWidth = $state(0);
 	let bearing = $state(0);
 	let pitch = $state(0);
@@ -523,6 +530,52 @@
 		}
 	}
 
+	function handleMapMouseMove(e: any) {
+		if (!map) return;
+		const interactableLayers = getInteractableLayerIds(isLayerVisible);
+		const features = map.queryRenderedFeatures(e.point, { layers: interactableLayers });
+
+		if (features.length > 0) {
+			const uniqueFeatures = features
+				.filter(
+					(feature, index, self) =>
+						index ===
+						self.findIndex(
+							(t) =>
+								t.properties?.id === feature.properties?.id &&
+								t.geometry.type === feature.geometry.type &&
+								t.layer.id === feature.layer.id,
+						),
+				)
+				.map((f) => {
+					const baseLayerId = f.layer.id.replace('-hitarea', '');
+					const allConfigs = getAllLayerConfigs();
+					const config = allConfigs.find((c) => c.interactableLayerIds.includes(f.layer.id));
+					const featureType =
+						config?.featureType ||
+						layerToFeatureType.get(f.layer.id) ||
+						layerToFeatureType.get(baseLayerId) ||
+						'default';
+
+					return { ...f, type: featureType, config };
+				});
+
+			hoverPopupFeatures = {
+				features: uniqueFeatures,
+				lngLat: e.lngLat,
+			};
+			cursor = 'pointer';
+		} else {
+			hoverPopupFeatures = null;
+			cursor = undefined;
+		}
+	}
+
+	function handleMapMouseLeave() {
+		hoverPopupFeatures = null;
+		cursor = undefined;
+	}
+
 	function handleMapClick(e: any) {
 		params.selected = [e.lngLat.lng, e.lngLat.lat];
 		selectFeaturesAt(e.point, e.lngLat);
@@ -698,6 +751,8 @@
 			}}
 			oncontextmenu={handleMapContextMenu}
 			onclick={handleMapClick}
+			onmousemove={handleMapMouseMove}
+			onmouseleave={handleMapMouseLeave}
 			ontouchstart={handleTouchStart}
 			ontouchmove={handleTouchMove}
 			ontouchend={handleTouchEnd}
@@ -728,11 +783,35 @@
 				<GeocoderMarker pulse={false} lnglat={contextMenuPhotoLocation} />
 			{/if}
 
+			{#if hoverPopupFeatures && hoverPopupFeatures.features.length > 0}
+				<Popup lnglat={hoverPopupFeatures.lngLat} closeButton={false} closeOnClick={false}>
+					<div class="flex max-h-64 flex-col gap-2 overflow-y-auto">
+						{#each hoverPopupFeatures.features as feature, i}
+							{#if i > 0}
+								<hr class="border-gray-200" />
+							{/if}
+							<div class="flex flex-col gap-1">
+								{#if feature.config?.formatPopup}
+									{@html feature.config.formatPopup(feature.properties)}
+								{:else}
+									<span class="text-sm font-bold">
+										{feature.properties.name ||
+											feature.properties.nom ||
+											feature.properties.label ||
+											'Inconnu'}
+									</span>
+								{/if}
+							</div>
+						{/each}
+					</div>
+				</Popup>
+			{/if}
+
 			{#if hoveredPhotoLocation}
 				<GeocoderMarker lnglat={hoveredPhotoLocation} pulse={false} />
 			{/if}
 
-			<CommunesLayer {isLayerVisible} />
+			<CommunesLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<CyclewayLayer
 				{isLayerVisible}
