@@ -16,6 +16,7 @@ export interface LayerConfig {
 	featureType: string;
 	defaultEnabled?: boolean;
 	formatPopup?: (properties: any) => string;
+	minZoomPopup?: number;
 }
 
 export const layerConfigs: LayerConfig[] = [
@@ -37,6 +38,7 @@ export const layerConfigs: LayerConfig[] = [
 					</div>
 				</div>`;
 		},
+		minZoomPopup: 13.5,
 	},
 
 	// Parking
@@ -257,6 +259,7 @@ export const layerConfigs: LayerConfig[] = [
 		category: 'projects',
 		interactableLayerIds: Array.from({ length: 12 }, (_, i) => `vl-project-${i + 1}-line-hitarea`),
 		featureType: 'project-vl',
+		minZoomPopup: 13,
 		formatPopup: (p) => {
 			return `
 			<div class="flex items-center gap-2">
@@ -316,6 +319,7 @@ export function getVoiesLyonnaisesConfigs(): LayerConfig[] {
 				</div>`;
 			return content;
 		},
+		minZoomPopup: 13.5,
 	}));
 }
 

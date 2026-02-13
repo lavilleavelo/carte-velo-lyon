@@ -16,15 +16,11 @@
 
 	let {
 		isLayerVisible,
-		handleMouseEnter,
-		handleMouseLeave,
 		map,
 		projectVLStatuses = ['wip', 'planned', 'variante'],
 		projectVLSubLayers = [],
 	}: {
 		isLayerVisible: (id: string) => boolean;
-		handleMouseEnter: () => void;
-		handleMouseLeave: () => void;
 		map: maplibregl.Map | undefined;
 		projectVLStatuses?: string[];
 		projectVLSubLayers?: readonly ProjectVLSubLayer[];
@@ -126,8 +122,6 @@
 					'line-opacity': 0,
 				}}
 				filter={['==', ['get', 'status'], 'done']}
-				onmouseenter={handleMouseEnter}
-				onmouseleave={handleMouseLeave}
 			/>
 
 			<SymbolLayer
@@ -234,8 +228,6 @@
 					'line-cap': 'round',
 				}}
 				filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
-				onmouseenter={handleMouseEnter}
-				onmouseleave={handleMouseLeave}
 			/>
 		</GeoJSONSource>
 	{/if}

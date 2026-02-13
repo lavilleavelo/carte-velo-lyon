@@ -2,7 +2,7 @@
 	import { GeoJSONSource, LineLayer } from 'svelte-maplibre-gl';
 	import { matchTypeColorReseau, matchTypeWidth } from '$lib/utils.ts';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave, voirieData, mapStyle } = $props();
+	let { isLayerVisible, voirieData, mapStyle } = $props();
 </script>
 
 <GeoJSONSource
@@ -43,7 +43,5 @@
 		layout={{
 			visibility: isLayerVisible('cycleways') ? 'visible' : 'none',
 		}}
-		onmouseenter={handleMouseEnter}
-		onmouseleave={handleMouseLeave}
 	/>
 </GeoJSONSource>

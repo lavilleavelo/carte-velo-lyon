@@ -268,6 +268,7 @@
 	let geocoderHighlightFading = $state(false);
 	let geocoderHighlightTimeout: ReturnType<typeof setTimeout> | null = null;
 	let geocoderFadeTimeout: ReturnType<typeof setTimeout> | null = null;
+	let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 
 	let contextMenuVisible = $state(false);
 	let contextMenuX = $state(0);
@@ -502,11 +503,21 @@
 	function selectFeaturesAt(point: { x: number; y: number }, lngLat: { lng: number; lat: number }) {
 		if (!map) return;
 
-		const interactableLayers = getInteractableLayerIds(isLayerVisible);
+		const interactableLayers = getInteractableLayerIds(isLayerVisible).filter((id) =>
+			map!.getLayer(id),
+		);
+
+		if (interactableLayers.length === 0) {
+			selectedFeatures = [];
+			selectedLngLat = null;
+			hoveredPhotoLocation = null;
+			return;
+		}
+
 		const features = map.queryRenderedFeatures(point, { layers: interactableLayers });
 
 		if (features.length > 0) {
-			selectedFeatures = features
+			const filtered = features
 				.filter(
 					(feature, index, self) =>
 						index ===
@@ -518,21 +529,57 @@
 				)
 				.map((f) => {
 					const baseLayerId = f.layer.id.replace('-hitarea', '');
+					const allConfigs = getAllLayerConfigs();
+					const config = allConfigs.find((c) => c.interactableLayerIds.includes(f.layer.id));
 					const featureType =
-						layerToFeatureType.get(f.layer.id) || layerToFeatureType.get(baseLayerId) || 'default';
-					return { ...f, type: featureType };
+						config?.featureType ||
+						layerToFeatureType.get(f.layer.id) ||
+						layerToFeatureType.get(baseLayerId) ||
+						'default';
+					return { ...f, type: featureType, config };
+				})
+				.filter((f) => {
+					if (f.config?.minZoomPopup && zoom < f.config.minZoomPopup) {
+						return false;
+					}
+					return true;
 				});
-			selectedLngLat = lngLat;
+
+			if (filtered.length > 0) {
+				selectedFeatures = filtered;
+				selectedLngLat = lngLat;
+			} else {
+				selectedFeatures = [];
+				selectedLngLat = null;
+				hoveredPhotoLocation = null;
+				params.selected = [];
+			}
 		} else {
 			selectedFeatures = [];
 			selectedLngLat = null;
 			hoveredPhotoLocation = null;
+			params.selected = [];
 		}
 	}
 
 	function handleMapMouseMove(e: any) {
 		if (!map) return;
-		const interactableLayers = getInteractableLayerIds(isLayerVisible);
+
+		// Clear any pending timeout when moving mouse
+		if (hoverTimeout) {
+			clearTimeout(hoverTimeout);
+			hoverTimeout = null;
+		}
+
+		const interactableLayers = getInteractableLayerIds(isLayerVisible).filter((id) =>
+			map!.getLayer(id),
+		);
+		if (interactableLayers.length === 0) {
+			hoverPopupFeatures = null;
+			cursor = undefined;
+			return;
+		}
+
 		const features = map.queryRenderedFeatures(e.point, { layers: interactableLayers });
 
 		if (features.length > 0) {
@@ -558,13 +605,34 @@
 						'default';
 
 					return { ...f, type: featureType, config };
+				})
+				.filter((f) => {
+					if (f.config?.minZoomPopup && zoom < f.config.minZoomPopup) {
+						return false;
+					}
+					return true;
 				});
 
-			hoverPopupFeatures = {
-				features: uniqueFeatures,
-				lngLat: e.lngLat,
-			};
-			cursor = 'pointer';
+			if (uniqueFeatures.length > 0) {
+				cursor = 'pointer';
+				if (hoverPopupFeatures) {
+					hoverPopupFeatures = {
+						features: uniqueFeatures,
+						lngLat: e.lngLat,
+					};
+				} else {
+					const targetLngLat = e.lngLat;
+					hoverTimeout = setTimeout(() => {
+						hoverPopupFeatures = {
+							features: uniqueFeatures,
+							lngLat: targetLngLat,
+						};
+					}, 200);
+				}
+			} else {
+				hoverPopupFeatures = null;
+				cursor = undefined;
+			}
 		} else {
 			hoverPopupFeatures = null;
 			cursor = undefined;
@@ -572,6 +640,10 @@
 	}
 
 	function handleMapMouseLeave() {
+		if (hoverTimeout) {
+			clearTimeout(hoverTimeout);
+			hoverTimeout = null;
+		}
 		hoverPopupFeatures = null;
 		cursor = undefined;
 	}
@@ -785,7 +857,7 @@
 
 			{#if hoverPopupFeatures && hoverPopupFeatures.features.length > 0}
 				<Popup lnglat={hoverPopupFeatures.lngLat} closeButton={false} closeOnClick={false}>
-					<div class="flex max-h-64 flex-col gap-2 overflow-y-auto">
+					<div class="flex max-h-64 animate-[fade-in_0.2s_ease-out] flex-col gap-2 overflow-y-auto">
 						{#each hoverPopupFeatures.features as feature, i}
 							{#if i > 0}
 								<hr class="border-gray-200" />
@@ -816,8 +888,6 @@
 			<CyclewayLayer
 				{isLayerVisible}
 				voirieData={filteredVoirieData}
-				{handleMouseEnter}
-				{handleMouseLeave}
 				mapStyle={mapStyleState.mapStyle}
 			/>
 
@@ -835,8 +905,6 @@
 
 			<VoiesLyonnaisesLayer
 				{isLayerVisible}
-				{handleMouseEnter}
-				{handleMouseLeave}
 				{map}
 				projectVLStatuses={params.projectVLStatuses}
 				{projectVLSubLayers}
