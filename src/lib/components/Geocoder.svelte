@@ -2,6 +2,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Debounced } from 'runed';
 	import Check from '@lucide/svelte/icons/check';
+	import Loader2 from '@lucide/svelte/icons/loader-2';
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import { cn } from '$lib/utils';
 	import * as Command from '$lib/components/ui/command';
@@ -33,7 +34,8 @@
 
 	let open = $state(false);
 	let inputValue = $state('');
-	let selectedValue = $state('');
+	let selectedId = $state<number | undefined>(undefined);
+	let selectedName = $state('');
 	let inputRef = $state<HTMLInputElement>(null!);
 	let wrapperRef = $state<HTMLDivElement>(null!);
 
@@ -61,9 +63,15 @@
 					feature.properties.housenumber,
 					feature.properties.street,
 				];
-				if (feature.properties.city && feature.properties.city !== feature.properties.name)
+				if (feature.properties.city && feature.properties.city !== feature.properties.name) {
 					parts.push(feature.properties.city);
-				const label = parts.filter(Boolean).join(', ');
+				}
+
+				const keyParts = [...parts];
+				if (feature.properties.osm_value) {
+					keyParts.push(feature.properties.osm_value);
+				}
+				const label = keyParts.filter(Boolean).join('|');
 
 				if (seen.has(label)) return false;
 				seen.add(label);
@@ -75,6 +83,7 @@
 
 	const results = $derived(geocoderQuery.data ?? []);
 	const isLoading = $derived(geocoderQuery.isLoading);
+	const isSearching = $derived(isLoading || inputValue !== debouncedQuery.current);
 
 	function getResultTitle(props: GeocoderResult['properties']): string {
 		if (props.name) return props.name;
@@ -83,8 +92,67 @@
 		return props.city || '';
 	}
 
+	const typeTranslations: Record<string, string> = {
+		bus_stop: 'Arrêt de bus',
+		tram_stop: 'Arrêt de tram',
+		subway_entrance: 'Bouche de métro',
+		park: 'Parc',
+		school: 'École',
+		university: 'Université',
+		kindergarten: 'Jardin d’enfants',
+		college: 'Collège',
+		public_building: 'Bâtiment public',
+		residential: 'Résidentiel',
+		commercial: 'Commercial',
+		industrial: 'Industriel',
+		place_of_worship: 'Lieu de culte',
+		restaurant: 'Restaurant',
+		cafe: 'Café',
+		bar: 'Bar',
+		fast_food: 'Restauration rapide',
+		biergarten: 'Brasserie en plein air',
+		cinema: 'Cinéma',
+		arts_centre: 'Centre artistique',
+		bank: 'Banque',
+		pharmacy: 'Pharmacie',
+		hospital: 'Hôpital',
+		clinic: 'Clinique',
+		doctors: 'Médecin',
+		dentist: 'Dentiste',
+		veterinary: 'Vétérinaire',
+		theatre: 'Théâtre',
+		nightclub: 'Boîte de nuit',
+		playground: 'Aire de jeux',
+		sports_centre: 'Centre sportif',
+		pitch: 'Terrain de sport',
+		swimming_pool: 'Piscine',
+		stadium: 'Stade',
+		attraction: 'Attraction touristique',
+		information: 'Information',
+		hotel: 'Hôtel',
+		motel: 'Motel',
+		guest_house: 'Maison d’hôtes',
+		hostel: 'Auberge de jeunesse',
+		camp_site: 'Camping',
+		alpine_hut: 'Refuge de montagne',
+		museum: 'Musée',
+		zoo: 'Zoo',
+		district: 'Quartier',
+		city: 'Ville',
+		village: 'Village',
+		town: 'Ville',
+		house: 'Maison',
+		detached: 'Maison individuelle',
+		apartments: 'Appartements',
+		dormitory: 'Dortoir',
+		terrace: 'Terrasse',
+	};
+
 	function getResultSubtitle(props: GeocoderResult['properties']): string {
 		const parts = [];
+		if (props.osm_value && typeTranslations[props.osm_value]) {
+			parts.push(typeTranslations[props.osm_value]);
+		}
 		if (props.city && props.city !== props.name) parts.push(props.city);
 		if (props.state) parts.push(props.state);
 		if (props.country) parts.push(props.country);
@@ -93,7 +161,9 @@
 
 	function handleSelect(result: GeocoderResult) {
 		const name = getResultTitle(result.properties);
-		selectedValue = name;
+		const id = result.properties.osm_id;
+		selectedId = id;
+		selectedName = name;
 		inputValue = name;
 		open = false;
 		onSelect?.(result.geometry.coordinates, name);
@@ -129,33 +199,39 @@
 				class="absolute top-[calc(100%+4px)] left-0 w-full animate-in rounded-md border bg-popover text-popover-foreground shadow-md fade-in-0 outline-none zoom-in-95"
 			>
 				<Command.List class="max-h-[300px] overflow-x-hidden overflow-y-auto p-1">
-					{#if !isLoading && results.length === 0 && inputValue.length >= 2}
+					{#if isSearching}
+						<div class="flex items-center justify-center py-6 text-sm text-muted-foreground">
+							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
+							Recherche en cours...
+						</div>
+					{:else if results.length === 0}
 						<Command.Empty class="py-6 text-center text-sm">Aucun résultat trouvé.</Command.Empty>
 					{/if}
 
-					<Command.Group>
-						{#each results as result}
-							{@const title = getResultTitle(result.properties)}
-							{@const subtitle = getResultSubtitle(result.properties)}
-							<Command.Item
-								value={title}
-								onSelect={() => handleSelect(result)}
-								class="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
-							>
-								<Check
-									class={cn('mr-2 h-4 w-4', selectedValue === title ? 'opacity-100' : 'opacity-0')}
-								/>
-								<div class="flex flex-col">
-									<span class="font-medium">{title}</span>
-									{#if subtitle}
-										<span class="text-xs text-muted-foreground">
-											{subtitle}
-										</span>
-									{/if}
-								</div>
-							</Command.Item>
-						{/each}
-					</Command.Group>
+					{#if !isSearching}
+						<Command.Group>
+							{#each results as result, i}
+								{@const title = getResultTitle(result.properties)}
+								{@const subtitle = getResultSubtitle(result.properties)}
+								{@const isSelected = selectedId === result.properties.osm_id}
+								<Command.Item
+									value={`${title}-${subtitle}-${i}`}
+									onSelect={() => handleSelect(result)}
+									class="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none aria-selected:bg-accent aria-selected:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50"
+								>
+									<Check class={cn('mr-2 h-4 w-4', isSelected ? 'opacity-100' : 'opacity-0')} />
+									<div class="flex flex-col">
+										<span class="font-medium">{title}</span>
+										{#if subtitle}
+											<span class="text-xs text-muted-foreground">
+												{subtitle}
+											</span>
+										{/if}
+									</div>
+								</Command.Item>
+							{/each}
+						</Command.Group>
+					{/if}
 				</Command.List>
 			</div>
 		{/if}
