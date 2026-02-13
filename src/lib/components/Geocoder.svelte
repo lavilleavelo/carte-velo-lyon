@@ -183,7 +183,12 @@
 	});
 </script>
 
-<div bind:this={wrapperRef} class={cn('relative z-50', className)}>
+<div
+	bind:this={wrapperRef}
+	class={cn('relative z-50', className)}
+	onpointerdown={(e) => e.stopPropagation()}
+	ontouchstart={(e) => e.stopPropagation()}
+>
 	<Command.Root shouldFilter={false} class="overflow-visible rounded-lg border bg-white shadow-md">
 		<Command.Input
 			bind:ref={inputRef}
