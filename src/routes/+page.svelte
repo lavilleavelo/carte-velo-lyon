@@ -71,7 +71,7 @@
 
 	const mapSearchParamsSchema = type({
 		layers: type('string[]').default(() =>
-			['communes', 'cycleways', Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`)].flat(),
+			['cycleways', Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`)].flat(),
 		),
 		commune: 'string = ""',
 		zoom: 'number = 11',

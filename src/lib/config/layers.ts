@@ -257,12 +257,15 @@ export const layerConfigs: LayerConfig[] = [
 		category: 'projects',
 		interactableLayerIds: Array.from({ length: 12 }, (_, i) => `vl-project-${i + 1}-line-hitarea`),
 		featureType: 'project-vl',
-		formatPopup: () => {
+		formatPopup: (p) => {
 			return `
-				<div class="flex items-center gap-2">
-					<div class="mt-0.5 shrink-0">${Icons.construction('#eab308')}</div>
-					<span class="font-bold text-sm">Projet Voie Lyonnaise</span>
-				</div>`;
+			<div class="flex items-center gap-2">
+				<div class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow-xs" style="background-color: ${vlColors[p.line - 1]}">
+					${p.line}
+				</div>
+				<span class="font-bold text-sm">Voie Lyonnaise ${p.line}</span>
+			</div>
+			<div class="text-xs text-gray-600">${p.status === 'wip' ? 'En travaux' : 'Prévu pour 2026'}</span>`;
 		},
 	},
 
