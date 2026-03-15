@@ -39,7 +39,7 @@ export const layerConfigs: LayerConfig[] = [
 					</div>
 				</div>`;
 		},
-		minZoomPopup: 13.5,
+		minZoomPopup: 15,
 	},
 
 	// Parking
