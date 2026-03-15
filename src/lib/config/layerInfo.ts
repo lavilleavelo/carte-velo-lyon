@@ -91,7 +91,7 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 		],
 	},
 	'Aires de service': {
-		description: 'Pompes à vélo en libre-service et bornes fontaine à eau.',
+		description: 'Pompes à vélo en libre-service, bornes fontaine à eau et toilettes publiques.',
 		source: 'Métropole de Lyon (data.grandlyon.com)',
 		sourceUrl: 'https://data.grandlyon.com',
 		links: [
@@ -102,6 +102,10 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 			{
 				label: 'Bornes fontaine à eau — data.grandlyon.com',
 				url: 'https://data.grandlyon.com/portail/fr/jeux-de-donnees/bornes-fontaine-a-eau-metropole-lyon/info',
+			},
+			{
+				label: 'Toilettes publiques — OpenStreetMap',
+				url: 'https://wiki.openstreetmap.org/wiki/Tag:amenity%3Dtoilets',
 			},
 		],
 	},

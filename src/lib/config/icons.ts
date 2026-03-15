@@ -25,4 +25,7 @@ export const Icons = {
 
 	commune: (color: string = '#000') =>
 		`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 7l6-3 6 3 6-3v13l-6 3-6-3-6 3V7z"/><path d="M9 4v13"/><path d="M15 7v13"/></svg>`,
+
+	toilet: (color: string = '#000') =>
+		`<svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="${color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 20V4H6v16"/><path d="M2 20h20"/><path d="M14 12h.01"/></svg>`,
 };

@@ -132,6 +132,40 @@ export async function getCachedOverpassVLData(): Promise<unknown> {
 	return typedOverpassCache.overpassVL();
 }
 
+const OVERPASS_TOILETS_QUERY = `[out:json][timeout:60];(node["amenity"="toilets"](${OVERPASS_BBOX});way["amenity"="toilets"](${OVERPASS_BBOX});relation["amenity"="toilets"](${OVERPASS_BBOX}););out center;`;
+
+async function fetchOverpassToilets(): Promise<unknown> {
+	const response = await fetch('https://overpass-api.de/api/interpreter', {
+		method: 'POST',
+		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+		body: `data=${encodeURIComponent(OVERPASS_TOILETS_QUERY)}`,
+	});
+	if (!response.ok) {
+		throw new Error(`Failed to fetch Overpass toilets data: ${response.statusText}`);
+	}
+	return response.json();
+}
+
+const overpassToiletsCache = createCache({
+	ttl: 300,
+	stale: 300,
+	storage: { type: 'memory' },
+});
+
+overpassToiletsCache.define('overpassToilets', async () => {
+	return fetchOverpassToilets();
+});
+
+interface OverpassToiletsCache {
+	overpassToilets: () => Promise<unknown>;
+}
+
+const typedOverpassToiletsCache = overpassToiletsCache as unknown as OverpassToiletsCache;
+
+export async function getCachedOverpassToiletsData(): Promise<unknown> {
+	return typedOverpassToiletsCache.overpassToilets();
+}
+
 const COUNTERS_BASE_URL =
 	'https://raw.githubusercontent.com/lavilleavelo/cyclopolis/refs/heads/main/content/compteurs';
 

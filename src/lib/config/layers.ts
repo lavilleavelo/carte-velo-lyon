@@ -237,6 +237,28 @@ export const layerConfigs: LayerConfig[] = [
 		},
 	},
 
+	{
+		id: 'toilets',
+		label: 'Toilettes publiques',
+		category: 'services',
+		interactableLayerIds: ['toilets-layer-hitarea'],
+		featureType: 'toilet',
+		formatPopup: (p) => {
+			const details = [p.wheelchair ? '♿ Accessible' : null, p.fee ? '💰 Payant' : '✅ Gratuit']
+				.filter(Boolean)
+				.join(' · ');
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.toilet('#7c3aed')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || 'Toilettes publiques'}</span>
+						${p.operator ? `<span class="text-xs">${p.operator}</span>` : ''}
+						${details ? `<span class="text-xs mt-0.5">${details}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+
 	// Counters
 	{
 		id: 'counters-velo',

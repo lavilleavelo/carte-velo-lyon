@@ -58,6 +58,7 @@
 	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
 	import PumpLayer from '$lib/components/map/layers/PumpLayer.svelte';
 	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
+	import ToiletLayer from '$lib/components/map/layers/ToiletLayer.svelte';
 	import CyclewayFilters from '$lib/components/map/filters/CyclewayFilters.svelte';
 	import TargetNetworkLayer from '$lib/components/map/layers/TargetNetworkLayer.svelte';
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
@@ -269,6 +270,12 @@
 			label: 'Borne fontaine à eau',
 			color: '#3b82f6',
 			icon: fountainIcon,
+			category: 'Aires de service',
+		},
+		{
+			id: 'toilets',
+			label: 'Toilettes publiques',
+			color: '#60a5fa',
 			category: 'Aires de service',
 		},
 		{
@@ -1180,6 +1187,8 @@
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<WaterFountainLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
+
+			<ToiletLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 		</MapLibre>
 
 		<a
