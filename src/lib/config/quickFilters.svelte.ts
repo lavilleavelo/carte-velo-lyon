@@ -33,12 +33,6 @@ export const presetQuickFilters: QuickFilter[] = [
 		layerIds: ['metro', 'tram', 'bus-tb'],
 	},
 	{
-		id: 'qf-services',
-		label: 'Services',
-		color: '#e11d48',
-		layerIds: ['pumps', 'water-fountains'],
-	},
-	{
 		id: 'qf-communes',
 		label: 'Communes',
 		color: '#6b7280',
