@@ -18,8 +18,11 @@
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Ellipsis from '@lucide/svelte/icons/ellipsis';
 	import * as Dialog from '$lib/components/ui/dialog';
+	import * as Select from '$lib/components/ui/select';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
+	import Plus from '@lucide/svelte/icons/plus';
+	import X from '@lucide/svelte/icons/x';
 	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
 	import FilterPanel from '$lib/components/map/FilterPanel.svelte';
 	import FeatureInfo from '$lib/components/map/FeatureInfo.svelte';
@@ -60,6 +63,7 @@
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
 	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
+	import { createQuickFilterState } from '$lib/config/quickFilters.svelte';
 
 	const voirieQuery = createQuery(() => ({
 		queryKey: ['voirie-data'],
@@ -349,107 +353,11 @@
 		params.layers = compactLayers(layers);
 	}
 
-	const allQuickFilters = [
-		{
-			id: 'qf-vl',
-			label: 'VL',
-			color: '#152B68',
-			layerIds: Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`),
-		},
-		{ id: 'qf-pistes', label: 'Pistes', color: '#15803d', layerIds: ['cycleways'] },
-		{ id: 'qf-velov', label: "Vélo'v", color: '#EA2127', layerIds: ['velov'] },
-		{
-			id: 'qf-parking',
-			label: 'Parking',
-			color: '#4ade80',
-			layerIds: [
-				'parking-arceaux',
-				'parking-couverts',
-				'parking-box',
-				'parking-velostation',
-				'parking-lpa',
-			],
-		},
-		{
-			id: 'qf-transport',
-			label: 'Transport',
-			color: '#933591',
-			layerIds: ['metro', 'tram', 'bus-tb'],
-		},
-		{
-			id: 'qf-osm-vl',
-			label: 'VL OSM',
-			color: '#e74c3c',
-			layerIds: Array.from({ length: 12 }, (_, i) => `osm-vl-${i + 1}`),
-		},
-		{
-			id: 'qf-communes',
-			label: 'Communes',
-			color: '#6b7280',
-			layerIds: ['communes'],
-		},
-		{
-			id: 'qf-services',
-			label: 'Services',
-			color: '#e11d48',
-			layerIds: ['pumps', 'water-fountains'],
-		},
-	] as const;
-
-	const defaultQuickFilterIds = ['qf-vl', 'qf-pistes', 'qf-velov', 'qf-parking', 'qf-transport'];
-	const QF_STORAGE_KEY = 'quickFilterIds';
-
-	function loadQuickFilterIds(): string[] {
-		if (typeof globalThis.localStorage === 'undefined') return defaultQuickFilterIds;
-		try {
-			const stored = localStorage.getItem(QF_STORAGE_KEY);
-			if (stored) {
-				const parsed = JSON.parse(stored) as string[];
-				const validIds = new Set(allQuickFilters.map((qf) => qf.id));
-				const filtered = parsed.filter((id) => validIds.has(id));
-				return filtered.length > 0 ? filtered : defaultQuickFilterIds;
-			}
-		} catch {}
-		return defaultQuickFilterIds;
-	}
-
-	function saveQuickFilterIds(ids: string[]) {
-		if (typeof globalThis.localStorage === 'undefined') return;
-		try {
-			localStorage.setItem(QF_STORAGE_KEY, JSON.stringify(ids));
-		} catch {}
-	}
-
-	let activeQuickFilterIds = $state(loadQuickFilterIds());
-
-	function toggleQuickFilterVisibility(id: string) {
-		if (activeQuickFilterIds.includes(id)) {
-			activeQuickFilterIds = activeQuickFilterIds.filter((qfId) => qfId !== id);
-		} else {
-			activeQuickFilterIds = [...activeQuickFilterIds, id];
-		}
-		saveQuickFilterIds(activeQuickFilterIds);
-	}
-
-	const quickFilters = $derived(
-		allQuickFilters.filter((qf) => activeQuickFilterIds.includes(qf.id)),
+	const qf = createQuickFilterState(
+		availableLayers,
+		() => visibleLayers,
+		(layers) => setLayers(layers),
 	);
-
-	function isQuickFilterActive(qf: (typeof allQuickFilters)[number]): boolean {
-		return qf.layerIds.some((id) => visibleLayers.has(id));
-	}
-
-	function toggleQuickFilter(qf: (typeof allQuickFilters)[number]) {
-		const currentLayers = new Set(visibleLayers);
-		const allActive = qf.layerIds.every((id) => currentLayers.has(id));
-
-		if (allActive) {
-			qf.layerIds.forEach((id) => currentLayers.delete(id));
-		} else {
-			qf.layerIds.forEach((id) => currentLayers.add(id));
-		}
-		setLayers(Array.from(currentLayers));
-	}
 
 	const hasNonDefaultFilters = $derived.by(() => {
 		const defaultSet = new Set(expandLayers(['cycleways', 'vl']));
@@ -1016,18 +924,18 @@
 			<div class="rounded-lg shadow-md">
 				<Geocoder onSelect={handleGeocoderSelect} bbox={LYON_BOUNDS} />
 			</div>
-			<div class="flex items-center justify-center gap-1.5">
-				{#each quickFilters as qf}
+			<div class="flex flex-wrap items-center justify-center gap-1.5">
+				{#each qf.activeFilters as qfItem}
 					<button
-						onclick={() => toggleQuickFilter(qf)}
+						onclick={() => qf.toggle(qfItem)}
 						class="rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-sm transition-all active:scale-95"
 						style="
-							background-color: {isQuickFilterActive(qf) ? qf.color : 'white'};
-							color: {isQuickFilterActive(qf) ? 'white' : qf.color};
-							border: 1.5px solid {qf.color};
+							background-color: {qf.isActive(qfItem) ? qfItem.color : 'white'};
+							color: {qf.isActive(qfItem) ? 'white' : qfItem.color};
+							border: 1.5px solid {qfItem.color};
 						"
 					>
-						{qf.label}
+						{qfItem.label}
 					</button>
 				{/each}
 				<button
@@ -1276,9 +1184,9 @@
 
 	<div class="md:hidden">
 		<MobileDrawer bind:open={showMobileFilters} snapPoints={[0.4, 0.9]} initialSnapPoint={0}>
-			<div class="p-4">
-				<div class="mb-4 flex items-center justify-between">
-					<h2 class="text-lg font-bold">Filtres</h2>
+			<div class="px-2 py-2">
+				<div class="mb-2 flex items-center justify-between">
+					<h2 class="text-base font-bold">Filtres</h2>
 					<div class="flex items-center gap-1">
 						<button
 							onclick={resetLayers}
@@ -1304,6 +1212,7 @@
 					{toggleCategory}
 					{toggleCategoryCollapse}
 					{toggleLayer}
+					compact
 				>
 					{#snippet layerSubFilters(layerId: string)}
 						{#if layerId === 'cycleways'}
@@ -1330,7 +1239,7 @@
 						{/if}
 					{/snippet}
 				</FilterPanel>
-				<div class="mt-6 border-t pt-4">
+				<div class="mt-4 border-t pt-3">
 					<a
 						href="/a-propos"
 						class="text-sm text-gray-500 transition-colors hover:text-brand-navy hover:underline"
@@ -1396,20 +1305,66 @@
 					Choisissez les filtres affichés sous la barre de recherche.
 				</p>
 				<div class="flex flex-wrap gap-2">
-					{#each allQuickFilters as qf}
+					{#each qf.presets as preset}
 						<button
-							onclick={() => toggleQuickFilterVisibility(qf.id)}
+							onclick={() => qf.toggleVisibility(preset.id)}
 							class="rounded-full px-2.5 py-1 text-xs font-semibold transition-all active:scale-95"
 							style="
-								background-color: {activeQuickFilterIds.includes(qf.id) ? qf.color : 'white'};
-								color: {activeQuickFilterIds.includes(qf.id) ? 'white' : qf.color};
-								border: 1.5px solid {qf.color};
+								background-color: {qf.activeIds.includes(preset.id) ? preset.color : 'white'};
+								color: {qf.activeIds.includes(preset.id) ? 'white' : preset.color};
+								border: 1.5px solid {preset.color};
 							"
 						>
-							{qf.label}
+							{preset.label}
 						</button>
 					{/each}
+					{#each qf.activeIds.filter((id) => id.startsWith('qf-layer-')) as customId}
+						{@const customQf = qf.allQuickFilterMap.get(customId)}
+						{#if customQf}
+							<button
+								onclick={() => qf.remove(customId)}
+								class="group flex items-center gap-1 rounded-full px-2.5 py-1 text-xs font-semibold transition-all active:scale-95"
+								style="
+									background-color: {customQf.color};
+									color: white;
+									border: 1.5px solid {customQf.color};
+								"
+								title="Retirer"
+							>
+								{customQf.label}
+								<X size={12} class="opacity-60 group-hover:opacity-100" />
+							</button>
+						{/if}
+					{/each}
 				</div>
+				{#if qf.availableExtras.length > 0}
+					<div class="mt-3">
+						<Select.Root
+							type="single"
+							onValueChange={(value) => {
+								if (value) qf.addCustom(value);
+							}}
+						>
+							<Select.Trigger size="sm" class="text-xs text-gray-500">
+								<Plus size={14} />
+								<span>Ajouter un raccourci...</span>
+							</Select.Trigger>
+							<Select.Content>
+								{#each qf.availableExtras as extra}
+									<Select.Item value={extra.id} label={extra.label}>
+										<span class="flex items-center gap-2">
+											<span
+												class="inline-block h-2.5 w-2.5 rounded-full"
+												style="background-color: {extra.color}"
+											></span>
+											{extra.label}
+										</span>
+									</Select.Item>
+								{/each}
+							</Select.Content>
+						</Select.Root>
+					</div>
+				{/if}
 			</div>
 
 			<hr class="border-gray-100" />

@@ -120,13 +120,13 @@
 		style="height: {drawerHeight}px; {isDragging ? 'transition: none;' : ''}"
 	>
 		<div
-			class="flex w-full cursor-grab touch-none items-center justify-center p-4 active:cursor-grabbing"
+			class="flex w-full cursor-grab touch-none items-center justify-center py-3 active:cursor-grabbing"
 			ontouchstart={handleTouchStart}
 		>
 			<div class="h-1.5 w-12 rounded-full bg-gray-300"></div>
 		</div>
 
-		<div class="flex-1 overflow-y-auto px-4 pb-8">
+		<div class="flex-1 overflow-y-auto px-2 pb-6">
 			{@render children?.()}
 		</div>
 	</div>

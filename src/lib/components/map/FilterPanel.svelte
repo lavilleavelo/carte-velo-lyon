@@ -14,6 +14,7 @@
 		toggleLayer,
 		isLayerVisible,
 		layerSubFilters,
+		compact = false,
 	}: {
 		layersByCategory: Map<string, any[]>;
 		isCategoryVisible: (category: string) => boolean;
@@ -23,14 +24,20 @@
 		toggleLayer: (layerId: string) => void;
 		isLayerVisible: (layerId: string) => boolean;
 		layerSubFilters?: Snippet<[string]>;
+		compact?: boolean;
 	} = $props();
 </script>
 
-<div class="flex flex-col gap-6">
+<div class="flex flex-col" class:gap-4={compact} class:gap-6={!compact}>
 	{#each [...layersByCategory.entries()] as [category, layers]}
 		{@const allVisible = layers.every((l) => isLayerVisible(l.id))}
 		<div
-			class="flex flex-col gap-3 rounded-xl border border-gray-100 bg-gray-50/50 p-3 transition-all hover:bg-gray-50"
+			class="flex flex-col rounded-xl border border-gray-100 bg-gray-50/50 transition-all hover:bg-gray-50"
+			class:gap-2={compact}
+			class:gap-3={!compact}
+			class:px-2={compact}
+			class:py-2={compact}
+			class:p-3={!compact}
 		>
 			<div class="flex items-center justify-between">
 				<button
