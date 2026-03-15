@@ -1062,7 +1062,7 @@
 			maxBounds={MAP_BOUNDS}
 			{cursor}
 			attributionControl={false}
-			maxZoom={22}
+			maxZoom={18}
 			onload={async () => {
 				if (map) {
 					if (params.selected && params.selected.length === 2) {
