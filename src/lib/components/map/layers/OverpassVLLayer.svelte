@@ -103,9 +103,9 @@
 						visibility: isLayerVisible(layerId) ? 'visible' : 'none',
 					}}
 					paint={{
-						'line-color': vlColors[lineIndex],
-						'line-width': 5,
-						'line-opacity': 0.4,
+						'line-color': '#ffffff',
+						'line-width': ['interpolate', ['linear'], ['zoom'], 11, 2, 14, 6],
+						'line-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.3, 14, 0.8],
 					}}
 				/>
 				<LineLayer
