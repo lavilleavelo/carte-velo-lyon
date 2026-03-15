@@ -934,13 +934,46 @@
 		[5.5, 46.1],
 	];
 
+	let wakeLock: WakeLockSentinel | null = null;
+
+	async function requestWakeLock() {
+		try {
+			if ('wakeLock' in navigator) {
+				wakeLock = await navigator.wakeLock.request('screen');
+				wakeLock.addEventListener('release', () => {
+					wakeLock = null;
+				});
+			}
+		} catch {}
+	}
+
+	function releaseWakeLock() {
+		wakeLock?.release();
+		wakeLock = null;
+	}
+
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
 		document.documentElement.style.overflow = 'hidden';
 		document.documentElement.classList.remove('settings-loading');
+
+		const geoBtn = document.querySelector('.maplibregl-ctrl-geolocate');
+		if (geoBtn) {
+			const observer = new MutationObserver(() => {
+				const isActive = geoBtn.classList.contains('maplibregl-ctrl-geolocate-active');
+				if (isActive) {
+					requestWakeLock();
+				} else {
+					releaseWakeLock();
+				}
+			});
+			observer.observe(geoBtn, { attributes: true, attributeFilter: ['class'] });
+		}
+
 		return () => {
 			document.body.style.overflow = '';
 			document.documentElement.style.overflow = '';
+			releaseWakeLock();
 		};
 	});
 </script>
@@ -1060,11 +1093,16 @@
 					position="top-right"
 				/>
 			{:else}
-				<GeolocateControl position="bottom-right" />
 				<MapStyleToggle
 					currentStyle={mapStyleState.mapStyle}
 					onSelect={mapStyleState.setMapStyle}
+					position="bottom-left"
+				/>
+				<GeolocateControl
 					position="bottom-right"
+					trackUserLocation={true}
+					showAccuracyCircle={true}
+					positionOptions={{ enableHighAccuracy: true }}
 				/>
 			{/if}
 
@@ -1488,5 +1526,17 @@
 	:global(.maplibregl-ctrl-bottom-left),
 	:global(.maplibregl-ctrl-bottom-right) {
 		bottom: max(16px, env(safe-area-inset-bottom));
+	}
+
+	@media (max-width: 767px) {
+		:global(.maplibregl-ctrl-bottom-right .maplibregl-ctrl-geolocate) {
+			width: 44px;
+			height: 44px;
+		}
+
+		:global(.maplibregl-ctrl-bottom-right .maplibregl-ctrl-geolocate .maplibregl-ctrl-icon) {
+			width: 44px;
+			height: 44px;
+		}
 	}
 </style>
