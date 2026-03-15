@@ -16,6 +16,7 @@
 	import Filter from '@lucide/svelte/icons/filter';
 	import Settings from '@lucide/svelte/icons/settings';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
+	import Ellipsis from '@lucide/svelte/icons/ellipsis';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
@@ -342,8 +343,69 @@
 		params.layers = ['cycleways', 'vl'];
 	}
 
+	const visibleLayers = $derived(new Set(expandLayers(params.layers || [])));
+
+	function setLayers(layers: string[]) {
+		params.layers = compactLayers(layers);
+	}
+
+	const quickFilters = [
+		{
+			id: 'qf-vl',
+			label: 'VL',
+			color: '#152B68',
+			layerIds: Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`),
+		},
+		{ id: 'qf-pistes', label: 'Pistes', color: '#15803d', layerIds: ['cycleways'] },
+		{ id: 'qf-velov', label: "Vélo'v", color: '#EA2127', layerIds: ['velov'] },
+		{
+			id: 'qf-parking',
+			label: 'Parking',
+			color: '#4ade80',
+			layerIds: [
+				'parking-arceaux',
+				'parking-couverts',
+				'parking-box',
+				'parking-velostation',
+				'parking-lpa',
+			],
+		},
+		{
+			id: 'qf-transport',
+			label: 'Transport',
+			color: '#933591',
+			layerIds: ['metro', 'tram', 'bus-tb'],
+		},
+	] as const;
+
+	function isQuickFilterActive(qf: (typeof quickFilters)[number]): boolean {
+		return qf.layerIds.some((id) => visibleLayers.has(id));
+	}
+
+	function toggleQuickFilter(qf: (typeof quickFilters)[number]) {
+		const currentLayers = new Set(visibleLayers);
+		const allActive = qf.layerIds.every((id) => currentLayers.has(id));
+
+		if (allActive) {
+			qf.layerIds.forEach((id) => currentLayers.delete(id));
+		} else {
+			qf.layerIds.forEach((id) => currentLayers.add(id));
+		}
+		setLayers(Array.from(currentLayers));
+	}
+
+	const hasNonDefaultFilters = $derived.by(() => {
+		const defaultSet = new Set(expandLayers(['cycleways', 'vl']));
+		if (visibleLayers.size !== defaultSet.size) return true;
+		for (const id of visibleLayers) {
+			if (!defaultSet.has(id)) return true;
+		}
+		return false;
+	});
+
 	let map: maplibregl.Map | undefined = $state();
 	let showMobileFilters = $state(false);
+	let showDesktopSidebar = $state(true);
 	let cursor: string | undefined = $state();
 
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
@@ -429,8 +491,6 @@
 
 	const layerIdToCategory = new Map<string, string>(availableLayers.map((l) => [l.id, l.category]));
 
-	const visibleLayers = $derived(new Set(expandLayers(params.layers || [])));
-
 	const categoriesNeededByUrl = $derived.by(() => {
 		const needed = new Set<string>();
 		for (const id of visibleLayers) {
@@ -455,10 +515,6 @@
 		}
 		return filtered;
 	});
-
-	function setLayers(layers: string[]) {
-		params.layers = compactLayers(layers);
-	}
 
 	function toggleLayer(layerId: string) {
 		const currentLayers = new Set(visibleLayers);
@@ -898,10 +954,44 @@
 >
 	<div class="relative h-full flex-1">
 		<div
-			class="absolute top-4 left-1/2 z-20 w-full max-w-xs -translate-x-1/2 px-4 sm:max-w-sm md:max-w-md"
+			class="absolute top-3 left-1/2 z-20 flex w-full max-w-xs -translate-x-1/2 flex-col gap-2 px-4 sm:max-w-sm md:max-w-md"
 		>
 			<div class="rounded-lg shadow-md">
 				<Geocoder onSelect={handleGeocoderSelect} bbox={LYON_BOUNDS} />
+			</div>
+			<div class="flex items-center justify-center gap-1.5">
+				{#each quickFilters as qf}
+					<button
+						onclick={() => toggleQuickFilter(qf)}
+						class="rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm transition-all active:scale-95"
+						style="
+							background-color: {isQuickFilterActive(qf) ? qf.color : 'white'};
+							color: {isQuickFilterActive(qf) ? 'white' : qf.color};
+							border: 1.5px solid {qf.color};
+						"
+					>
+						{qf.label}
+					</button>
+				{/each}
+				<button
+					onclick={() => {
+						if (innerWidth >= 768) {
+							showDesktopSidebar = !showDesktopSidebar;
+						} else {
+							showMobileFilters = true;
+						}
+					}}
+					class="relative rounded-full bg-white p-1.5 shadow-sm transition-all hover:bg-gray-50 active:scale-95"
+					style="border: 1.5px solid #9ca3af;"
+					title="Plus de filtres"
+				>
+					<Ellipsis size={14} class="text-gray-500" />
+					{#if hasNonDefaultFilters}
+						<span
+							class="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-blue-500 ring-2 ring-white"
+						></span>
+					{/if}
+				</button>
 			</div>
 		</div>
 
@@ -919,14 +1009,6 @@
 				/>
 			</div>
 		{/if}
-
-		<button
-			class="absolute bottom-14 left-4 z-20 rounded-full bg-white p-3 shadow-lg md:hidden"
-			onclick={() => (showMobileFilters = true)}
-			aria-label="Filtres"
-		>
-			<Filter size={24} />
-		</button>
 
 		<MapLibre
 			class="h-full w-full"
@@ -1064,66 +1146,68 @@
 		</a>
 	</div>
 
-	<div class="hidden h-full w-80 border-l bg-white shadow-xl md:flex md:flex-col">
-		<div class="flex items-center justify-between border-b p-4">
-			<h2 class="flex items-center gap-2 text-lg font-bold">
-				<Filter size={20} />
-				Filtres
-			</h2>
-			<div class="flex items-center gap-1">
-				<button
-					onclick={resetLayers}
-					class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-					title="Réinitialiser les filtres"
+	{#if showDesktopSidebar}
+		<div class="hidden h-full w-80 border-l bg-white shadow-xl md:flex md:flex-col">
+			<div class="flex items-center justify-between border-b p-4">
+				<h2 class="flex items-center gap-2 text-lg font-bold">
+					<Filter size={20} />
+					Filtres
+				</h2>
+				<div class="flex items-center gap-1">
+					<button
+						onclick={resetLayers}
+						class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+						title="Réinitialiser les filtres"
+					>
+						<RotateCcw size={18} />
+					</button>
+					<button
+						onclick={() => (showConfigDialog = true)}
+						class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+						title="Configurer les couches"
+					>
+						<Settings size={18} />
+					</button>
+				</div>
+			</div>
+			<div class="flex-1 overflow-y-auto p-4">
+				<FilterPanel
+					layersByCategory={filteredLayersByCategory}
+					{isCategoryVisible}
+					{isCategoryCollapsed}
+					{toggleCategory}
+					{toggleCategoryCollapse}
+					{toggleLayer}
+					{isLayerVisible}
 				>
-					<RotateCcw size={18} />
-				</button>
-				<button
-					onclick={() => (showConfigDialog = true)}
-					class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-					title="Configurer les couches"
-				>
-					<Settings size={18} />
-				</button>
+					{#snippet layerSubFilters(layerId: string)}
+						{#if layerId === 'cycleways'}
+							<CyclewayFilters
+								filterOptions={cyclewayFilterOptions}
+								toggleReseau={toggleCyclewayReseau}
+								toggleType={toggleCyclewayType}
+								toggleLocalisation={toggleCyclewayLocalisation}
+								isReseauSelected={isCyclewayReseauSelected}
+								isTypeSelected={isCyclewayTypeSelected}
+								isLocalisationSelected={isCyclewayLocalisationSelected}
+							/>
+						{:else if layerId === 'target-network'}
+							<TargetNetworkFilters
+								targetNetworkHorizons={params.targetNetworkHorizons}
+								toggleHorizon={toggleTargetNetworkHorizon}
+							/>
+						{:else if layerId === 'project-vl'}
+							<ProjectVLFilters
+								subLayers={projectVLSubLayers}
+								selectedStatuses={params.projectVLStatuses || []}
+								toggleStatus={toggleProjectVLStatus}
+							/>
+						{/if}
+					{/snippet}
+				</FilterPanel>
 			</div>
 		</div>
-		<div class="flex-1 overflow-y-auto p-4">
-			<FilterPanel
-				layersByCategory={filteredLayersByCategory}
-				{isCategoryVisible}
-				{isCategoryCollapsed}
-				{toggleCategory}
-				{toggleCategoryCollapse}
-				{toggleLayer}
-				{isLayerVisible}
-			>
-				{#snippet layerSubFilters(layerId: string)}
-					{#if layerId === 'cycleways'}
-						<CyclewayFilters
-							filterOptions={cyclewayFilterOptions}
-							toggleReseau={toggleCyclewayReseau}
-							toggleType={toggleCyclewayType}
-							toggleLocalisation={toggleCyclewayLocalisation}
-							isReseauSelected={isCyclewayReseauSelected}
-							isTypeSelected={isCyclewayTypeSelected}
-							isLocalisationSelected={isCyclewayLocalisationSelected}
-						/>
-					{:else if layerId === 'target-network'}
-						<TargetNetworkFilters
-							targetNetworkHorizons={params.targetNetworkHorizons}
-							toggleHorizon={toggleTargetNetworkHorizon}
-						/>
-					{:else if layerId === 'project-vl'}
-						<ProjectVLFilters
-							subLayers={projectVLSubLayers}
-							selectedStatuses={params.projectVLStatuses || []}
-							toggleStatus={toggleProjectVLStatus}
-						/>
-					{/if}
-				{/snippet}
-			</FilterPanel>
-		</div>
-	</div>
+	{/if}
 
 	<div class="md:hidden">
 		<MobileDrawer bind:open={showMobileFilters} snapPoints={[0.4, 0.9]} initialSnapPoint={0}>
