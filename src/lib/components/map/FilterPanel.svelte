@@ -72,7 +72,7 @@
 
 			{#if !isCategoryCollapsed(category)}
 				<div class="pl-1 transition-all duration-300">
-					{#if category === 'Voies Lyonnaises'}
+					{#if category === 'Voies Lyonnaises' || category === 'Voies Lyonnaises (OSM)'}
 						<div class="grid grid-cols-4 gap-2 sm:grid-cols-4">
 							{#each layers as layer}
 								<div class="flex items-center justify-center">

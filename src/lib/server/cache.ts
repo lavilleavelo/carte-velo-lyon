@@ -99,3 +99,35 @@ const typedVlCache = vlCache as unknown as VLCache;
 export async function getCachedVoiesLyonnaisesData(): Promise<Record<number, any>> {
 	return typedVlCache.voiesLyonnaises();
 }
+
+const OVERPASS_BBOX = '45.55,4.6,45.95,5.1';
+const OVERPASS_QUERY = `[out:json];nwr["cycle_network"="Les Voies Lyonnaises"](${OVERPASS_BBOX});out geom;`;
+const OVERPASS_URL = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(OVERPASS_QUERY)}`;
+
+async function fetchOverpassVL(): Promise<unknown> {
+	const response = await fetch(OVERPASS_URL);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch Overpass data: ${response.statusText}`);
+	}
+	return response.json();
+}
+
+const overpassCache = createCache({
+	ttl: 300,
+	stale: 300,
+	storage: { type: 'memory' },
+});
+
+overpassCache.define('overpassVL', async () => {
+	return fetchOverpassVL();
+});
+
+interface OverpassCache {
+	overpassVL: () => Promise<unknown>;
+}
+
+const typedOverpassCache = overpassCache as unknown as OverpassCache;
+
+export async function getCachedOverpassVLData(): Promise<unknown> {
+	return typedOverpassCache.overpassVL();
+}

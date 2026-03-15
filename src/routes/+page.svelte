@@ -14,6 +14,11 @@
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
+	import Settings from '@lucide/svelte/icons/settings';
+	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { Label } from '$lib/components/ui/label';
 	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
 	import FilterPanel from '$lib/components/map/FilterPanel.svelte';
 	import FeatureInfo from '$lib/components/map/FeatureInfo.svelte';
@@ -53,6 +58,7 @@
 	import TargetNetworkLayer from '$lib/components/map/layers/TargetNetworkLayer.svelte';
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
 	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
+	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
 
 	const voirieQuery = createQuery(() => ({
 		queryKey: ['voirie-data'],
@@ -69,10 +75,46 @@
 
 	const layerToFeatureType = createLayerToFeatureTypeMap();
 
+	const layerGroups: Record<string, string[]> = {
+		vl: Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`),
+		'osm-vl': Array.from({ length: 12 }, (_, i) => `osm-vl-${i + 1}`),
+	};
+
+	function expandLayers(layers: string[]): string[] {
+		const expanded: string[] = [];
+		for (const id of layers) {
+			if (layerGroups[id]) {
+				expanded.push(...layerGroups[id]);
+			} else {
+				expanded.push(id);
+			}
+		}
+		return expanded;
+	}
+
+	function compactLayers(layers: string[]): string[] {
+		const set = new Set(layers);
+		const result: string[] = [];
+		const consumed = new Set<string>();
+
+		for (const [group, members] of Object.entries(layerGroups)) {
+			if (members.every((m) => set.has(m))) {
+				result.push(group);
+				members.forEach((m) => consumed.add(m));
+			}
+		}
+
+		for (const id of layers) {
+			if (!consumed.has(id)) {
+				result.push(id);
+			}
+		}
+
+		return result;
+	}
+
 	const mapSearchParamsSchema = type({
-		layers: type('string[]').default(() =>
-			['cycleways', Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`)].flat(),
-		),
+		layers: type('string[]').default(() => ['cycleways', 'vl']),
 		commune: 'string = ""',
 		zoom: 'number = 11',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
@@ -173,6 +215,12 @@
 			color: vlColors[i],
 			category: 'Voies Lyonnaises',
 		})),
+		...Array.from({ length: 12 }, (_, i) => ({
+			id: `osm-vl-${i + 1}`,
+			label: `${i + 1}`,
+			color: vlColors[i],
+			category: 'Voies Lyonnaises (OSM)',
+		})),
 
 		{
 			id: 'metro',
@@ -227,7 +275,7 @@
 		},
 		{
 			id: 'project-vl',
-			label: 'Voies Lyonnaises (Projet)',
+			label: 'Voies Lyonnaises (WIP)',
 			color: '#19181a',
 			category: 'Projets',
 			hasSubFilters: true,
@@ -254,6 +302,45 @@
 			},
 		},
 	] as const;
+
+	const optionalCategories = ['Voies Lyonnaises (OSM)', 'Projets'] as const;
+	const STORAGE_KEY = 'visibleOptionalCategories';
+
+	function loadOptionalCategories(): Set<string> {
+		if (typeof globalThis.localStorage === 'undefined') return new Set<string>();
+		try {
+			const stored = localStorage.getItem(STORAGE_KEY);
+			if (stored) {
+				const parsed = JSON.parse(stored) as string[];
+				return new Set(parsed.filter((c) => (optionalCategories as readonly string[]).includes(c)));
+			}
+		} catch {}
+		return new Set<string>();
+	}
+
+	function saveOptionalCategories(categories: Set<string>) {
+		if (typeof globalThis.localStorage === 'undefined') return;
+		try {
+			localStorage.setItem(STORAGE_KEY, JSON.stringify([...categories]));
+		} catch {}
+	}
+
+	let visibleOptionalCategories = $state(loadOptionalCategories());
+	let showConfigDialog = $state(false);
+
+	function toggleOptionalCategory(category: string) {
+		if (visibleOptionalCategories.has(category)) {
+			visibleOptionalCategories.delete(category);
+		} else {
+			visibleOptionalCategories.add(category);
+		}
+		visibleOptionalCategories = new Set(visibleOptionalCategories);
+		saveOptionalCategories(visibleOptionalCategories);
+	}
+
+	function resetLayers() {
+		params.layers = ['cycleways', 'vl'];
+	}
 
 	let map: maplibregl.Map | undefined = $state();
 	let showMobileFilters = $state(false);
@@ -338,21 +425,53 @@
 		return grouped;
 	});
 
-	function toggleLayer(layerId: string) {
-		const currentLayers = [...(params.layers || [])];
-		const index = currentLayers.indexOf(layerId);
+	const optionalCategoriesSet = new Set<string>(optionalCategories);
 
-		if (index >= 0) {
-			currentLayers.splice(index, 1);
-		} else {
-			currentLayers.push(layerId);
+	const layerIdToCategory = new Map<string, string>(availableLayers.map((l) => [l.id, l.category]));
+
+	const visibleLayers = $derived(new Set(expandLayers(params.layers || [])));
+
+	const categoriesNeededByUrl = $derived.by(() => {
+		const needed = new Set<string>();
+		for (const id of visibleLayers) {
+			const category = layerIdToCategory.get(id);
+			if (category && optionalCategoriesSet.has(category)) {
+				needed.add(category);
+			}
 		}
+		return needed;
+	});
 
-		params.layers = currentLayers;
+	const filteredLayersByCategory = $derived.by(() => {
+		const filtered = new Map<string, Array<(typeof availableLayers)[number]>>();
+		for (const [category, layers] of layersByCategory) {
+			if (
+				!optionalCategoriesSet.has(category) ||
+				visibleOptionalCategories.has(category) ||
+				categoriesNeededByUrl.has(category)
+			) {
+				filtered.set(category, layers);
+			}
+		}
+		return filtered;
+	});
+
+	function setLayers(layers: string[]) {
+		params.layers = compactLayers(layers);
+	}
+
+	function toggleLayer(layerId: string) {
+		const currentLayers = new Set(visibleLayers);
+		if (currentLayers.has(layerId)) {
+			currentLayers.delete(layerId);
+		} else {
+			currentLayers.add(layerId);
+		}
+		setLayers(Array.from(currentLayers));
 	}
 
 	function isLayerVisible(layerId: string): boolean {
-		return (params.layers || []).includes(layerId);
+		return visibleLayers.has(layerId);
 	}
 
 	function toggleCategory(category: string) {
@@ -360,15 +479,15 @@
 		if (!categoryLayers) return;
 
 		const layerIds = categoryLayers.map((layer) => layer.id);
-		const allVisible = layerIds.every((id) => isLayerVisible(id));
+		const allVisible = layerIds.every((id) => visibleLayers.has(id));
 
+		const currentLayers = new Set(visibleLayers);
 		if (allVisible) {
-			params.layers = (params.layers || []).filter((id) => !layerIds.includes(id));
+			layerIds.forEach((id) => currentLayers.delete(id));
 		} else {
-			const currentLayers = new Set(params.layers || []);
 			layerIds.forEach((id) => currentLayers.add(id));
-			params.layers = Array.from(currentLayers);
 		}
+		setLayers(Array.from(currentLayers));
 	}
 
 	function isCategoryVisible(category: string): boolean {
@@ -925,6 +1044,8 @@
 				{projectVLSubLayers}
 			/>
 
+			<OverpassVLLayer {isLayerVisible} />
+
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<WaterFountainLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
@@ -944,15 +1065,31 @@
 	</div>
 
 	<div class="hidden h-full w-80 border-l bg-white shadow-xl md:flex md:flex-col">
-		<div class="border-b p-4">
+		<div class="flex items-center justify-between border-b p-4">
 			<h2 class="flex items-center gap-2 text-lg font-bold">
 				<Filter size={20} />
 				Filtres
 			</h2>
+			<div class="flex items-center gap-1">
+				<button
+					onclick={resetLayers}
+					class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+					title="Réinitialiser les filtres"
+				>
+					<RotateCcw size={18} />
+				</button>
+				<button
+					onclick={() => (showConfigDialog = true)}
+					class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+					title="Configurer les couches"
+				>
+					<Settings size={18} />
+				</button>
+			</div>
 		</div>
 		<div class="flex-1 overflow-y-auto p-4">
 			<FilterPanel
-				{layersByCategory}
+				layersByCategory={filteredLayersByCategory}
 				{isCategoryVisible}
 				{isCategoryCollapsed}
 				{toggleCategory}
@@ -991,9 +1128,27 @@
 	<div class="md:hidden">
 		<MobileDrawer bind:open={showMobileFilters} snapPoints={[0.4, 0.9]} initialSnapPoint={0}>
 			<div class="p-4">
-				<h2 class="mb-4 text-lg font-bold">Filtres</h2>
+				<div class="mb-4 flex items-center justify-between">
+					<h2 class="text-lg font-bold">Filtres</h2>
+					<div class="flex items-center gap-1">
+						<button
+							onclick={resetLayers}
+							class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+							title="Réinitialiser les filtres"
+						>
+							<RotateCcw size={18} />
+						</button>
+						<button
+							onclick={() => (showConfigDialog = true)}
+							class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
+							title="Configurer les couches"
+						>
+							<Settings size={18} />
+						</button>
+					</div>
+				</div>
 				<FilterPanel
-					{layersByCategory}
+					layersByCategory={filteredLayersByCategory}
 					{isCategoryVisible}
 					{isCategoryCollapsed}
 					{isLayerVisible}
@@ -1077,6 +1232,35 @@
 		onClose={() => (showPanoramax = false)}
 	/>
 {/if}
+
+<Dialog.Root bind:open={showConfigDialog}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>Couches supplémentaires</Dialog.Title>
+			<Dialog.Description>
+				Sélectionnez les couches à afficher dans le panneau de filtres.
+			</Dialog.Description>
+		</Dialog.Header>
+		<div class="flex flex-col gap-3 py-2">
+			{#each optionalCategories as category}
+				<div class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50">
+					<Checkbox
+						id={`config-${category}`}
+						checked={visibleOptionalCategories.has(category)}
+						onCheckedChange={() => toggleOptionalCategory(category)}
+						class="border-gray-300 data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy"
+					/>
+					<Label
+						for={`config-${category}`}
+						class="cursor-pointer text-sm font-medium text-gray-700"
+					>
+						{category}
+					</Label>
+				</div>
+			{/each}
+		</div>
+	</Dialog.Content>
+</Dialog.Root>
 
 <style>
 	:global(.maplibregl-popup-content) {

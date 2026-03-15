@@ -10,6 +10,7 @@ export interface LayerConfig {
 		| 'transport'
 		| 'services'
 		| 'voies-lyonnaises'
+		| 'osm-vl'
 		| 'projects'
 		| 'communes';
 	interactableLayerIds: string[];
@@ -255,7 +256,7 @@ export const layerConfigs: LayerConfig[] = [
 	},
 	{
 		id: 'project-vl',
-		label: 'Voies Lyonnaises (Projet)',
+		label: 'Voies Lyonnaises (wip)',
 		category: 'projects',
 		interactableLayerIds: Array.from({ length: 12 }, (_, i) => `vl-project-${i + 1}-line-hitarea`),
 		featureType: 'project-vl',
@@ -323,8 +324,34 @@ export function getVoiesLyonnaisesConfigs(): LayerConfig[] {
 	}));
 }
 
+export function getOsmVLConfigs(): LayerConfig[] {
+	return Array.from({ length: 12 }, (_, i) => i + 1).map((num) => ({
+		id: `osm-vl-${num}`,
+		label: `Voie Lyonnaise ${num} (OSM)`,
+		category: 'osm-vl' as const,
+		interactableLayerIds: [`osm-vl-${num}-line-hitarea`],
+		featureType: `osm-vl-${num}`,
+		formatPopup: (p) => {
+			const name = p.name || `Voie Lyonnaise ${num}`;
+			return `
+				<div class="flex items-start gap-2">
+					<div class="flex h-5 w-5 shrink-0 items-center justify-center rounded-full border-2 border-white text-[10px] font-bold text-white shadow-xs" style="background-color: ${vlColors[num - 1]}">
+						${num}
+					</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${name}</span>
+						<span class="text-xs text-gray-500">Source: OpenStreetMap</span>
+						${p.surface ? `<span class="text-xs">Surface: ${p.surface}</span>` : ''}
+						${p.width ? `<span class="text-xs">Largeur: ${p.width}</span>` : ''}
+					</div>
+				</div>`;
+		},
+		minZoomPopup: 13,
+	}));
+}
+
 export function getAllLayerConfigs(): LayerConfig[] {
-	return [...layerConfigs, ...getVoiesLyonnaisesConfigs()];
+	return [...layerConfigs, ...getVoiesLyonnaisesConfigs(), ...getOsmVLConfigs()];
 }
 
 export function getInteractableLayerIds(isLayerVisible: (id: string) => boolean): string[] {
