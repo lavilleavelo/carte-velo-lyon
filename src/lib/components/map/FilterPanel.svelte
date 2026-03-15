@@ -1,9 +1,13 @@
 <script lang="ts">
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
+	import * as Dialog from '$lib/components/ui/dialog';
 	import Eye from '@lucide/svelte/icons/eye';
 	import EyeOff from '@lucide/svelte/icons/eye-off';
+	import Info from '@lucide/svelte/icons/info';
+	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import type { Snippet } from 'svelte';
+	import { layerInfo } from '$lib/config/layerInfo';
 
 	let {
 		layersByCategory,
@@ -26,11 +30,23 @@
 		layerSubFilters?: Snippet<[string]>;
 		compact?: boolean;
 	} = $props();
+
+	let infoDialogOpen = $state(false);
+	let infoDialogCategory = $state<string | null>(null);
+
+	function openInfo(category: string, e: MouseEvent) {
+		e.stopPropagation();
+		infoDialogCategory = category;
+		infoDialogOpen = true;
+	}
+
+	const infoData = $derived(infoDialogCategory ? layerInfo[infoDialogCategory] : null);
 </script>
 
 <div class="flex flex-col" class:gap-4={compact} class:gap-6={!compact}>
 	{#each [...layersByCategory.entries()] as [category, layers]}
 		{@const allVisible = layers.every((l) => isLayerVisible(l.id))}
+		{@const info = layerInfo[category]}
 		<div
 			class="flex flex-col rounded-xl border border-gray-100 bg-gray-50/50 transition-all hover:bg-gray-50"
 			class:gap-2={compact}
@@ -40,28 +56,39 @@
 			class:p-3={!compact}
 		>
 			<div class="flex items-center justify-between">
-				<button
-					onclick={() => toggleCategoryCollapse(category)}
-					class="group flex items-center gap-2 text-[10px] font-bold tracking-wide whitespace-nowrap text-gray-500 uppercase transition-colors hover:text-brand-navy"
-				>
-					<div class="rounded-full bg-gray-200 p-1 transition-colors group-hover:bg-gray-300">
-						<svg
-							class="h-3 w-3 transition-transform duration-200"
-							class:rotate-180={!isCategoryCollapsed(category)}
-							fill="none"
-							stroke="currentColor"
-							viewBox="0 0 24 24"
+				<div class="flex items-center gap-1">
+					<button
+						onclick={() => toggleCategoryCollapse(category)}
+						class="group flex items-center gap-2 text-[10px] font-bold tracking-wide whitespace-nowrap text-gray-500 uppercase transition-colors hover:text-brand-navy"
+					>
+						<div class="rounded-full bg-gray-200 p-1 transition-colors group-hover:bg-gray-300">
+							<svg
+								class="h-3 w-3 transition-transform duration-200"
+								class:rotate-180={!isCategoryCollapsed(category)}
+								fill="none"
+								stroke="currentColor"
+								viewBox="0 0 24 24"
+							>
+								<path
+									stroke-linecap="round"
+									stroke-linejoin="round"
+									stroke-width="2"
+									d="M19 9l-7 7-7-7"
+								/>
+							</svg>
+						</div>
+						<span>{category}</span>
+					</button>
+					{#if info}
+						<button
+							onclick={(e) => openInfo(category, e)}
+							class="rounded-full p-0.5 text-gray-300 transition-colors hover:text-gray-500"
+							title="Informations"
 						>
-							<path
-								stroke-linecap="round"
-								stroke-linejoin="round"
-								stroke-width="2"
-								d="M19 9l-7 7-7-7"
-							/>
-						</svg>
-					</div>
-					<span>{category}</span>
-				</button>
+							<Info size={12} />
+						</button>
+					{/if}
+				</div>
 				<button
 					onclick={() => toggleCategory(category)}
 					class="rounded-full p-1.5 transition-colors hover:bg-gray-200"
@@ -143,3 +170,62 @@
 		</div>
 	{/each}
 </div>
+
+<Dialog.Root bind:open={infoDialogOpen}>
+	<Dialog.Content>
+		<Dialog.Header>
+			<Dialog.Title>{infoDialogCategory}</Dialog.Title>
+		</Dialog.Header>
+		{#if infoData}
+			<div class="flex flex-col gap-4 py-2">
+				<p class="text-sm leading-relaxed text-gray-600">{infoData.description}</p>
+				<div class="rounded-lg border border-gray-100 bg-gray-50 p-3">
+					<span class="text-[10px] font-semibold tracking-wide text-gray-400 uppercase"
+						>Source des données</span
+					>
+					{#if infoData.sourceUrl}
+						<a
+							href={infoData.sourceUrl}
+							target="_blank"
+							rel="noopener noreferrer"
+							class="mt-1 flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+						>
+							<ExternalLink size={13} />
+							{infoData.source}
+						</a>
+					{:else}
+						<p class="mt-1 text-sm text-gray-600">{infoData.source}</p>
+					{/if}
+				</div>
+				{#if infoData.links && infoData.links.length > 0}
+					<div class="flex flex-col gap-1.5">
+						{#each infoData.links as link}
+							<a
+								href={link.url}
+								target="_blank"
+								rel="noopener noreferrer"
+								class="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
+							>
+								<ExternalLink size={13} class="shrink-0" />
+								{link.label}
+							</a>
+						{/each}
+					</div>
+				{/if}
+				{#if infoData.logos && infoData.logos.length > 0}
+					<div class="flex items-center gap-3">
+						{#each infoData.logos as logo}
+							{#if logo.url}
+								<a href={logo.url} target="_blank" rel="noopener noreferrer">
+									<img src={logo.src} alt={logo.alt} class="h-8" />
+								</a>
+							{:else}
+								<img src={logo.src} alt={logo.alt} class="h-8" />
+							{/if}
+						{/each}
+					</div>
+				{/if}
+			</div>
+		{/if}
+	</Dialog.Content>
+</Dialog.Root>

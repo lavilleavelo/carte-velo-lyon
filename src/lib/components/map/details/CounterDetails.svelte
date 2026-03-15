@@ -192,4 +192,27 @@
 			Voir sur Cyclopolis
 		</a>
 	{/if}
+
+	<div class="flex items-center gap-2 text-[10px] text-gray-400">
+		{#if isVelo}
+			<span
+				>Données : <a
+					href="https://data.eco-counter.com/ParcPublic/?id=3902#"
+					target="_blank"
+					rel="noopener noreferrer"
+					class="hover:underline">data.eco-counter.com</a
+				></span
+			>
+		{:else}
+			<a
+				href="https://avatar.cerema.fr"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="flex items-center gap-1.5 hover:underline"
+			>
+				<img src="https://cyclopolis.lavilleavelo.org/avatar_cerema.png" alt="CEREMA" class="h-4" />
+				<span>Données : avatar.cerema.fr</span>
+			</a>
+		{/if}
+	</div>
 </div>
