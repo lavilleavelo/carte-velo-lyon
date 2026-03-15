@@ -107,3 +107,25 @@
 		'circle-stroke-color': '#D53032',
 	}}
 />
+
+<SymbolLayer
+	id="metro-stop-labels"
+	source="openmaptiles"
+	source-layer="poi"
+	filter={['all', ['==', 'class', 'railway'], ['==', 'subclass', 'subway']]}
+	minzoom={14}
+	layout={{
+		'text-field': ['get', 'name'],
+		'text-size': 12,
+		'text-offset': [0, 1.5],
+		'text-anchor': 'top',
+		'text-optional': true,
+		'text-allow-overlap': false,
+		visibility: isLayerVisible('metro') ? 'visible' : 'none',
+	}}
+	paint={{
+		'text-color': '#333333',
+		'text-halo-color': '#FFFFFF',
+		'text-halo-width': 1.5,
+	}}
+/>
