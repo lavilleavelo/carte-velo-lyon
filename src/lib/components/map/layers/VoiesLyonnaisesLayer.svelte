@@ -124,6 +124,7 @@
 				filter={['==', ['get', 'status'], 'done']}
 			/>
 
+			{@const osmVlVisible = isLayerVisible(`osm-vl-${lineNumber}`)}
 			<SymbolLayer
 				id={`vl-${lineNumber}-labels-low`}
 				maxzoom={14}
@@ -138,7 +139,7 @@
 					'symbol-spacing': 1000000,
 					'symbol-placement': 'line-center',
 					'icon-rotation-alignment': 'viewport',
-					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+					visibility: isLayerVisible(layerId) && !osmVlVisible ? 'visible' : 'none',
 				}}
 			/>
 
@@ -156,7 +157,7 @@
 					'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.3, 15, 0.3, 17, 0.4],
 					'symbol-spacing': 1000000,
 					'symbol-placement': 'line-center',
-					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+					visibility: isLayerVisible(layerId) && !osmVlVisible ? 'visible' : 'none',
 				}}
 			/>
 
@@ -173,7 +174,7 @@
 					'icon-size': 0.4,
 					'symbol-spacing': 1000000,
 					'symbol-placement': 'line-center',
-					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+					visibility: isLayerVisible(layerId) && !osmVlVisible ? 'visible' : 'none',
 				}}
 			/>
 		</GeoJSONSource>

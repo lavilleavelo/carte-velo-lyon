@@ -1173,9 +1173,9 @@
 				{projectVLSubLayers}
 			/>
 
-			<OverpassVLLayer {isLayerVisible} />
-
 			<CountersLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
+
+			<OverpassVLLayer {isLayerVisible} {map} />
 
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
