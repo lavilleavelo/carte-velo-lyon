@@ -63,6 +63,7 @@
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
 	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
+	import CountersLayer from '$lib/components/map/layers/CountersLayer.svelte';
 	import { createQuickFilterState } from '$lib/config/quickFilters.svelte';
 
 	const voirieQuery = createQuery(() => ({
@@ -272,6 +273,18 @@
 			category: 'Communes',
 		},
 		{
+			id: 'counters-velo',
+			label: 'Compteurs vélo',
+			color: '#2563eb',
+			category: 'Compteurs',
+		},
+		{
+			id: 'counters-voiture',
+			label: 'Compteurs voiture',
+			color: '#dc2626',
+			category: 'Compteurs',
+		},
+		{
 			id: 'target-network',
 			label: 'Réseau Cible LVV 2040',
 			color: '#9333ea',
@@ -308,7 +321,7 @@
 		},
 	] as const;
 
-	const optionalCategories = ['Voies Lyonnaises (OSM)', 'Projets'] as const;
+	const optionalCategories = ['Voies Lyonnaises (OSM)', 'Compteurs', 'Projets'] as const;
 	const STORAGE_KEY = 'visibleOptionalCategories';
 
 	function loadOptionalCategories(): Set<string> {
@@ -1100,6 +1113,8 @@
 			/>
 
 			<OverpassVLLayer {isLayerVisible} />
+
+			<CountersLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 

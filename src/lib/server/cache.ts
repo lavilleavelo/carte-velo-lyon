@@ -131,3 +131,69 @@ const typedOverpassCache = overpassCache as unknown as OverpassCache;
 export async function getCachedOverpassVLData(): Promise<unknown> {
 	return typedOverpassCache.overpassVL();
 }
+
+const COUNTERS_BASE_URL =
+	'https://raw.githubusercontent.com/lavilleavelo/cyclopolis/refs/heads/main/content/compteurs';
+
+async function fetchCounterFile(type: 'velo' | 'voiture', slug: string): Promise<unknown | null> {
+	const url = `${COUNTERS_BASE_URL}/${type}/${slug}.json`;
+	try {
+		const response = await fetch(url);
+		if (!response.ok) return null;
+		const data = await response.json();
+		return { ...data, slug };
+	} catch {
+		return null;
+	}
+}
+
+async function fetchCounterDirectory(type: 'velo' | 'voiture'): Promise<string[]> {
+	const url = `https://api.github.com/repos/lavilleavelo/cyclopolis/contents/content/compteurs/${type}`;
+	try {
+		const response = await fetch(url, {
+			headers: { Accept: 'application/vnd.github.v3+json' },
+		});
+		if (!response.ok) return [];
+		const files = (await response.json()) as { name: string }[];
+		return files.filter((f) => f.name.endsWith('.json')).map((f) => f.name.replace('.json', ''));
+	} catch {
+		return [];
+	}
+}
+
+async function fetchAllCounters(): Promise<{ velo: unknown[]; voiture: unknown[] }> {
+	const [veloSlugs, voitureSlugs] = await Promise.all([
+		fetchCounterDirectory('velo'),
+		fetchCounterDirectory('voiture'),
+	]);
+
+	const [veloData, voitureData] = await Promise.all([
+		Promise.all(veloSlugs.map((slug) => fetchCounterFile('velo', slug))),
+		Promise.all(voitureSlugs.map((slug) => fetchCounterFile('voiture', slug))),
+	]);
+
+	return {
+		velo: veloData.filter(Boolean),
+		voiture: voitureData.filter(Boolean),
+	};
+}
+
+const countersCache = createCache({
+	ttl: 300,
+	stale: 300,
+	storage: { type: 'memory' },
+});
+
+countersCache.define('counters', async () => {
+	return fetchAllCounters();
+});
+
+interface CountersCache {
+	counters: () => Promise<{ velo: unknown[]; voiture: unknown[] }>;
+}
+
+const typedCountersCache = countersCache as unknown as CountersCache;
+
+export async function getCachedCountersData(): Promise<{ velo: unknown[]; voiture: unknown[] }> {
+	return typedCountersCache.counters();
+}

@@ -237,6 +237,52 @@ export const layerConfigs: LayerConfig[] = [
 		},
 	},
 
+	// Counters
+	{
+		id: 'counters-velo',
+		label: 'Compteurs vélo',
+		category: 'projects',
+		interactableLayerIds: ['counters-velo-hitarea'],
+		featureType: 'counter',
+		formatPopup: (p) => {
+			const lastCount = p.lastCount != null ? Number(p.lastCount).toLocaleString('fr-FR') : '?';
+			const lastMonth = p.lastMonth
+				? new Date(p.lastMonth).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+				: '';
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.bike('#1e3a5f')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name}</span>
+						${p.arrondissement ? `<span class="text-xs text-gray-500">${p.arrondissement}</span>` : ''}
+						${lastMonth ? `<span class="text-xs mt-1">${lastCount} vélos/mois en ${lastMonth}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+	{
+		id: 'counters-voiture',
+		label: 'Compteurs voiture',
+		category: 'projects',
+		interactableLayerIds: ['counters-voiture-hitarea'],
+		featureType: 'counter',
+		formatPopup: (p) => {
+			const lastCount = p.lastCount != null ? Number(p.lastCount).toLocaleString('fr-FR') : '?';
+			const lastMonth = p.lastMonth
+				? new Date(p.lastMonth).toLocaleDateString('fr-FR', { month: 'long', year: 'numeric' })
+				: '';
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.bus('#dc2626')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name}</span>
+						${p.arrondissement ? `<span class="text-xs text-gray-500">${p.arrondissement}</span>` : ''}
+						${lastMonth ? `<span class="text-xs mt-1">${lastCount} voitures/mois en ${lastMonth}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+
 	{
 		id: 'target-network',
 		label: 'Réseau Cible LVV 2040',
