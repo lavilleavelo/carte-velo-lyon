@@ -63,6 +63,11 @@
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
 	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
+	import {
+		navigationProviders,
+		loadDefaultProvider,
+		saveDefaultProvider,
+	} from '$lib/config/navigationProviders';
 	import CountersLayer from '$lib/components/map/layers/CountersLayer.svelte';
 	import { createQuickFilterState } from '$lib/config/quickFilters.svelte';
 
@@ -345,6 +350,7 @@
 
 	let visibleOptionalCategories = $state(loadOptionalCategories());
 	let showConfigDialog = $state(false);
+	let defaultNavProvider = $state(loadDefaultProvider());
 
 	function toggleOptionalCategory(category: string) {
 		if (visibleOptionalCategories.has(category)) {
@@ -978,7 +984,9 @@
 				<FeatureInfo
 					features={selectedFeatures}
 					coordinates={selectedLngLat}
+					{defaultNavProvider}
 					onOpenPanoramax={() => (showPanoramax = true)}
+					onOpenSettings={() => (showConfigDialog = true)}
 					onClose={() => {
 						selectedFeatures = [];
 						hoveredPhotoLocation = null;
@@ -1294,6 +1302,7 @@
 		x={contextMenuX}
 		y={contextMenuY}
 		lngLat={contextMenuLngLat}
+		{defaultNavProvider}
 		onClose={closeContextMenu}
 		onPhotoFound={(loc) => (contextMenuPhotoLocation = loc)}
 	/>
@@ -1407,6 +1416,32 @@
 						</div>
 					{/each}
 				</div>
+			</div>
+
+			<hr class="border-gray-100" />
+
+			<div>
+				<h3 class="mb-2 text-sm font-semibold text-gray-900">Navigation</h3>
+				<p class="mb-3 text-xs text-gray-500">Application par défaut pour ouvrir un lieu.</p>
+				<Select.Root
+					type="single"
+					value={defaultNavProvider}
+					onValueChange={(value) => {
+						if (value) {
+							defaultNavProvider = value;
+							saveDefaultProvider(value);
+						}
+					}}
+				>
+					<Select.Trigger size="sm" class="w-full text-sm">
+						{navigationProviders.find((p) => p.id === defaultNavProvider)?.label ?? 'OpenStreetMap'}
+					</Select.Trigger>
+					<Select.Content>
+						{#each navigationProviders as provider}
+							<Select.Item value={provider.id} label={provider.label} />
+						{/each}
+					</Select.Content>
+				</Select.Root>
 			</div>
 		</div>
 	</Dialog.Content>

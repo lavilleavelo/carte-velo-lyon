@@ -10,11 +10,19 @@
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
-	import Map from '@lucide/svelte/icons/map';
+	import NavigationButtons from './NavigationButtons.svelte';
 	import { searchPanoramaxPhoto } from '$lib/utils/panoramax';
 	import { createQuery } from '@tanstack/svelte-query';
 
-	let { features = [], coordinates, onClose, onOpenPanoramax, onPhotoHover } = $props();
+	let {
+		features = [],
+		coordinates,
+		onClose,
+		onOpenPanoramax,
+		onPhotoHover,
+		onOpenSettings,
+		defaultNavProvider,
+	} = $props();
 
 	let currentIndex = $state(0);
 	let selectedFeature = $derived(features[currentIndex]);
@@ -133,7 +141,7 @@
 	</div>
 
 	<div
-		class="flex max-h-[60vh] flex-col overflow-y-auto md:max-h-[400px]"
+		class="flex max-h-[50vh] flex-col overflow-y-auto md:max-h-[350px]"
 		class:pt-12={!panoramaxQuery.data}
 	>
 		<div class="p-4">
@@ -141,20 +149,17 @@
 				{@const Component = getComponent(selectedFeature.type)}
 				<Component properties={selectedFeature.properties} />
 			{/if}
-
-			{#if coordinates}
-				<div class="mt-2 pt-2">
-					<a
-						href={`https://www.openstreetmap.org/query?lat=${coordinates.lat}&lon=${coordinates.lng}&mlat=${coordinates.lat}&mlon=${coordinates.lng}#map=19/${coordinates.lat}/${coordinates.lng}`}
-						target="_blank"
-						rel="noopener noreferrer"
-						class="flex w-full items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 py-2.5 text-sm font-medium text-gray-700 transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-[0.98]"
-					>
-						<Map size={16} />
-						<span>Voir sur OpenStreetMap</span>
-					</a>
-				</div>
-			{/if}
 		</div>
 	</div>
+
+	{#if coordinates}
+		<div class="border-t border-gray-100 px-4 py-2">
+			<NavigationButtons
+				lat={coordinates.lat}
+				lng={coordinates.lng}
+				defaultProviderId={defaultNavProvider}
+				{onOpenSettings}
+			/>
+		</div>
+	{/if}
 </div>

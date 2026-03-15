@@ -3,10 +3,16 @@
 	import { searchPanoramaxPhoto } from '$lib/utils/panoramax';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import MapIcon from '@lucide/svelte/icons/map';
-	import Globe from '@lucide/svelte/icons/globe';
+	import MapPin from '@lucide/svelte/icons/map-pin';
 	import User from '@lucide/svelte/icons/user';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
 	import Camera from '@lucide/svelte/icons/camera';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import {
+		navigationProviders,
+		getProvider,
+		getProviderUrl,
+	} from '$lib/config/navigationProviders';
 
 	interface Props {
 		visible: boolean;
@@ -14,17 +20,31 @@
 		y: number;
 		lngLat: { lng: number; lat: number } | null;
 		zoom?: number;
+		defaultNavProvider: string;
 		onClose: () => void;
 		onPhotoFound?: (coordinates: { lng: number; lat: number }) => void;
 	}
 
-	let { visible, x, y, lngLat, zoom = 13, onClose, onPhotoFound }: Props = $props();
+	let {
+		visible,
+		x,
+		y,
+		lngLat,
+		zoom = 13,
+		defaultNavProvider,
+		onClose,
+		onPhotoFound,
+	}: Props = $props();
 
 	let showPanoramaxViewer = $state(false);
+	let showMoreApps = $state(false);
 	let menuElement: HTMLDivElement | undefined = $state();
 
+	const defaultProvider = $derived(getProvider(defaultNavProvider));
+	const otherProviders = $derived(navigationProviders.filter((p) => p.id !== defaultNavProvider));
+
 	let adjustedPosition = $derived.by(() => {
-		const menuWidth = 320; // w-80 = 20rem = 320px
+		const menuWidth = 320;
 		const menuHeight = menuElement?.offsetHeight ?? 300;
 		const padding = 8;
 
@@ -52,7 +72,6 @@
 			return await searchPanoramaxPhoto([lngLat.lng, lngLat.lat]);
 		},
 		enabled: visible && lngLat !== null,
-		enabled: visible && lngLat !== null,
 		retry: 1,
 	}));
 
@@ -63,6 +82,10 @@
 				lat: panoramaxQuery.data.coordinates[1],
 			});
 		}
+	});
+
+	$effect(() => {
+		if (!visible) showMoreApps = false;
 	});
 
 	function openPanoramaxViewer() {
@@ -81,18 +104,18 @@
 		onClose();
 	}
 
-	function openInOpenStreetMap() {
+	function openInGoogleStreetView() {
 		if (lngLat) {
-			const url = `https://www.openstreetmap.org/query?mlat=${lngLat.lat}&mlon=${lngLat.lng}#map=19/${lngLat.lat}/${lngLat.lng}`;
+			const url = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lngLat.lat},${lngLat.lng}`;
 			window.open(url, '_blank');
 		}
 		onClose();
 	}
 
-	function openInGoogleStreetView() {
+	function openInProvider(providerId: string) {
 		if (lngLat) {
-			const url = `https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${lngLat.lat},${lngLat.lng}`;
-			window.open(url, '_blank');
+			const provider = getProvider(providerId);
+			window.open(getProviderUrl(provider, lngLat.lat, lngLat.lng), '_blank');
 		}
 		onClose();
 	}
@@ -158,22 +181,47 @@
 				class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
 			>
 				<MapIcon class="h-4 w-4" />
-				Ouvrir dans Panoramax
-			</button>
-			<button
-				onclick={openInOpenStreetMap}
-				class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
-			>
-				<Globe class="h-4 w-4" />
-				Ouvrir dans OpenStreetMap
+				Panoramax
 			</button>
 			<button
 				onclick={openInGoogleStreetView}
 				class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
 			>
 				<User class="h-4 w-4" />
-				Ouvrir dans Google Street View
+				Google Street View
 			</button>
+
+			<div class="border-t border-gray-100"></div>
+
+			<button
+				onclick={() => openInProvider(defaultNavProvider)}
+				class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
+			>
+				<MapPin class="h-4 w-4" />
+				Ouvrir dans {defaultProvider.label}
+			</button>
+
+			<button
+				onclick={() => (showMoreApps = !showMoreApps)}
+				class="flex w-full items-center gap-2 px-4 py-2 text-left text-xs text-gray-400 transition-colors hover:bg-gray-50 hover:text-gray-600"
+			>
+				<ChevronDown class="h-3 w-3 transition-transform {showMoreApps ? 'rotate-180' : ''}" />
+				Autres applications
+			</button>
+
+			{#if showMoreApps}
+				<div class="border-t border-gray-50">
+					{#each otherProviders as provider}
+						<button
+							onclick={() => openInProvider(provider.id)}
+							class="flex w-full items-center gap-2 px-4 py-1.5 pl-8 text-left text-sm text-gray-500 transition-colors hover:bg-gray-50 hover:text-gray-700"
+						>
+							{provider.label}
+						</button>
+					{/each}
+				</div>
+			{/if}
+
 			{#if lngLat}
 				<div class="border-t border-gray-100 px-4 py-2 text-xs text-gray-500">
 					{lngLat.lat.toFixed(5)}, {lngLat.lng.toFixed(5)}

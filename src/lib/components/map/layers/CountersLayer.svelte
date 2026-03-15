@@ -34,7 +34,7 @@
 					const lastCount = counter.counts?.length
 						? counter.counts[counter.counts.length - 1]
 						: null;
-					const linkSlug = counter.cyclopolisId || counter.slug;
+					const linkSlug = counter.slug;
 					return {
 						type: 'Feature' as const,
 						properties: {
