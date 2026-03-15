@@ -28,12 +28,8 @@
 			isLayerVisible('parking-lpa'),
 	}));
 
-	const visibleFeatures = $derived(parkingQuery.data?.features || []);
-
-	const clusterFeatures = $derived(visibleFeatures.filter((f) => f.properties.type === 'arceaux'));
-
-	const unclusterFeatures = $derived(
-		visibleFeatures.filter((f) => f.properties.type !== 'arceaux'),
+	const parkingData = $derived(
+		parkingQuery.data || { type: 'FeatureCollection' as const, features: [] },
 	);
 </script>
 
@@ -51,80 +47,34 @@
 		'parking-lpa': parkingLpaIcon,
 	}}
 >
-	<GeoJSONSource
-		id="parking-arceaux-source"
-		data={{
-			type: 'FeatureCollection',
-			features: clusterFeatures,
-		}}
-		cluster={true}
-		clusterMaxZoom={14}
-		clusterRadius={50}
-	>
-		<CircleLayer
-			id="parking-cluster-circle"
-			filter={['has', 'point_count']}
-			layout={{
-				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
-			}}
-			minzoom={13}
-			paint={{
-				'circle-color': [
-					'step',
-					['get', 'point_count'],
-					'#4ade80',
-					20,
-					'#22c55e',
-					50,
-					'#16a34a',
-					100,
-					'#15803d',
-				],
-				'circle-radius': ['step', ['get', 'point_count'], 12, 10, 18, 12, 25, 20, 15],
-				'circle-opacity': 0.7,
-				'circle-stroke-width': 1,
-				'circle-stroke-color': '#fff',
-			}}
-		/>
-
-		<SymbolLayer
-			id="parking-cluster-count"
-			filter={['has', 'point_count']}
-			layout={{
-				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
-				'text-field': '{point_count_abbreviated}',
-				'text-size': 10,
-				'text-font': ['Open Sans Bold'],
-			}}
-			paint={{
-				'text-color': '#ffffff',
-			}}
-		/>
-
+	<GeoJSONSource id="parking-source" data={parkingData}>
+		<!-- Arceaux: small dots, only visible at higher zoom -->
 		<CircleLayer
 			id="parking-layer-circles"
-			filter={['!', ['has', 'point_count']]}
+			filter={['==', ['get', 'type'], 'arceaux']}
+			minzoom={14}
 			layout={{
 				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
 			}}
 			paint={{
-				'circle-opacity': 0.8,
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 2, 15, 4, 18, 6],
-				'circle-color': '#4ade80', // Green
+				'circle-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.4, 16, 0.8],
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 2, 16, 4, 18, 6],
+				'circle-color': '#4ade80',
 				'circle-stroke-color': '#166534',
-				'circle-stroke-width': 1,
+				'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 14, 0, 16, 1],
 			}}
 		/>
 
 		<CircleLayer
 			id="parking-layer-circles-hitarea"
-			filter={['!', ['has', 'point_count']]}
+			filter={['==', ['get', 'type'], 'arceaux']}
+			minzoom={14}
 			layout={{
 				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
 			}}
 			paint={{
 				'circle-opacity': 0,
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 12, 15, 16, 18, 20],
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 8, 16, 14, 18, 20],
 				'circle-color': 'transparent',
 			}}
 			onmouseenter={handleMouseEnter}
@@ -133,8 +83,8 @@
 
 		<SymbolLayer
 			id="parking-layer-capacity"
-			filter={['all', ['!', ['has', 'point_count']], ['has', 'capacite']]}
-			minzoom={16}
+			filter={['all', ['==', ['get', 'type'], 'arceaux'], ['has', 'capacite']]}
+			minzoom={17}
 			layout={{
 				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
 				'text-field': ['to-string', ['get', 'capacite']],
@@ -149,22 +99,15 @@
 				'text-halo-width': 1,
 			}}
 		/>
-	</GeoJSONSource>
 
-	<GeoJSONSource
-		id="parking-others-source"
-		data={{
-			type: 'FeatureCollection',
-			features: unclusterFeatures,
-		}}
-	>
 		<SymbolLayer
 			id="parking-layer-roof"
 			filter={['==', ['get', 'type'], 'arceaux-couverts']}
+			minzoom={13}
 			layout={{
 				visibility: isLayerVisible('parking-couverts') ? 'visible' : 'none',
 				'icon-image': 'parking-covered',
-				'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.2, 17, 0.5],
+				'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.15, 15, 0.3, 17, 0.5],
 				'icon-allow-overlap': true,
 				'text-field': ['step', ['zoom'], '', 16, ['to-string', ['get', 'capacite']]],
 				'text-offset': [0, 1.2],
@@ -176,12 +119,13 @@
 		<CircleLayer
 			id="parking-layer-roof-hitarea"
 			filter={['==', ['get', 'type'], 'arceaux-couverts']}
+			minzoom={13}
 			layout={{
 				visibility: isLayerVisible('parking-couverts') ? 'visible' : 'none',
 			}}
 			paint={{
 				'circle-opacity': 0,
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 12, 15, 18, 18, 24],
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 13, 8, 15, 14, 18, 20],
 				'circle-color': 'transparent',
 			}}
 			onmouseenter={handleMouseEnter}
@@ -191,10 +135,11 @@
 		<SymbolLayer
 			id="parking-layer-box"
 			filter={['==', ['get', 'type'], 'box']}
+			minzoom={15}
 			layout={{
 				visibility: isLayerVisible('parking-box') ? 'visible' : 'none',
 				'icon-image': 'parking-box',
-				'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.2, 17, 0.3],
+				'icon-size': ['interpolate', ['linear'], ['zoom'], 15, 0.2, 17, 0.3],
 				'icon-allow-overlap': true,
 			}}
 		/>
@@ -202,12 +147,13 @@
 		<CircleLayer
 			id="parking-layer-box-hitarea"
 			filter={['==', ['get', 'type'], 'box']}
+			minzoom={15}
 			layout={{
 				visibility: isLayerVisible('parking-box') ? 'visible' : 'none',
 			}}
 			paint={{
 				'circle-opacity': 0,
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 12, 12, 15, 18, 18, 24],
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 15, 12, 18, 20],
 				'circle-color': 'transparent',
 			}}
 			onmouseenter={handleMouseEnter}
@@ -255,7 +201,7 @@
 				'text-font': ['Open Sans Bold'],
 			}}
 			paint={{
-				'text-color': '#1e40af', // Blue-800
+				'text-color': '#1e40af',
 				'text-halo-color': '#ffffff',
 				'text-halo-width': 2,
 			}}

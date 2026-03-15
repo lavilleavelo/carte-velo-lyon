@@ -6,12 +6,10 @@ export interface ParkingProperties {
 	nom: string;
 	adresse: string;
 	commune: string;
-	avancement: string;
 	gestionnaire: string;
-	mobiliervelo: string; // "Autre", "Box", "Consigne collective", "Consigne individuelle", "En U inversé", "Wilmotte"
+	mobiliervelo: string;
 	localisation: string;
 	abrite: boolean;
-	duree: string;
 	nbarceaux: number | null;
 	capacite: number;
 	anneerealisation: number | null;
@@ -21,12 +19,11 @@ export interface ParkingProperties {
 	observation: string;
 }
 
-// TODO: fix me
 export function processParkingData(
 	features: Feature<Point, any>[],
 ): FeatureCollection<Point, ParkingProperties> {
 	const processedFeatures = features
-		.filter((f) => f.properties.validite === 'Validé') // Filter out non-validated if needed, user said "Les stationnements vélo (représentés par des ronds verts)"
+		.filter((f) => f.properties.validite === 'Validé')
 		.map((feature) => {
 			const props = feature.properties;
 			const gid = props.gid;
@@ -37,23 +34,27 @@ export function processParkingData(
 			let type: string;
 			let icon: string;
 
-			const mv = props.mobiliervelo;
-			const localisation = props.localisation;
+			const mv = (props.mobiliervelo || '').toLowerCase();
+			const localisation = props.localisation || '';
 
-			if (localisation === 'Parc relais en ouvrage') {
+			if (mv === 'vélostation' || localisation === 'Parc relais en ouvrage') {
 				type = 'velostation';
 				icon = 'velostation';
 			} else if (localisation === 'Parking en ouvrage') {
 				type = 'lpa';
 				icon = 'lpa';
-			} else if (mv === 'Box' || mv === 'Consigne individuelle' || mv === 'Consigne collective') {
+			} else if (
+				mv.includes('box') ||
+				mv.includes('consigne') ||
+				mv.includes('espace vélo sécurisé') ||
+				mv.includes('local vélo sécurisé')
+			) {
 				type = 'box';
 				icon = 'lock';
 			} else if (props.abrite) {
 				type = 'arceaux-couverts';
 				icon = 'roof';
 			} else {
-				// Includes 'En U inversé', 'Wilmotte', 'Autre' and defaults
 				type = 'arceaux';
 				icon = 'circle';
 			}
@@ -101,18 +102,15 @@ export function processLPAParkingData(
 		.filter((f) => f.properties.capacitevelo > 0)
 		.map((feature) => {
 			const props = feature.properties;
-			// Map specific properties for LPA parking
 			const processedProps: ParkingProperties = {
 				gid: props.gid,
 				nom: props.nom,
 				adresse: props.voieentree || props.voiesortie || '',
 				commune: props.commune,
-				avancement: props.avancement,
 				gestionnaire: props.gestionnaire,
 				mobiliervelo: 'LPA',
 				localisation: props.situation,
-				abrite: true, // Generally covered in LPA/P+R
-				duree: props.typeparking,
+				abrite: true,
 				nbarceaux: null,
 				capacite: props.capacitevelo,
 				anneerealisation: null,
