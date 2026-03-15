@@ -120,8 +120,8 @@
 		zoom: 'number = 11',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
 		selected: type('number[]').default(() => []),
-		mapStyle: type('"positron" | "osm-bright" | "hybrid" | "cyclosm"').default(
-			() => 'osm-bright' as MapStyle,
+		mapStyle: type('"positron" | "osm-bright" | "cyclopolis" | "hybrid" | "cyclosm"').default(
+			() => 'cyclopolis' as MapStyle,
 		),
 		cyclewayReseau: type('string[]').default(() => []),
 		cyclewayType: type('string[]').default(() => []),

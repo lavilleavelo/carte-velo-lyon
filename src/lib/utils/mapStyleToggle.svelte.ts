@@ -1,6 +1,7 @@
 import hybridStyle from '$lib/components/map/hybrid-style.json';
+import cyclopolisStyle from '$lib/components/map/cyclopolis-style.json';
 
-export type MapStyle = 'positron' | 'osm-bright' | 'hybrid' | 'cyclosm';
+export type MapStyle = 'positron' | 'osm-bright' | 'hybrid' | 'cyclosm' | 'cyclopolis';
 
 const cyclosmAttribution =
 	'<a href="https://cyclosm.org" target="_blank">CyclOSM</a> (<a href="https://www.cyclosm.org/legend.html" target="_blank">Legende</a>)';
@@ -43,6 +44,7 @@ const cyclosmStyle = {
 export const MAP_STYLES: Record<MapStyle, any> = {
 	positron: 'https://tiles.openfreemap.org/styles/positron',
 	'osm-bright': 'https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json',
+	cyclopolis: cyclopolisStyle,
 	hybrid: hybridStyle,
 	cyclosm: cyclosmStyle,
 };
@@ -54,7 +56,7 @@ export function createMapStyleState(
 	let mapStyle = $state<MapStyle>(initialStyle);
 
 	function toggleMapStyle() {
-		const styles: MapStyle[] = ['positron', 'osm-bright', 'hybrid', 'cyclosm'];
+		const styles: MapStyle[] = ['positron', 'osm-bright', 'cyclopolis', 'hybrid', 'cyclosm'];
 		const currentIndex = styles.indexOf(mapStyle);
 		mapStyle = styles[(currentIndex + 1) % styles.length];
 		onChange?.(mapStyle);
