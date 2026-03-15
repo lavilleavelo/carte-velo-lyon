@@ -10,6 +10,14 @@
 		%sveltekit.head%
 	</head>
 	<body data-sveltekit-preload-data="hover">
+		<script>
+			document.documentElement.classList.add('settings-loading');
+		</script>
+		<style>
+			.settings-loading [data-settings-dependent] {
+				visibility: hidden !important;
+			}
+		</style>
 		<div style="display: contents">%sveltekit.body%</div>
 	</body>
 </html>

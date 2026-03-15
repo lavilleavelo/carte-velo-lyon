@@ -33,6 +33,18 @@ export const presetQuickFilters: QuickFilter[] = [
 		layerIds: ['metro', 'tram', 'bus-tb'],
 	},
 	{
+		id: 'qf-pumps',
+		label: 'Pompes',
+		color: '#e11d48',
+		layerIds: ['pumps'],
+	},
+	{
+		id: 'qf-fountains',
+		label: 'Fontaines',
+		color: '#3b82f6',
+		layerIds: ['water-fountains'],
+	},
+	{
 		id: 'qf-communes',
 		label: 'Communes',
 		color: '#6b7280',
@@ -71,7 +83,8 @@ const DEFAULT_QF_IDS = [
 	'qf-velov',
 	'qf-parking',
 	'qf-transport',
-	'qf-services',
+	'qf-pumps',
+	'qf-fountains',
 ];
 const QF_STORAGE_KEY = 'quickFilterIds';
 
@@ -152,6 +165,11 @@ export function createQuickFilterState(
 		saveIds(activeIds);
 	}
 
+	function resetToDefaults() {
+		activeIds = [...DEFAULT_QF_IDS];
+		saveIds(activeIds);
+	}
+
 	function isActive(qf: QuickFilter): boolean {
 		return qf.layerIds.some((id) => visibleLayersFn().has(id));
 	}
@@ -185,6 +203,7 @@ export function createQuickFilterState(
 		toggleVisibility,
 		addCustom,
 		remove,
+		resetToDefaults,
 		isActive,
 		toggle,
 	};

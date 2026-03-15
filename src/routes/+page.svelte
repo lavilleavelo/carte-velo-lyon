@@ -923,6 +923,7 @@
 	onMount(() => {
 		document.body.style.overflow = 'hidden';
 		document.documentElement.style.overflow = 'hidden';
+		document.documentElement.classList.remove('settings-loading');
 		return () => {
 			document.body.style.overflow = '';
 			document.documentElement.style.overflow = '';
@@ -943,7 +944,7 @@
 			<div class="rounded-lg shadow-md">
 				<Geocoder onSelect={handleGeocoderSelect} bbox={LYON_BOUNDS} />
 			</div>
-			<div class="flex flex-wrap items-center justify-center gap-1.5">
+			<div class="flex flex-wrap items-center justify-center gap-1.5" data-settings-dependent>
 				{#each qf.activeFilters as qfItem}
 					<button
 						onclick={() => qf.toggle(qfItem)}
@@ -1319,12 +1320,23 @@
 	<Dialog.Content>
 		<Dialog.Header>
 			<Dialog.Title>Configuration</Dialog.Title>
-			<Dialog.Description>Personnalisez l'affichage de la carte.</Dialog.Description>
+			<Dialog.Description>
+				Personnalisez l'affichage de la carte. Les paramètres sont enregistrés sur cet appareil
+				uniquement.
+			</Dialog.Description>
 		</Dialog.Header>
 
 		<div class="flex flex-col gap-5 py-2">
 			<div>
-				<h3 class="mb-2 text-sm font-semibold text-gray-900">Raccourcis rapides</h3>
+				<div class="mb-2 flex items-center justify-between">
+					<h3 class="text-sm font-semibold text-gray-900">Raccourcis rapides</h3>
+					<button
+						onclick={() => qf.resetToDefaults()}
+						class="text-[11px] text-gray-400 transition-colors hover:text-gray-600 hover:underline"
+					>
+						Réinitialiser
+					</button>
+				</div>
 				<p class="mb-3 text-xs text-gray-500">
 					Choisissez les filtres affichés sous la barre de recherche.
 				</p>
