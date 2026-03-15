@@ -486,6 +486,20 @@
 		return needed;
 	});
 
+	$effect(() => {
+		let changed = false;
+		for (const category of categoriesNeededByUrl) {
+			if (!visibleOptionalCategories.has(category)) {
+				visibleOptionalCategories.add(category);
+				changed = true;
+			}
+		}
+		if (changed) {
+			visibleOptionalCategories = new Set(visibleOptionalCategories);
+			saveOptionalCategories(visibleOptionalCategories);
+		}
+	});
+
 	const filteredLayersByCategory = $derived.by(() => {
 		const filtered = new Map<string, Array<(typeof availableLayers)[number]>>();
 		for (const [category, layers] of layersByCategory) {
