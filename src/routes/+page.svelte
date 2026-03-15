@@ -269,7 +269,7 @@
 		},
 		{
 			id: 'target-network',
-			label: 'Réseau Cible 2040',
+			label: 'Réseau Cible LVV 2040',
 			color: '#9333ea',
 			category: 'Projets',
 			hasSubFilters: true,
@@ -1053,10 +1053,18 @@
 
 			{#if innerWidth >= 768}
 				<GeolocateControl position="top-right" />
-				<MapStyleToggle onToggle={mapStyleState.toggleMapStyle} position="top-right" />
+				<MapStyleToggle
+					currentStyle={mapStyleState.mapStyle}
+					onSelect={mapStyleState.setMapStyle}
+					position="top-right"
+				/>
 			{:else}
 				<GeolocateControl position="bottom-right" />
-				<MapStyleToggle onToggle={mapStyleState.toggleMapStyle} position="bottom-right" />
+				<MapStyleToggle
+					currentStyle={mapStyleState.mapStyle}
+					onSelect={mapStyleState.setMapStyle}
+					position="bottom-right"
+				/>
 			{/if}
 
 			{#if geocoderHighlight}

@@ -239,7 +239,7 @@ export const layerConfigs: LayerConfig[] = [
 
 	{
 		id: 'target-network',
-		label: 'Réseau Cible 2040',
+		label: 'Réseau Cible LVV 2040',
 		category: 'projects',
 		interactableLayerIds: ['target-network-hitarea'],
 		featureType: 'target-network',
