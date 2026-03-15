@@ -349,7 +349,7 @@
 		params.layers = compactLayers(layers);
 	}
 
-	const quickFilters = [
+	const allQuickFilters = [
 		{
 			id: 'qf-vl',
 			label: 'VL',
@@ -376,13 +376,70 @@
 			color: '#933591',
 			layerIds: ['metro', 'tram', 'bus-tb'],
 		},
+		{
+			id: 'qf-osm-vl',
+			label: 'VL OSM',
+			color: '#e74c3c',
+			layerIds: Array.from({ length: 12 }, (_, i) => `osm-vl-${i + 1}`),
+		},
+		{
+			id: 'qf-communes',
+			label: 'Communes',
+			color: '#6b7280',
+			layerIds: ['communes'],
+		},
+		{
+			id: 'qf-services',
+			label: 'Services',
+			color: '#e11d48',
+			layerIds: ['pumps', 'water-fountains'],
+		},
 	] as const;
 
-	function isQuickFilterActive(qf: (typeof quickFilters)[number]): boolean {
+	const defaultQuickFilterIds = ['qf-vl', 'qf-pistes', 'qf-velov', 'qf-parking', 'qf-transport'];
+	const QF_STORAGE_KEY = 'quickFilterIds';
+
+	function loadQuickFilterIds(): string[] {
+		if (typeof globalThis.localStorage === 'undefined') return defaultQuickFilterIds;
+		try {
+			const stored = localStorage.getItem(QF_STORAGE_KEY);
+			if (stored) {
+				const parsed = JSON.parse(stored) as string[];
+				const validIds = new Set(allQuickFilters.map((qf) => qf.id));
+				const filtered = parsed.filter((id) => validIds.has(id));
+				return filtered.length > 0 ? filtered : defaultQuickFilterIds;
+			}
+		} catch {}
+		return defaultQuickFilterIds;
+	}
+
+	function saveQuickFilterIds(ids: string[]) {
+		if (typeof globalThis.localStorage === 'undefined') return;
+		try {
+			localStorage.setItem(QF_STORAGE_KEY, JSON.stringify(ids));
+		} catch {}
+	}
+
+	let activeQuickFilterIds = $state(loadQuickFilterIds());
+
+	function toggleQuickFilterVisibility(id: string) {
+		if (activeQuickFilterIds.includes(id)) {
+			activeQuickFilterIds = activeQuickFilterIds.filter((qfId) => qfId !== id);
+		} else {
+			activeQuickFilterIds = [...activeQuickFilterIds, id];
+		}
+		saveQuickFilterIds(activeQuickFilterIds);
+	}
+
+	const quickFilters = $derived(
+		allQuickFilters.filter((qf) => activeQuickFilterIds.includes(qf.id)),
+	);
+
+	function isQuickFilterActive(qf: (typeof allQuickFilters)[number]): boolean {
 		return qf.layerIds.some((id) => visibleLayers.has(id));
 	}
 
-	function toggleQuickFilter(qf: (typeof quickFilters)[number]) {
+	function toggleQuickFilter(qf: (typeof allQuickFilters)[number]) {
 		const currentLayers = new Set(visibleLayers);
 		const allActive = qf.layerIds.every((id) => currentLayers.has(id));
 
@@ -963,7 +1020,7 @@
 				{#each quickFilters as qf}
 					<button
 						onclick={() => toggleQuickFilter(qf)}
-						class="rounded-full px-2.5 py-1 text-xs font-semibold shadow-sm transition-all active:scale-95"
+						class="rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-sm transition-all active:scale-95"
 						style="
 							background-color: {isQuickFilterActive(qf) ? qf.color : 'white'};
 							color: {isQuickFilterActive(qf) ? 'white' : qf.color};
@@ -1328,28 +1385,59 @@
 <Dialog.Root bind:open={showConfigDialog}>
 	<Dialog.Content>
 		<Dialog.Header>
-			<Dialog.Title>Couches supplémentaires</Dialog.Title>
-			<Dialog.Description>
-				Sélectionnez les couches à afficher dans le panneau de filtres.
-			</Dialog.Description>
+			<Dialog.Title>Configuration</Dialog.Title>
+			<Dialog.Description>Personnalisez l'affichage de la carte.</Dialog.Description>
 		</Dialog.Header>
-		<div class="flex flex-col gap-3 py-2">
-			{#each optionalCategories as category}
-				<div class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50">
-					<Checkbox
-						id={`config-${category}`}
-						checked={visibleOptionalCategories.has(category)}
-						onCheckedChange={() => toggleOptionalCategory(category)}
-						class="border-gray-300 data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy"
-					/>
-					<Label
-						for={`config-${category}`}
-						class="cursor-pointer text-sm font-medium text-gray-700"
-					>
-						{category}
-					</Label>
+
+		<div class="flex flex-col gap-5 py-2">
+			<div>
+				<h3 class="mb-2 text-sm font-semibold text-gray-900">Raccourcis rapides</h3>
+				<p class="mb-3 text-xs text-gray-500">
+					Choisissez les filtres affichés sous la barre de recherche.
+				</p>
+				<div class="flex flex-wrap gap-2">
+					{#each allQuickFilters as qf}
+						<button
+							onclick={() => toggleQuickFilterVisibility(qf.id)}
+							class="rounded-full px-2.5 py-1 text-xs font-semibold transition-all active:scale-95"
+							style="
+								background-color: {activeQuickFilterIds.includes(qf.id) ? qf.color : 'white'};
+								color: {activeQuickFilterIds.includes(qf.id) ? 'white' : qf.color};
+								border: 1.5px solid {qf.color};
+							"
+						>
+							{qf.label}
+						</button>
+					{/each}
 				</div>
-			{/each}
+			</div>
+
+			<hr class="border-gray-100" />
+
+			<div>
+				<h3 class="mb-2 text-sm font-semibold text-gray-900">Couches supplémentaires</h3>
+				<p class="mb-3 text-xs text-gray-500">
+					Affichez des catégories avancées dans le panneau de filtres.
+				</p>
+				<div class="flex flex-col gap-2">
+					{#each optionalCategories as category}
+						<div class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50">
+							<Checkbox
+								id={`config-${category}`}
+								checked={visibleOptionalCategories.has(category)}
+								onCheckedChange={() => toggleOptionalCategory(category)}
+								class="border-gray-300 data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy"
+							/>
+							<Label
+								for={`config-${category}`}
+								class="cursor-pointer text-sm font-medium text-gray-700"
+							>
+								{category}
+							</Label>
+						</div>
+					{/each}
+				</div>
+			</div>
 		</div>
 	</Dialog.Content>
 </Dialog.Root>
