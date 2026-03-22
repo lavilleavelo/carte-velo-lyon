@@ -186,8 +186,7 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 		],
 	},
 	'Établissements scolaires': {
-		description:
-			'Écoles maternelles, élémentaires, collèges et lycées de la Métropole de Lyon.',
+		description: 'Écoles maternelles, élémentaires, collèges et lycées de la Métropole de Lyon.',
 		source: 'OpenStreetMap contributors (Overpass API)',
 		sourceUrl: 'https://wiki.openstreetmap.org/wiki/FR:Tag:amenity%3Dschool',
 		links: [

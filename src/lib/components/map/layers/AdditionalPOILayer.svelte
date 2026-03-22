@@ -13,8 +13,7 @@
 		| 'bench'
 		| 'picnic-table'
 		| 'pharmacy'
-		| 'defibrillator'
-;
+		| 'defibrillator';
 
 	function classifyPOI(tags: Record<string, string>): POIType | null {
 		// Local bike services — order matters for specificity
@@ -24,8 +23,7 @@
 			const op = (tags.operator || '').toLowerCase();
 			const net = (tags.network || '').toLowerCase();
 			const name = (tags.name || '').toLowerCase();
-			if (op.includes('jcdecaux') || net.includes("vélo'v") || name.includes("vélo'v"))
-				return null;
+			if (op.includes('jcdecaux') || net.includes("vélo'v") || name.includes("vélo'v")) return null;
 			return 'loueur';
 		}
 		if (tags.shop === 'bicycle') return 'revendeur';
@@ -116,16 +114,48 @@
 
 	const poiTypes: POITypeDef[] = [
 		// Local (blue squares)
-		{ type: 'veloecole', layerId: 'local-veloecole', color: LOCAL_COLOR, label: 'VÉ', shape: 'square' },
+		{
+			type: 'veloecole',
+			layerId: 'local-veloecole',
+			color: LOCAL_COLOR,
+			label: 'VÉ',
+			shape: 'square',
+		},
 		{ type: 'atelier', layerId: 'local-atelier', color: LOCAL_COLOR, label: 'At', shape: 'square' },
-		{ type: 'revendeur', layerId: 'local-revendeur', color: LOCAL_COLOR, label: 'Re', shape: 'square' },
+		{
+			type: 'revendeur',
+			layerId: 'local-revendeur',
+			color: LOCAL_COLOR,
+			label: 'Re',
+			shape: 'square',
+		},
 		{ type: 'loueur', layerId: 'local-loueur', color: LOCAL_COLOR, label: 'Lo', shape: 'square' },
 		// Comfort (circles)
-		{ type: 'bench', layerId: 'poi-bench', color: '#78716c', label: '', shape: 'circle', minzoom: 13, iconScale: 0.5 },
-		{ type: 'picnic-table', layerId: 'poi-picnic-table', color: '#65a30d', label: 'P', shape: 'circle' },
+		{
+			type: 'bench',
+			layerId: 'poi-bench',
+			color: '#78716c',
+			label: '',
+			shape: 'circle',
+			minzoom: 13,
+			iconScale: 0.5,
+		},
+		{
+			type: 'picnic-table',
+			layerId: 'poi-picnic-table',
+			color: '#65a30d',
+			label: 'P',
+			shape: 'circle',
+		},
 		// Safety (circles)
 		{ type: 'pharmacy', layerId: 'poi-pharmacy', color: '#16a34a', label: '+', shape: 'circle' },
-		{ type: 'defibrillator', layerId: 'poi-defibrillator', color: '#dc2626', label: 'D', shape: 'circle' },
+		{
+			type: 'defibrillator',
+			layerId: 'poi-defibrillator',
+			color: '#dc2626',
+			label: 'D',
+			shape: 'circle',
+		},
 	];
 
 	function createSquareIcon(bgColor: string, text: string): HTMLCanvasElement {
@@ -216,7 +246,15 @@
 			layout={{
 				visibility: isLayerVisible(pt.layerId) ? 'visible' : 'none',
 				'icon-image': `poi-${pt.type}`,
-				'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.4 * (pt.iconScale ?? 1), 17, 0.8 * (pt.iconScale ?? 1)],
+				'icon-size': [
+					'interpolate',
+					['linear'],
+					['zoom'],
+					12,
+					0.4 * (pt.iconScale ?? 1),
+					17,
+					0.8 * (pt.iconScale ?? 1),
+				],
 				'icon-allow-overlap': true,
 			}}
 		/>
