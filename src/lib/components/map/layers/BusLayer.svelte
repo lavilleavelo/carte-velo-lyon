@@ -43,7 +43,7 @@
 		}}
 		paint={{
 			'line-color': '#FFFFFF',
-			'line-width': 3,
+			'line-width': 4.5,
 			'line-opacity': 1,
 		}}
 	/>
@@ -57,8 +57,8 @@
 		}}
 		paint={{
 			'line-color': ['get', 'color'],
-			'line-width': 1.5,
-			'line-opacity': 0.6,
+			'line-width': 2.5,
+			'line-opacity': 0.8,
 		}}
 	/>
 

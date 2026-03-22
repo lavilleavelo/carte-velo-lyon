@@ -1,10 +1,59 @@
-import { createCache } from 'async-cache-dedupe';
+const store = new Map<string, unknown>();
+const fetchers = new Map<string, () => Promise<unknown>>();
+const refreshing = new Set<string>();
 
-const cache = createCache({
-	ttl: 300,
-	stale: 300,
-	storage: { type: 'memory' },
-});
+async function refreshEntry(key: string): Promise<void> {
+	if (refreshing.has(key)) return;
+	const fetcher = fetchers.get(key);
+	if (!fetcher) return;
+	refreshing.add(key);
+	try {
+		const data = await fetcher();
+		store.set(key, data);
+	} catch (error) {
+		console.error(`[cache] background refresh failed for "${key}":`, error);
+	} finally {
+		refreshing.delete(key);
+	}
+}
+
+function registerEntry(key: string, fetcher: () => Promise<unknown>): void {
+	fetchers.set(key, fetcher);
+}
+
+async function getCached<T>(key: string): Promise<T> {
+	const cached = store.get(key);
+	if (cached !== undefined) {
+		return cached as T;
+	}
+	const fetcher = fetchers.get(key);
+	if (!fetcher) {
+		throw new Error(`[cache] no fetcher registered for "${key}"`);
+	}
+	const data = await fetcher();
+	store.set(key, data);
+	return data as T;
+}
+
+// Background refresh: every ~5min (with random jitter) re-fetch all populated entries
+const REFRESH_BASE_MS = 5 * 60 * 1000;
+const REFRESH_JITTER_MS = 60 * 1000;
+
+function scheduleNextRefresh(): void {
+	const delay = REFRESH_BASE_MS + Math.random() * REFRESH_JITTER_MS;
+	setTimeout(async () => {
+		const keys = [...store.keys()];
+		for (const key of keys) {
+			await refreshEntry(key);
+			await new Promise((r) => setTimeout(r, 1000 + Math.random() * 4000));
+		}
+		scheduleNextRefresh();
+	}, delay);
+}
+
+scheduleNextRefresh();
+
+// --- Data source definitions ---
 
 const GRAND_LYON_URLS = {
 	tram: 'https://data.grandlyon.com/geoserver/sytral/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=sytral:tcl_sytral.tcllignetram_2_0_0&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
@@ -24,31 +73,24 @@ const GRAND_LYON_URLS = {
 } as const;
 
 export type GrandLyonDataType = keyof typeof GRAND_LYON_URLS;
+export { GRAND_LYON_URLS };
 
-async function fetchGrandLyonData(type: GrandLyonDataType): Promise<unknown> {
-	const url = GRAND_LYON_URLS[type];
-	const response = await fetch(url);
-	if (!response.ok) {
-		throw new Error(`Failed to fetch ${type} data: ${response.statusText}`);
-	}
-	return response.json();
+for (const type of Object.keys(GRAND_LYON_URLS) as GrandLyonDataType[]) {
+	registerEntry(`grandlyon:${type}`, async () => {
+		const url = GRAND_LYON_URLS[type];
+		const response = await fetch(url);
+		if (!response.ok) {
+			throw new Error(`Failed to fetch ${type} data: ${response.statusText}`);
+		}
+		return response.json();
+	});
 }
-
-cache.define('grandLyonData', async (type: GrandLyonDataType) => {
-	return fetchGrandLyonData(type);
-});
-
-interface GrandLyonCache {
-	grandLyonData: (type: GrandLyonDataType) => Promise<unknown>;
-}
-
-const typedCache = cache as unknown as GrandLyonCache;
 
 export async function getCachedGrandLyonData(type: GrandLyonDataType): Promise<unknown> {
-	return typedCache.grandLyonData(type);
+	return getCached(`grandlyon:${type}`);
 }
 
-export { GRAND_LYON_URLS };
+// Voies Lyonnaises
 
 async function fetchVoieLyonnaise(lineNumber: number) {
 	const url = `https://raw.githubusercontent.com/lavilleavelo/cyclopolis/refs/heads/main/content/voies-cyclables/ligne-${lineNumber}.json`;
@@ -80,91 +122,59 @@ async function fetchAllVoiesLyonnaises(): Promise<Record<number, any>> {
 	);
 }
 
-const vlCache = createCache({
-	ttl: 300,
-	stale: 300,
-	storage: { type: 'memory' },
-});
-
-vlCache.define('voiesLyonnaises', async () => {
-	return fetchAllVoiesLyonnaises();
-});
-
-interface VLCache {
-	voiesLyonnaises: () => Promise<Record<number, any>>;
-}
-
-const typedVlCache = vlCache as unknown as VLCache;
+registerEntry('voiesLyonnaises', fetchAllVoiesLyonnaises);
 
 export async function getCachedVoiesLyonnaisesData(): Promise<Record<number, any>> {
-	return typedVlCache.voiesLyonnaises();
+	return getCached<Record<number, any>>('voiesLyonnaises');
 }
+
+// Overpass queries
 
 const OVERPASS_BBOX = '45.55,4.6,45.95,5.1';
-const OVERPASS_QUERY = `[out:json];nwr["cycle_network"="Les Voies Lyonnaises"](${OVERPASS_BBOX});out geom;`;
-const OVERPASS_URL = `https://overpass-api.de/api/interpreter?data=${encodeURIComponent(OVERPASS_QUERY)}`;
 
-async function fetchOverpassVL(): Promise<unknown> {
-	const response = await fetch(OVERPASS_URL);
-	if (!response.ok) {
-		throw new Error(`Failed to fetch Overpass data: ${response.statusText}`);
-	}
-	return response.json();
+function overpassFetcher(query: string): () => Promise<unknown> {
+	return async () => {
+		const response = await fetch('https://overpass-api.de/api/interpreter', {
+			method: 'POST',
+			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			body: `data=${encodeURIComponent(query)}`,
+		});
+		if (!response.ok) {
+			throw new Error(`Failed to fetch Overpass data: ${response.statusText}`);
+		}
+		return response.json();
+	};
 }
 
-const overpassCache = createCache({
-	ttl: 300,
-	stale: 300,
-	storage: { type: 'memory' },
-});
-
-overpassCache.define('overpassVL', async () => {
-	return fetchOverpassVL();
-});
-
-interface OverpassCache {
-	overpassVL: () => Promise<unknown>;
-}
-
-const typedOverpassCache = overpassCache as unknown as OverpassCache;
+const OVERPASS_VL_QUERY = `[out:json];nwr["cycle_network"="Les Voies Lyonnaises"](${OVERPASS_BBOX});out geom;`;
+registerEntry('overpassVL', overpassFetcher(OVERPASS_VL_QUERY));
 
 export async function getCachedOverpassVLData(): Promise<unknown> {
-	return typedOverpassCache.overpassVL();
+	return getCached('overpassVL');
 }
 
 const OVERPASS_TOILETS_QUERY = `[out:json][timeout:60];(node["amenity"="toilets"](${OVERPASS_BBOX});way["amenity"="toilets"](${OVERPASS_BBOX});relation["amenity"="toilets"](${OVERPASS_BBOX}););out center;`;
-
-async function fetchOverpassToilets(): Promise<unknown> {
-	const response = await fetch('https://overpass-api.de/api/interpreter', {
-		method: 'POST',
-		headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-		body: `data=${encodeURIComponent(OVERPASS_TOILETS_QUERY)}`,
-	});
-	if (!response.ok) {
-		throw new Error(`Failed to fetch Overpass toilets data: ${response.statusText}`);
-	}
-	return response.json();
-}
-
-const overpassToiletsCache = createCache({
-	ttl: 300,
-	stale: 300,
-	storage: { type: 'memory' },
-});
-
-overpassToiletsCache.define('overpassToilets', async () => {
-	return fetchOverpassToilets();
-});
-
-interface OverpassToiletsCache {
-	overpassToilets: () => Promise<unknown>;
-}
-
-const typedOverpassToiletsCache = overpassToiletsCache as unknown as OverpassToiletsCache;
+registerEntry('overpassToilets', overpassFetcher(OVERPASS_TOILETS_QUERY));
 
 export async function getCachedOverpassToiletsData(): Promise<unknown> {
-	return typedOverpassToiletsCache.overpassToilets();
+	return getCached('overpassToilets');
 }
+
+const OVERPASS_SCHOOLS_QUERY = `[out:json][timeout:60];(node["amenity"="kindergarten"](${OVERPASS_BBOX});way["amenity"="kindergarten"](${OVERPASS_BBOX});relation["amenity"="kindergarten"](${OVERPASS_BBOX});node["amenity"="school"](${OVERPASS_BBOX});way["amenity"="school"](${OVERPASS_BBOX});relation["amenity"="school"](${OVERPASS_BBOX}););out center;`;
+registerEntry('overpassSchools', overpassFetcher(OVERPASS_SCHOOLS_QUERY));
+
+export async function getCachedOverpassSchoolsData(): Promise<unknown> {
+	return getCached('overpassSchools');
+}
+
+const OVERPASS_POIS_QUERY = `[out:json][timeout:90];(node["shop"="bicycle"](${OVERPASS_BBOX});way["shop"="bicycle"](${OVERPASS_BBOX});node["amenity"="bicycle_repair_station"](${OVERPASS_BBOX});way["amenity"="bicycle_repair_station"](${OVERPASS_BBOX});node["amenity"="bicycle_rental"](${OVERPASS_BBOX});way["amenity"="bicycle_rental"](${OVERPASS_BBOX});node["club"="bicycle"](${OVERPASS_BBOX});way["club"="bicycle"](${OVERPASS_BBOX});node["amenity"="bench"](${OVERPASS_BBOX});node["leisure"="picnic_table"](${OVERPASS_BBOX});node["amenity"="pharmacy"](${OVERPASS_BBOX});way["amenity"="pharmacy"](${OVERPASS_BBOX});node["emergency"="defibrillator"](${OVERPASS_BBOX}););out center;`;
+registerEntry('overpassPOIs', overpassFetcher(OVERPASS_POIS_QUERY));
+
+export async function getCachedOverpassPOIsData(): Promise<unknown> {
+	return getCached('overpassPOIs');
+}
+
+// Counters
 
 const COUNTERS_BASE_URL =
 	'https://raw.githubusercontent.com/lavilleavelo/cyclopolis/refs/heads/main/content/compteurs';
@@ -212,22 +222,8 @@ async function fetchAllCounters(): Promise<{ velo: unknown[]; voiture: unknown[]
 	};
 }
 
-const countersCache = createCache({
-	ttl: 300,
-	stale: 300,
-	storage: { type: 'memory' },
-});
-
-countersCache.define('counters', async () => {
-	return fetchAllCounters();
-});
-
-interface CountersCache {
-	counters: () => Promise<{ velo: unknown[]; voiture: unknown[] }>;
-}
-
-const typedCountersCache = countersCache as unknown as CountersCache;
+registerEntry('counters', fetchAllCounters);
 
 export async function getCachedCountersData(): Promise<{ velo: unknown[]; voiture: unknown[] }> {
-	return typedCountersCache.counters();
+	return getCached<{ velo: unknown[]; voiture: unknown[] }>('counters');
 }

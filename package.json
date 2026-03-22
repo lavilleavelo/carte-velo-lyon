@@ -45,7 +45,6 @@
 		"@tanstack/svelte-query": "^6.0.7",
 		"@types/node": "^24.10.0",
 		"arktype": "^2.1.26",
-		"async-cache-dedupe": "^3.4.0",
 		"maplibre-gl": "^5.12.0",
 		"runed": "^0.36.0",
 		"svelte-maplibre-gl": "^1.0.2",

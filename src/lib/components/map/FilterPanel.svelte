@@ -151,7 +151,9 @@
 											<img src={layer.icon} alt="" class="h-6 w-6 object-contain" />
 										{:else}
 											<span
-												class="inline-block h-3 w-3 rounded-full shadow-sm ring-2 ring-white"
+												class="inline-block h-3 w-3 shadow-sm ring-2 ring-white"
+												class:rounded-full={layer.shape !== 'square'}
+												class:rounded-sm={layer.shape === 'square'}
 												style="background-color: {layer.color}"
 											></span>
 										{/if}

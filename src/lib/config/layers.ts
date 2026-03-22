@@ -12,7 +12,11 @@ export interface LayerConfig {
 		| 'voies-lyonnaises'
 		| 'osm-vl'
 		| 'projects'
-		| 'communes';
+		| 'communes'
+		| 'schools'
+		| 'local'
+		| 'comfort'
+		| 'safety';
 	interactableLayerIds: string[];
 	featureType: string;
 	defaultEnabled?: boolean;
@@ -342,6 +346,13 @@ export const layerConfigs: LayerConfig[] = [
 	},
 
 	{
+		id: 'metropole',
+		label: 'Métropole de Lyon',
+		category: 'communes',
+		interactableLayerIds: [],
+		featureType: 'commune',
+	},
+	{
 		id: 'communes',
 		label: 'Limites des communes',
 		category: 'communes',
@@ -354,6 +365,218 @@ export const layerConfigs: LayerConfig[] = [
 					<div class="flex flex-col">
 						<span class="font-bold text-sm">${p.nom}</span>
 						<span class="text-xs text-gray-600">${p.insee}</span>
+					</div>
+				</div>`;
+		},
+	},
+
+	// Schools
+	{
+		id: 'schools-maternelle',
+		label: 'Écoles maternelles',
+		category: 'schools',
+		interactableLayerIds: ['schools-maternelle-hitarea'],
+		featureType: 'school',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.school('#f59e0b')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || 'École maternelle'}</span>
+						<span class="text-xs text-gray-500">Maternelle</span>
+						${p.operator ? `<span class="text-xs">${p.operator}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+	{
+		id: 'schools-elementaire',
+		label: 'Écoles élémentaires',
+		category: 'schools',
+		interactableLayerIds: ['schools-elementaire-hitarea'],
+		featureType: 'school',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.school('#3b82f6')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || 'École élémentaire'}</span>
+						<span class="text-xs text-gray-500">Élémentaire</span>
+						${p.operator ? `<span class="text-xs">${p.operator}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+	{
+		id: 'schools-college',
+		label: 'Collèges',
+		category: 'schools',
+		interactableLayerIds: ['schools-college-hitarea'],
+		featureType: 'school',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.school('#8b5cf6')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || 'Collège'}</span>
+						<span class="text-xs text-gray-500">Collège</span>
+						${p.operator ? `<span class="text-xs">${p.operator}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+	{
+		id: 'schools-lycee',
+		label: 'Lycées',
+		category: 'schools',
+		interactableLayerIds: ['schools-lycee-hitarea'],
+		featureType: 'school',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.school('#ef4444')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || 'Lycée'}</span>
+						<span class="text-xs text-gray-500">Lycée</span>
+						${p.operator ? `<span class="text-xs">${p.operator}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+
+	// Local — bike commerce & services
+	{
+		id: 'local-veloecole',
+		label: 'Véloécole',
+		category: 'local',
+		interactableLayerIds: ['local-veloecole-hitarea'],
+		featureType: 'local',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.school('#1e5a8a')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || 'Véloécole'}</span>
+						${p.operator ? `<span class="text-xs">${p.operator}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+	{
+		id: 'local-atelier',
+		label: "Atelier d'autoréparation",
+		category: 'local',
+		interactableLayerIds: ['local-atelier-hitarea'],
+		featureType: 'local',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.wrench('#1e5a8a')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || "Atelier d'autoréparation"}</span>
+						${p.operator ? `<span class="text-xs">${p.operator}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+	{
+		id: 'local-revendeur',
+		label: 'Revendeur cycle',
+		category: 'local',
+		interactableLayerIds: ['local-revendeur-hitarea'],
+		featureType: 'local',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.bike('#1e5a8a')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || 'Revendeur cycle'}</span>
+						${p.opening_hours ? `<span class="text-xs">${p.opening_hours}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+	{
+		id: 'local-loueur',
+		label: 'Loueur de vélos',
+		category: 'local',
+		interactableLayerIds: ['local-loueur-hitarea'],
+		featureType: 'local',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.key('#1e5a8a')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || 'Loueur de vélos'}</span>
+						${p.operator ? `<span class="text-xs">${p.operator}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+
+	// Comfort & rest
+	{
+		id: 'poi-bench',
+		label: 'Bancs',
+		category: 'comfort',
+		interactableLayerIds: ['poi-bench-hitarea'],
+		featureType: 'poi',
+		minZoomPopup: 16,
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-center gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.bench('#78716c')}</div>
+					<span class="font-bold text-sm">${p.name || 'Banc'}</span>
+				</div>`;
+		},
+	},
+	{
+		id: 'poi-picnic-table',
+		label: 'Tables de pique-nique',
+		category: 'comfort',
+		interactableLayerIds: ['poi-picnic-table-hitarea'],
+		featureType: 'poi',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-center gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.picnicTable('#65a30d')}</div>
+					<span class="font-bold text-sm">${p.name || 'Table de pique-nique'}</span>
+				</div>`;
+		},
+	},
+
+	// Safety
+	{
+		id: 'poi-pharmacy',
+		label: 'Pharmacies',
+		category: 'safety',
+		interactableLayerIds: ['poi-pharmacy-hitarea'],
+		featureType: 'poi',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.pharmacy('#16a34a')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.name || 'Pharmacie'}</span>
+						${p.opening_hours ? `<span class="text-xs">${p.opening_hours}</span>` : ''}
+					</div>
+				</div>`;
+		},
+	},
+	{
+		id: 'poi-defibrillator',
+		label: 'Défibrillateurs',
+		category: 'safety',
+		interactableLayerIds: ['poi-defibrillator-hitarea'],
+		featureType: 'poi',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.heartPulse('#dc2626')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">Défibrillateur</span>
+						${p.access ? `<span class="text-xs">Accès : ${p.access}</span>` : ''}
+						${p.indoor ? `<span class="text-xs">${p.indoor === 'yes' ? 'Intérieur' : 'Extérieur'}</span>` : ''}
 					</div>
 				</div>`;
 		},

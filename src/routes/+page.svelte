@@ -59,6 +59,8 @@
 	import PumpLayer from '$lib/components/map/layers/PumpLayer.svelte';
 	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
 	import ToiletLayer from '$lib/components/map/layers/ToiletLayer.svelte';
+	import SchoolLayer from '$lib/components/map/layers/SchoolLayer.svelte';
+	import AdditionalPOILayer from '$lib/components/map/layers/AdditionalPOILayer.svelte';
 	import CyclewayFilters from '$lib/components/map/filters/CyclewayFilters.svelte';
 	import TargetNetworkLayer from '$lib/components/map/layers/TargetNetworkLayer.svelte';
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
@@ -235,28 +237,32 @@
 		})),
 
 		{
-			id: 'metro',
-			label: 'Métro',
-			color: '#D53032',
-			category: 'Transports en commun',
+			id: 'local-veloecole',
+			label: 'Véloécole',
+			color: '#1e5a8a',
+			category: 'Local',
+			shape: 'square',
 		},
 		{
-			id: 'tram',
-			label: 'Tramway',
-			color: '#933591',
-			category: 'Transports en commun',
+			id: 'local-atelier',
+			label: "Atelier d'autoréparation",
+			color: '#1e5a8a',
+			category: 'Local',
+			shape: 'square',
 		},
 		{
-			id: 'bus-tb',
-			label: 'Tram-Bus (BHNS)',
-			color: '#933591',
-			category: 'Transports en commun',
+			id: 'local-revendeur',
+			label: 'Revendeur cycle',
+			color: '#1e5a8a',
+			category: 'Local',
+			shape: 'square',
 		},
 		{
-			id: 'bus-std',
-			label: 'Bus',
-			color: '#a3a3a3',
-			category: 'Transports en commun',
+			id: 'local-loueur',
+			label: 'Loueur de vélos',
+			color: '#1e5a8a',
+			category: 'Local',
+			shape: 'square',
 		},
 		{
 			id: 'pumps',
@@ -279,6 +285,60 @@
 			category: 'Aires de service',
 		},
 		{
+			id: 'metro',
+			label: 'Métro',
+			color: '#D53032',
+			category: 'Métro / Tram',
+		},
+		{
+			id: 'tram',
+			label: 'Tramway',
+			color: '#933591',
+			category: 'Métro / Tram',
+		},
+		{
+			id: 'bus-tb',
+			label: 'Tram-Bus (BHNS)',
+			color: '#933591',
+			category: 'Métro / Tram',
+		},
+		{
+			id: 'bus-std',
+			label: 'Bus',
+			color: '#a3a3a3',
+			category: 'Bus',
+		},
+		{
+			id: 'poi-bench',
+			label: 'Bancs',
+			color: '#78716c',
+			category: 'Confort & Repos',
+		},
+		{
+			id: 'poi-picnic-table',
+			label: 'Tables de pique-nique',
+			color: '#65a30d',
+			category: 'Confort & Repos',
+		},
+		{
+			id: 'poi-pharmacy',
+			label: 'Pharmacies',
+			color: '#16a34a',
+			category: 'Santé & Sécurité',
+		},
+		{
+			id: 'poi-defibrillator',
+			label: 'Défibrillateurs',
+			color: '#dc2626',
+			category: 'Santé & Sécurité',
+		},
+		{
+			id: 'metropole',
+			label: 'Métropole de Lyon',
+			color: '#1e3a5f',
+			category: 'Communes',
+		},
+		{
 			id: 'communes',
 			label: 'Limites des communes',
 			color: '#6b7280',
@@ -295,6 +355,30 @@
 			label: 'Compteurs voiture',
 			color: '#dc2626',
 			category: 'Compteurs',
+		},
+		{
+			id: 'schools-maternelle',
+			label: 'Écoles maternelles',
+			color: '#f59e0b',
+			category: 'Établissements scolaires',
+		},
+		{
+			id: 'schools-elementaire',
+			label: 'Écoles élémentaires',
+			color: '#3b82f6',
+			category: 'Établissements scolaires',
+		},
+		{
+			id: 'schools-college',
+			label: 'Collèges',
+			color: '#8b5cf6',
+			category: 'Établissements scolaires',
+		},
+		{
+			id: 'schools-lycee',
+			label: 'Lycées',
+			color: '#ef4444',
+			category: 'Établissements scolaires',
 		},
 		{
 			id: 'target-network',
@@ -333,7 +417,14 @@
 		},
 	] as const;
 
-	const optionalCategories = ['Voies Lyonnaises (OSM)', 'Compteurs', 'Projets'] as const;
+	const optionalCategories = [
+		'Voies Lyonnaises (OSM)',
+		'Compteurs',
+		'Confort & Repos',
+		'Santé & Sécurité',
+		'Établissements scolaires',
+		'Projets',
+	] as const;
 	const STORAGE_KEY = 'visibleOptionalCategories';
 
 	function loadOptionalCategories(): Set<string> {
@@ -1189,6 +1280,10 @@
 			<WaterFountainLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<ToiletLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
+
+			<SchoolLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
+
+			<AdditionalPOILayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 		</MapLibre>
 
 		<a
@@ -1467,6 +1562,32 @@
 			<hr class="border-gray-100" />
 
 			<div>
+				<h3 class="mb-2 text-sm font-semibold text-gray-900">Navigation</h3>
+				<p class="mb-3 text-xs text-gray-500">Application par défaut pour ouvrir un lieu.</p>
+				<Select.Root
+					type="single"
+					value={defaultNavProvider}
+					onValueChange={(value) => {
+						if (value) {
+							defaultNavProvider = value;
+							saveDefaultProvider(value);
+						}
+					}}
+				>
+					<Select.Trigger size="sm" class="w-full text-sm">
+						{navigationProviders.find((p) => p.id === defaultNavProvider)?.label ?? 'OpenStreetMap'}
+					</Select.Trigger>
+					<Select.Content>
+						{#each navigationProviders as provider}
+							<Select.Item value={provider.id} label={provider.label} />
+						{/each}
+					</Select.Content>
+				</Select.Root>
+			</div>
+
+			<hr class="border-gray-100" />
+
+			<div>
 				<h3 class="mb-2 text-sm font-semibold text-gray-900">Couches supplémentaires</h3>
 				<p class="mb-3 text-xs text-gray-500">
 					Affichez des catégories avancées dans le panneau de filtres.
@@ -1489,32 +1610,6 @@
 						</div>
 					{/each}
 				</div>
-			</div>
-
-			<hr class="border-gray-100" />
-
-			<div>
-				<h3 class="mb-2 text-sm font-semibold text-gray-900">Navigation</h3>
-				<p class="mb-3 text-xs text-gray-500">Application par défaut pour ouvrir un lieu.</p>
-				<Select.Root
-					type="single"
-					value={defaultNavProvider}
-					onValueChange={(value) => {
-						if (value) {
-							defaultNavProvider = value;
-							saveDefaultProvider(value);
-						}
-					}}
-				>
-					<Select.Trigger size="sm" class="w-full text-sm">
-						{navigationProviders.find((p) => p.id === defaultNavProvider)?.label ?? 'OpenStreetMap'}
-					</Select.Trigger>
-					<Select.Content>
-						{#each navigationProviders as provider}
-							<Select.Item value={provider.id} label={provider.label} />
-						{/each}
-					</Select.Content>
-				</Select.Root>
 			</div>
 		</div>
 	</Dialog.Content>

@@ -71,8 +71,8 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 			},
 		],
 	},
-	'Transports en commun': {
-		description: 'Lignes de métro, tramway, tram-bus et bus du réseau TCL.',
+	'Métro / Tram': {
+		description: 'Lignes de métro, tramway et tram-bus du réseau TCL.',
 		source: 'Sytral / Métropole de Lyon',
 		sourceUrl: 'https://data.grandlyon.com',
 		links: [
@@ -84,6 +84,13 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 				label: 'Lignes de tramway — data.grandlyon.com',
 				url: 'https://data.grandlyon.com/portail/fr/jeux-de-donnees/lignes-tramway-reseau-transports-commun-lyonnais/info',
 			},
+		],
+	},
+	Bus: {
+		description: 'Lignes de tram-bus (BHNS) et bus du réseau TCL.',
+		source: 'Sytral / Métropole de Lyon',
+		sourceUrl: 'https://data.grandlyon.com',
+		links: [
 			{
 				label: 'Lignes de bus — data.grandlyon.com',
 				url: 'https://data.grandlyon.com/portail/fr/jeux-de-donnees/lignes-bus-reseau-transports-commun-lyonnais/info',
@@ -139,6 +146,54 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 				src: 'https://cyclopolis.lavilleavelo.org/avatar_cerema.png',
 				alt: 'CEREMA Avatar',
 				url: 'https://avatar.cerema.fr',
+			},
+		],
+	},
+	Local: {
+		description:
+			"Les commerces et services autour du vélo : véloécoles, ateliers d'autoréparation, revendeurs, loueurs, taxivélos, cafés vélo et artisans.",
+		source: 'OpenStreetMap contributors (Overpass API)',
+		sourceUrl: 'https://wiki.openstreetmap.org/wiki/FR:Tag:shop%3Dbicycle',
+		links: [
+			{
+				label: 'Magasins de vélo — OpenStreetMap Wiki',
+				url: 'https://wiki.openstreetmap.org/wiki/FR:Tag:shop%3Dbicycle',
+			},
+			{
+				label: 'Stations de réparation — OpenStreetMap Wiki',
+				url: 'https://wiki.openstreetmap.org/wiki/Tag:amenity%3Dbicycle_repair_station',
+			},
+		],
+	},
+	'Confort & Repos': {
+		description: 'Bancs, tables de pique-nique et abris le long des itinéraires cyclables.',
+		source: 'OpenStreetMap contributors (Overpass API)',
+		sourceUrl: 'https://wiki.openstreetmap.org/wiki/FR:Tag:amenity%3Dbench',
+	},
+	'Santé & Sécurité': {
+		description: 'Pharmacies, défibrillateurs et douches accessibles au public.',
+		source: 'OpenStreetMap contributors (Overpass API)',
+		sourceUrl: 'https://wiki.openstreetmap.org/wiki/FR:Tag:amenity%3Dpharmacy',
+		links: [
+			{
+				label: 'Pharmacies — OpenStreetMap Wiki',
+				url: 'https://wiki.openstreetmap.org/wiki/FR:Tag:amenity%3Dpharmacy',
+			},
+			{
+				label: 'Défibrillateurs — OpenStreetMap Wiki',
+				url: 'https://wiki.openstreetmap.org/wiki/FR:Tag:emergency%3Ddefibrillator',
+			},
+		],
+	},
+	'Établissements scolaires': {
+		description:
+			'Écoles maternelles, élémentaires, collèges et lycées de la Métropole de Lyon.',
+		source: 'OpenStreetMap contributors (Overpass API)',
+		sourceUrl: 'https://wiki.openstreetmap.org/wiki/FR:Tag:amenity%3Dschool',
+		links: [
+			{
+				label: 'Écoles — OpenStreetMap Wiki',
+				url: 'https://wiki.openstreetmap.org/wiki/FR:Tag:amenity%3Dschool',
 			},
 		],
 	},

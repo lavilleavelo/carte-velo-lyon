@@ -2,9 +2,24 @@
 	import { GeoJSONSource, LineLayer } from 'svelte-maplibre-gl';
 	import communesLimitUrl from '$lib/data/communes_limit_arrondissements.json?url';
 	import arrondissementsLyonUrl from '$lib/data/metropole-de-lyon_adr_voie_lieu.adrarrond.json?url';
+	import metropoleBoundaryUrl from '$lib/data/metropole_lyon_boundary.json?url';
 
 	let { isLayerVisible, handleMouseEnter, handleMouseLeave } = $props();
 </script>
+
+<GeoJSONSource id="metropole-boundary" data={metropoleBoundaryUrl} maxzoom={13}>
+	<LineLayer
+		id="metropole-boundary-line"
+		layout={{
+			visibility: isLayerVisible('metropole') ? 'visible' : 'none',
+		}}
+		paint={{
+			'line-color': '#1e3a5f',
+			'line-width': 3.5,
+			'line-opacity': 0.8,
+		}}
+	/>
+</GeoJSONSource>
 
 <GeoJSONSource id="arrondissements" data={arrondissementsLyonUrl} maxzoom={13}>
 	<LineLayer
