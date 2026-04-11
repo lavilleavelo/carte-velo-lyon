@@ -133,9 +133,9 @@
 		zoom: 'number = 11',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
 		selected: type('number[]').default(() => []),
-		mapStyle: type('"positron" | "osm-bright" | "cyclopolis" | "hybrid" | "cyclosm"').default(
-			() => 'cyclopolis' as MapStyle,
-		),
+		mapStyle: type(
+			'"positron" | "osm-bright" | "cyclopolis" | "hybrid" | "satellite" | "cyclosm"',
+		).default(() => 'cyclopolis' as MapStyle),
 		cyclewayReseau: type('string[]').default(() => []),
 		cyclewayType: type('string[]').default(() => []),
 		cyclewayLocalisation: type('string[]').default(() => []),
@@ -1190,6 +1190,12 @@
 			<AttributionControl compact={true} position="bottom-left" />
 
 			{#if innerWidth >= 768}
+				<NavigationControl
+					position="top-right"
+					showCompass={true}
+					showZoom={false}
+					visualizePitch={true}
+				/>
 				<GeolocateControl position="top-right" />
 				<MapStyleToggle
 					currentStyle={mapStyleState.mapStyle}
@@ -1201,6 +1207,12 @@
 					currentStyle={mapStyleState.mapStyle}
 					onSelect={mapStyleState.setMapStyle}
 					position="bottom-left"
+				/>
+				<NavigationControl
+					position="bottom-right"
+					showCompass={true}
+					showZoom={false}
+					visualizePitch={true}
 				/>
 				<GeolocateControl
 					position="bottom-right"

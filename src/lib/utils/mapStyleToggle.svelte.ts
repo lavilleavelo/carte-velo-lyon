@@ -1,7 +1,14 @@
 import hybridStyle from '$lib/components/map/hybrid-style.json';
 import cyclopolisStyle from '$lib/components/map/cyclopolis-style.json';
+import osmBrightStyle from '$lib/components/map/osm-bright-style.json';
 
-export type MapStyle = 'positron' | 'osm-bright' | 'hybrid' | 'cyclosm' | 'cyclopolis';
+export type MapStyle =
+	| 'positron'
+	| 'osm-bright'
+	| 'hybrid'
+	| 'satellite'
+	| 'cyclosm'
+	| 'cyclopolis';
 
 const cyclosmAttribution =
 	'<a href="https://cyclosm.org" target="_blank">CyclOSM</a> (<a href="https://www.cyclosm.org/legend.html" target="_blank">Legende</a>)';
@@ -41,11 +48,39 @@ const cyclosmStyle = {
 	zoom: 1,
 };
 
+const satelliteStyle = {
+	version: 8,
+	id: 'satellite',
+	name: 'Satellite',
+	sources: {
+		ortho: {
+			type: 'raster',
+			tiles: ['https://data.geopf.fr/tms/1.0.0/ORTHOIMAGERY.ORTHOPHOTOS/{z}/{x}/{y}.jpeg'],
+			tileSize: 256,
+			attribution: 'IGN - BD ORTHO',
+		},
+	},
+	layers: [
+		{
+			id: 'ortho',
+			type: 'raster',
+			source: 'ortho',
+			minzoom: 0,
+			maxzoom: 22,
+		},
+	],
+	bearing: 0,
+	pitch: 0,
+	center: [0, 0],
+	zoom: 1,
+};
+
 export const MAP_STYLES: Record<MapStyle, any> = {
 	positron: 'https://tiles.openfreemap.org/styles/positron',
-	'osm-bright': 'https://openmaptiles.geo.data.gouv.fr/styles/osm-bright/style.json',
+	'osm-bright': osmBrightStyle,
 	cyclopolis: cyclopolisStyle,
 	hybrid: hybridStyle,
+	satellite: satelliteStyle,
 	cyclosm: cyclosmStyle,
 };
 
@@ -56,7 +91,14 @@ export function createMapStyleState(
 	let mapStyle = $state<MapStyle>(initialStyle);
 
 	function toggleMapStyle() {
-		const styles: MapStyle[] = ['positron', 'osm-bright', 'cyclopolis', 'hybrid', 'cyclosm'];
+		const styles: MapStyle[] = [
+			'positron',
+			'osm-bright',
+			'cyclopolis',
+			'hybrid',
+			'satellite',
+			'cyclosm',
+		];
 		const currentIndex = styles.indexOf(mapStyle);
 		mapStyle = styles[(currentIndex + 1) % styles.length];
 		onChange?.(mapStyle);

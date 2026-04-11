@@ -15,12 +15,17 @@
 	let buttonEl: HTMLButtonElement | undefined = $state();
 	let menuStyle = $state('');
 
-	const styles: { id: MapStyle; label: string }[] = [
-		{ id: 'cyclopolis', label: 'Par défaut' },
-		{ id: 'positron', label: 'Positron' },
-		{ id: 'hybrid', label: 'Satellite' },
-		{ id: 'cyclosm', label: 'CyclOSM' },
-		{ id: 'osm-bright', label: 'OSM Bright' },
+	const styles: { id: MapStyle; label: string; description: string }[] = [
+		{ id: 'cyclopolis', label: 'Par défaut', description: 'Style par défaut' },
+		{ id: 'positron', label: 'Positron', description: 'Fond clair et minimaliste' },
+		{
+			id: 'osm-bright',
+			label: 'OSM Bright',
+			description: 'Style coloré alternatif avec bâtiments 3D',
+		},
+		{ id: 'hybrid', label: 'Satellite hybride', description: 'Photos aériennes IGN + rues' },
+		{ id: 'satellite', label: 'Satellite', description: 'Photos aériennes IGN seules' },
+		{ id: 'cyclosm', label: 'CyclOSM', description: 'Style OpenStreetMap alternatif vélo' },
 	];
 
 	function toggle(e: MouseEvent) {
@@ -28,7 +33,7 @@
 		if (!open && buttonEl) {
 			const rect = buttonEl.getBoundingClientRect();
 			const spaceBelow = window.innerHeight - rect.bottom;
-			const menuHeight = styles.length * 36 + 12;
+			const menuHeight = styles.length * 52 + 12;
 
 			if (position.startsWith('bottom') || spaceBelow < menuHeight) {
 				menuStyle = `bottom: ${window.innerHeight - rect.top + 4}px; right: ${window.innerWidth - rect.right}px;`;
@@ -68,7 +73,7 @@
 	<!-- svelte-ignore a11y_no_static_element_interactions -->
 	<div
 		onclick={(e) => e.stopPropagation()}
-		class="fixed z-50 min-w-36 rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5"
+		class="fixed z-50 min-w-56 rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5"
 		style={menuStyle}
 	>
 		{#each styles as style}
@@ -76,10 +81,14 @@
 				onclick={() => select(style.id)}
 				class="flex w-full items-center justify-between gap-3 rounded-md px-3 py-1.5 text-left text-sm transition-colors"
 				class:bg-gray-100={currentStyle === style.id}
-				class:font-semibold={currentStyle === style.id}
 				class:hover:bg-gray-50={currentStyle !== style.id}
 			>
-				<span class="text-gray-700">{style.label}</span>
+				<span class="flex flex-col">
+					<span class="text-gray-800" class:font-semibold={currentStyle === style.id}>
+						{style.label}
+					</span>
+					<span class="text-xs text-gray-500">{style.description}</span>
+				</span>
 				{#if currentStyle === style.id}
 					<svg class="h-4 w-4 shrink-0 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
 						<path
