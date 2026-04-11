@@ -16,11 +16,14 @@
 			return processBusData(data.features);
 		},
 		staleTime: Infinity,
-		enabled: isLayerVisible('bus-std') || isLayerVisible('bus-tb'),
+		enabled: isLayerVisible('bus-other') || isLayerVisible('bus-main') || isLayerVisible('bus-tb'),
 	}));
 
 	$effect(() => {
 		if (map && busQuery.data) {
+			const mainFeatures = busQuery.data.features.filter((f) => f.properties.type === 'bus-main');
+			loadTransportShieldIcons(map, mainFeatures, 'bus-main');
+
 			const tbFeatures = busQuery.data.features.filter((f) => f.properties.type === 'bus-tb');
 			loadTransportShieldIcons(map, tbFeatures, 'bus-tb');
 		}
@@ -32,14 +35,14 @@
 	id="bus-data"
 	data={busQuery.data || { type: 'FeatureCollection', features: [] }}
 >
-	<!-- Standard Bus (Bottom) -->
+	<!-- Other bus lines (Bottom) -->
 	<LineLayer
-		id="bus-layer-std-contour"
-		filter={['==', ['get', 'type'], 'bus-std']}
+		id="bus-layer-other-contour"
+		filter={['==', ['get', 'type'], 'bus-other']}
 		layout={{
 			'line-join': 'round',
 			'line-cap': 'round',
-			visibility: isLayerVisible('bus-std') ? 'visible' : 'none',
+			visibility: isLayerVisible('bus-other') ? 'visible' : 'none',
 		}}
 		paint={{
 			'line-color': '#FFFFFF',
@@ -48,12 +51,12 @@
 		}}
 	/>
 	<LineLayer
-		id="bus-layer-std"
-		filter={['==', ['get', 'type'], 'bus-std']}
+		id="bus-layer-other"
+		filter={['==', ['get', 'type'], 'bus-other']}
 		layout={{
 			'line-join': 'round',
 			'line-cap': 'round',
-			visibility: isLayerVisible('bus-std') ? 'visible' : 'none',
+			visibility: isLayerVisible('bus-other') ? 'visible' : 'none',
 		}}
 		paint={{
 			'line-color': ['get', 'color'],
@@ -63,12 +66,12 @@
 	/>
 
 	<LineLayer
-		id="bus-layer-std-hitarea"
-		filter={['==', ['get', 'type'], 'bus-std']}
+		id="bus-layer-other-hitarea"
+		filter={['==', ['get', 'type'], 'bus-other']}
 		layout={{
 			'line-join': 'round',
 			'line-cap': 'round',
-			visibility: isLayerVisible('bus-std') ? 'visible' : 'none',
+			visibility: isLayerVisible('bus-other') ? 'visible' : 'none',
 		}}
 		paint={{
 			'line-color': 'transparent',
@@ -79,7 +82,71 @@
 		onmouseleave={handleMouseLeave}
 	/>
 
-	<!-- TB / C Lines (Top) -->
+	<!-- Main lines (Lignes C — Top) -->
+	<LineLayer
+		id="bus-layer-main-contour"
+		filter={['==', ['get', 'type'], 'bus-main']}
+		layout={{
+			'line-join': 'round',
+			'line-cap': 'round',
+			visibility: isLayerVisible('bus-main') ? 'visible' : 'none',
+		}}
+		paint={{
+			'line-color': '#FFFFFF',
+			'line-width': 5,
+			'line-opacity': 1,
+		}}
+	/>
+	<LineLayer
+		id="bus-layer-main"
+		filter={['==', ['get', 'type'], 'bus-main']}
+		layout={{
+			'line-join': 'round',
+			'line-cap': 'round',
+			visibility: isLayerVisible('bus-main') ? 'visible' : 'none',
+		}}
+		paint={{
+			'line-color': ['get', 'color'],
+			'line-width': 3,
+			'line-opacity': 0.9,
+		}}
+	/>
+
+	<LineLayer
+		id="bus-layer-main-hitarea"
+		filter={['==', ['get', 'type'], 'bus-main']}
+		layout={{
+			'line-join': 'round',
+			'line-cap': 'round',
+			visibility: isLayerVisible('bus-main') ? 'visible' : 'none',
+		}}
+		paint={{
+			'line-color': 'transparent',
+			'line-width': 20,
+			'line-opacity': 0,
+		}}
+		onmouseenter={handleMouseEnter}
+		onmouseleave={handleMouseLeave}
+	/>
+
+	<SymbolLayer
+		id="bus-main-labels"
+		filter={['==', ['get', 'type'], 'bus-main']}
+		layout={{
+			'icon-image': ['concat', 'bus-main-shield-', ['get', 'ligne']],
+			'icon-size': 0.35,
+			'symbol-spacing': 250,
+			'symbol-placement': 'line-center',
+			'icon-rotation-alignment': 'viewport',
+			'icon-pitch-alignment': 'viewport',
+			visibility: isLayerVisible('bus-main') ? 'visible' : 'none',
+		}}
+		paint={{
+			'icon-opacity': 1,
+		}}
+	/>
+
+	<!-- Tram-Bus / BHNS (TB lines — Top, grouped with Métro/Tram) -->
 	<LineLayer
 		id="bus-layer-tb-contour"
 		filter={['==', ['get', 'type'], 'bus-tb']}

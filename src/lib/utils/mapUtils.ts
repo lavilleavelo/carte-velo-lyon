@@ -324,20 +324,26 @@ export async function loadShieldIcons(mapInstance: any, features: any[], totalLi
 	});
 }
 
+// TCL "Lignes C" (main bus corridors): C1–C26 plus E variants like C15E, C20E, C22E.
+// Excludes interurban C200-series.
+const BUS_MAIN_LINE_PATTERN = /^C\d{1,2}E?$/;
+
 export function processBusData(features: any[]) {
 	return {
 		type: 'FeatureCollection',
 		features: features.map((f) => {
 			const ligne = f.properties.ligne || '';
 			const isTB = ligne.startsWith('TB');
-			const color = isTB ? '#E0C233' : '#a3a3a3';
+			const isMain = !isTB && BUS_MAIN_LINE_PATTERN.test(ligne);
+			const type = isTB ? 'bus-tb' : isMain ? 'bus-main' : 'bus-other';
+			const color = isTB ? '#933591' : isMain ? '#E0C233' : '#a3a3a3';
 
 			return {
 				...f,
 				properties: {
 					...f.properties,
 					color,
-					type: isTB ? 'bus-tb' : 'bus-std',
+					type,
 				},
 			};
 		}),

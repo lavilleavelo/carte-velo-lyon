@@ -303,8 +303,14 @@
 			category: 'Métro / Tram',
 		},
 		{
-			id: 'bus-std',
-			label: 'Bus',
+			id: 'bus-main',
+			label: 'Bus (lignes C)',
+			color: '#E0C233',
+			category: 'Bus',
+		},
+		{
+			id: 'bus-other',
+			label: 'Bus (autres)',
 			color: '#a3a3a3',
 			category: 'Bus',
 		},

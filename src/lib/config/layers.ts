@@ -184,7 +184,7 @@ export const layerConfigs: LayerConfig[] = [
 	},
 	{
 		id: 'bus-tb',
-		label: 'Bus (lignes fortes)',
+		label: 'Tram-Bus (BHNS)',
 		category: 'transport',
 		interactableLayerIds: ['bus-layer-tb-hitarea'],
 		featureType: 'bus',
@@ -197,10 +197,24 @@ export const layerConfigs: LayerConfig[] = [
 		},
 	},
 	{
-		id: 'bus-std',
-		label: 'Bus (standard)',
+		id: 'bus-main',
+		label: 'Bus (lignes C)',
 		category: 'transport',
-		interactableLayerIds: ['bus-layer-std-hitarea'],
+		interactableLayerIds: ['bus-layer-main-hitarea'],
+		featureType: 'bus',
+		formatPopup: (p) => {
+			return `
+				<div class="flex items-center gap-2">
+					<div class="shrink-0">${Icons.bus(p.color)}</div>
+					<span class="font-bold text-sm" style="color: ${p.color}">Bus ${p.ligne}</span>
+				</div>`;
+		},
+	},
+	{
+		id: 'bus-other',
+		label: 'Bus (autres lignes)',
+		category: 'transport',
+		interactableLayerIds: ['bus-layer-other-hitarea'],
 		featureType: 'bus',
 		formatPopup: (p) => {
 			return `
