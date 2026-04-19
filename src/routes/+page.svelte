@@ -29,7 +29,13 @@
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
-	import { createMapStyleState, type MapStyle } from '$lib/utils/mapStyleToggle.svelte';
+	import {
+		createMapStyleState,
+		loadDefaultMapStyle,
+		saveDefaultMapStyle,
+		MAP_STYLE_IDS,
+		type MapStyle,
+	} from '$lib/utils/mapStyleToggle.svelte';
 	import {
 		getAllLayerConfigs,
 		getInteractableLayerIds,
@@ -133,9 +139,7 @@
 		zoom: 'number = 11',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
 		selected: type('number[]').default(() => []),
-		mapStyle: type(
-			'"positron" | "osm-bright" | "cyclopolis" | "hybrid" | "satellite" | "cyclosm"',
-		).default(() => 'cyclopolis' as MapStyle),
+		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => loadDefaultMapStyle()),
 		cyclewayReseau: type('string[]').default(() => []),
 		cyclewayType: type('string[]').default(() => []),
 		cyclewayLocalisation: type('string[]').default(() => []),
@@ -455,6 +459,17 @@
 	let visibleOptionalCategories = $state(loadOptionalCategories());
 	let showConfigDialog = $state(false);
 	let defaultNavProvider = $state(loadDefaultProvider());
+	let defaultMapStyle = $state<MapStyle>(loadDefaultMapStyle());
+
+	const mapStyleOptions: { id: MapStyle; label: string }[] = [
+		{ id: 'cyclopolis', label: 'Par défaut' },
+		{ id: 'neutrino', label: 'Neutre' },
+		{ id: 'positron', label: 'Monochrome' },
+		{ id: 'osm-bright', label: 'OSM Bright' },
+		{ id: 'hybrid', label: 'Satellite hybride' },
+		{ id: 'satellite', label: 'Satellite' },
+		{ id: 'cyclosm', label: 'CyclOSM' },
+	];
 
 	function toggleOptionalCategory(category: string) {
 		if (visibleOptionalCategories.has(category)) {
@@ -1575,6 +1590,36 @@
 						</Select.Root>
 					</div>
 				{/if}
+			</div>
+
+			<hr class="border-gray-100" />
+
+			<div>
+				<h3 class="mb-2 text-sm font-semibold text-gray-900">Style de carte par défaut</h3>
+				<p class="mb-3 text-xs text-gray-500">
+					Style utilisé au premier chargement (modifiable ensuite via le bouton de style).
+				</p>
+				<Select.Root
+					type="single"
+					value={defaultMapStyle}
+					onValueChange={(value) => {
+						if (value) {
+							const style = value as MapStyle;
+							defaultMapStyle = style;
+							saveDefaultMapStyle(style);
+							mapStyleState.setMapStyle(style);
+						}
+					}}
+				>
+					<Select.Trigger size="sm" class="w-full text-sm">
+						{mapStyleOptions.find((s) => s.id === defaultMapStyle)?.label ?? 'Par défaut'}
+					</Select.Trigger>
+					<Select.Content>
+						{#each mapStyleOptions as style}
+							<Select.Item value={style.id} label={style.label} />
+						{/each}
+					</Select.Content>
+				</Select.Root>
 			</div>
 
 			<hr class="border-gray-100" />

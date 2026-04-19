@@ -16,8 +16,9 @@
 	let menuStyle = $state('');
 
 	const styles: { id: MapStyle; label: string; description: string }[] = [
-		{ id: 'cyclopolis', label: 'Par défaut', description: 'Style par défaut' },
-		{ id: 'positron', label: 'Positron', description: 'Fond clair et minimaliste' },
+		{ id: 'cyclopolis', label: 'Par défaut', description: 'Style clair avec détails' },
+		{ id: 'neutrino', label: 'Neutre', description: 'Fond clair et minimaliste' },
+		{ id: 'positron', label: 'Monochrome', description: 'Fond clair monochrome' },
 		{
 			id: 'osm-bright',
 			label: 'OSM Bright',

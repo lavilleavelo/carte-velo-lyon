@@ -2,13 +2,17 @@ import hybridStyle from '$lib/components/map/hybrid-style.json';
 import cyclopolisStyle from '$lib/components/map/cyclopolis-style.json';
 import osmBrightStyle from '$lib/components/map/osm-bright-style.json';
 
-export type MapStyle =
-	| 'positron'
-	| 'osm-bright'
-	| 'hybrid'
-	| 'satellite'
-	| 'cyclosm'
-	| 'cyclopolis';
+export const MAP_STYLE_IDS = [
+	'cyclopolis',
+	'neutrino',
+	'positron',
+	'osm-bright',
+	'hybrid',
+	'satellite',
+	'cyclosm',
+] as const;
+
+export type MapStyle = (typeof MAP_STYLE_IDS)[number];
 
 const cyclosmAttribution =
 	'<a href="https://cyclosm.org" target="_blank">CyclOSM</a> (<a href="https://www.cyclosm.org/legend.html" target="_blank">Legende</a>)';
@@ -82,7 +86,31 @@ export const MAP_STYLES: Record<MapStyle, any> = {
 	hybrid: hybridStyle,
 	satellite: satelliteStyle,
 	cyclosm: cyclosmStyle,
+	neutrino: 'https://tiles.versatiles.org/assets/styles/neutrino/style.json',
 };
+
+export function isMapStyle(value: string | null | undefined): value is MapStyle {
+	return value != null && value in MAP_STYLES;
+}
+
+const DEFAULT_STYLE_STORAGE_KEY = 'defaultMapStyle';
+const FALLBACK_DEFAULT_STYLE: MapStyle = 'cyclopolis';
+
+export function loadDefaultMapStyle(): MapStyle {
+	if (typeof globalThis.localStorage === 'undefined') return FALLBACK_DEFAULT_STYLE;
+	try {
+		const stored = localStorage.getItem(DEFAULT_STYLE_STORAGE_KEY);
+		if (isMapStyle(stored)) return stored;
+	} catch {}
+	return FALLBACK_DEFAULT_STYLE;
+}
+
+export function saveDefaultMapStyle(style: MapStyle) {
+	if (typeof globalThis.localStorage === 'undefined') return;
+	try {
+		localStorage.setItem(DEFAULT_STYLE_STORAGE_KEY, style);
+	} catch {}
+}
 
 export function createMapStyleState(
 	initialStyle: MapStyle = 'osm-bright',
@@ -91,16 +119,8 @@ export function createMapStyleState(
 	let mapStyle = $state<MapStyle>(initialStyle);
 
 	function toggleMapStyle() {
-		const styles: MapStyle[] = [
-			'positron',
-			'osm-bright',
-			'cyclopolis',
-			'hybrid',
-			'satellite',
-			'cyclosm',
-		];
-		const currentIndex = styles.indexOf(mapStyle);
-		mapStyle = styles[(currentIndex + 1) % styles.length];
+		const currentIndex = MAP_STYLE_IDS.indexOf(mapStyle);
+		mapStyle = MAP_STYLE_IDS[(currentIndex + 1) % MAP_STYLE_IDS.length];
 		onChange?.(mapStyle);
 	}
 
