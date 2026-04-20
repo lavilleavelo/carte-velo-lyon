@@ -7,6 +7,7 @@
 	import {
 		MapLibre,
 		AttributionControl,
+		CustomControl,
 		GeolocateControl,
 		NavigationControl,
 		Marker,
@@ -17,6 +18,8 @@
 	import Settings from '@lucide/svelte/icons/settings';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Ellipsis from '@lucide/svelte/icons/ellipsis';
+	import PanelRightClose from '@lucide/svelte/icons/panel-right-close';
+	import PanelRightOpen from '@lucide/svelte/icons/panel-right-open';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Select from '$lib/components/ui/select';
 	import { Checkbox } from '$lib/components/ui/checkbox';
@@ -1215,6 +1218,20 @@
 					visualizePitch={true}
 				/>
 				<GeolocateControl position="top-right" />
+				<CustomControl position="top-right">
+					<button
+						onclick={() => (showDesktopSidebar = !showDesktopSidebar)}
+						class="rounded-lg bg-white pl-1! text-gray-700 shadow-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+						aria-label={showDesktopSidebar ? 'Masquer les filtres' : 'Afficher les filtres'}
+						title={showDesktopSidebar ? 'Masquer les filtres' : 'Afficher les filtres'}
+					>
+						{#if showDesktopSidebar}
+							<PanelRightClose size={20} />
+						{:else}
+							<PanelRightOpen size={20} />
+						{/if}
+					</button>
+				</CustomControl>
 				<MapStyleToggle
 					currentStyle={mapStyleState.mapStyle}
 					onSelect={mapStyleState.setMapStyle}
