@@ -18,9 +18,13 @@
 	import CyclewayLegend from '$lib/components/map/CyclewayLegend.svelte';
 	import CommuneMapLayers from '$lib/components/map/CommuneMapLayers.svelte';
 	import CommuneLayerToggles from '$lib/components/map/CommuneLayerToggles.svelte';
-	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import YearRangeFilter from '$lib/components/map/YearRangeFilter.svelte';
+	import { filterFeaturesByYear, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import type { FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
+
+	const MIN_YEAR = 2000;
+	const MAX_YEAR = new Date().getFullYear();
 
 	let {
 		boundary,
@@ -35,9 +39,14 @@
 	const paramsSchema = type({
 		layers: type('string[]').default(() => ['cycleways']),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),
+		yearFrom: type('number').default(() => MIN_YEAR),
+		yearTo: type('number').default(() => MAX_YEAR),
 	});
 
 	const params = useSearchParams(paramsSchema, { pushHistory: false });
+
+	const yearRange = $derived<[number, number]>([params.yearFrom, params.yearTo]);
+	const isFullYearRange = $derived(params.yearFrom <= MIN_YEAR && params.yearTo >= MAX_YEAR);
 
 	const layerToggles = [
 		{ id: 'cycleways', label: 'Aménagements cyclables' },
@@ -74,11 +83,35 @@
 
 	const voirieInside = $derived.by(() => {
 		if (!voirieQuery.data) return undefined;
-		return filterFeaturesInsideBoundary(voirieQuery.data, boundary);
+		let filtered = filterFeaturesInsideBoundary(voirieQuery.data, boundary);
+		if (!isFullYearRange) {
+			filtered = filterFeaturesByYear(filtered, 'anneelivraison', yearRange);
+		}
+		return filtered;
 	});
 </script>
 
-<div class="h-[60vh] min-h-80 overflow-hidden rounded-lg shadow">
+<div class="relative h-[60vh] min-h-80 overflow-hidden rounded-lg shadow">
+	{#if voirieQuery.isPending && params.layers.includes('cycleways')}
+		<div
+			class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/40 backdrop-blur-[1px]"
+			role="status"
+			aria-live="polite"
+		>
+			<div
+				class="pointer-events-auto flex items-center gap-3 rounded-full bg-white px-4 py-2 shadow-md"
+			>
+				<span
+					class="block h-4 w-4 animate-spin rounded-full border-2 border-brand-navy border-t-transparent"
+					aria-hidden="true"
+				></span>
+				<span class="text-sm font-medium text-brand-navy">
+					Chargement des aménagements cyclables…
+				</span>
+			</div>
+		</div>
+	{/if}
+
 	<MapLibre
 		bind:map
 		class="h-full w-full"
@@ -110,9 +143,24 @@
 			voirieData={voirieInside}
 		/>
 
-		<CommuneMapLayers layers={params.layers} {boundary} {map} />
+		<CommuneMapLayers
+			layers={params.layers}
+			{boundary}
+			{map}
+			yearRange={isFullYearRange ? undefined : yearRange}
+		/>
 	</MapLibre>
 </div>
+
+<YearRangeFilter
+	range={yearRange}
+	min={MIN_YEAR}
+	max={MAX_YEAR}
+	onRangeChange={(next) => {
+		params.yearFrom = next[0];
+		params.yearTo = next[1];
+	}}
+/>
 
 <CommuneLayerToggles bind:layers={params.layers} toggles={layerToggles} />
 

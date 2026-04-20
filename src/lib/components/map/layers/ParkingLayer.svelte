@@ -6,7 +6,7 @@
 	import parkingVelostationIcon from '$lib/assets/icons/parking-velostation.png?url';
 	import parkingBoxIcon from '$lib/assets/icons/box_securisee_velo.png?url';
 	import parkingLpaIcon from '$lib/assets/icons/parking-lpa.png?url';
-	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import { filterFeaturesInsideBoundary, filterFeaturesByYear } from '$lib/utils/geoFilter';
 	import type { FeatureCollection } from 'geojson';
 
 	let {
@@ -14,11 +14,13 @@
 		handleMouseEnter,
 		handleMouseLeave,
 		boundary,
+		yearRange,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		handleMouseEnter: () => void;
 		handleMouseLeave: () => void;
 		boundary?: FeatureCollection;
+		yearRange?: [number, number];
 	} = $props();
 
 	const parkingQuery = createQuery(() => ({
@@ -41,12 +43,13 @@
 	}));
 
 	const parkingData = $derived.by(() => {
-		const base = parkingQuery.data || { type: 'FeatureCollection' as const, features: [] };
-		if (!boundary) {
-			return base;
-		}
-
-		return filterFeaturesInsideBoundary(base, boundary);
+		let base: FeatureCollection = parkingQuery.data || {
+			type: 'FeatureCollection' as const,
+			features: [],
+		};
+		if (boundary) base = filterFeaturesInsideBoundary(base, boundary);
+		if (yearRange) base = filterFeaturesByYear(base, 'anneerealisation', yearRange);
+		return base;
 	});
 </script>
 
@@ -65,17 +68,17 @@
 	}}
 >
 	<GeoJSONSource id="parking-source" data={parkingData}>
-		<!-- Arceaux: small dots, only visible at higher zoom -->
+		<!-- Arceaux: small dots, visible from lower zoom -->
 		<CircleLayer
 			id="parking-layer-circles"
 			filter={['==', ['get', 'type'], 'arceaux']}
-			minzoom={14}
+			minzoom={11}
 			layout={{
 				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
 			}}
 			paint={{
-				'circle-opacity': ['interpolate', ['linear'], ['zoom'], 14, 0.4, 16, 0.8],
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 2, 16, 4, 18, 6],
+				'circle-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.6, 14, 0.8, 16, 1],
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 1.5, 14, 2, 16, 4, 18, 6],
 				'circle-color': '#4ade80',
 				'circle-stroke-color': '#166534',
 				'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 14, 0, 16, 1],
@@ -85,13 +88,13 @@
 		<CircleLayer
 			id="parking-layer-circles-hitarea"
 			filter={['==', ['get', 'type'], 'arceaux']}
-			minzoom={14}
+			minzoom={11}
 			layout={{
 				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
 			}}
 			paint={{
 				'circle-opacity': 0,
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 14, 8, 16, 14, 18, 20],
+				'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 6, 14, 8, 16, 14, 18, 20],
 				'circle-color': 'transparent',
 			}}
 			onmouseenter={handleMouseEnter}
@@ -101,11 +104,11 @@
 		<SymbolLayer
 			id="parking-layer-capacity"
 			filter={['all', ['==', ['get', 'type'], 'arceaux'], ['has', 'capacite']]}
-			minzoom={17}
+			minzoom={15}
 			layout={{
 				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
 				'text-field': ['to-string', ['get', 'capacite']],
-				'text-size': 10,
+				'text-size': ['interpolate', ['linear'], ['zoom'], 15, 9, 17, 11],
 				'text-offset': [0, 1.2],
 				'text-anchor': 'top',
 				'text-font': ['Open Sans Bold'],

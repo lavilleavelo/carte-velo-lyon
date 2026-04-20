@@ -81,6 +81,9 @@
 				'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.2, 14, 0.7, 18, 1, 22, 1.1],
 				'icon-allow-overlap': true,
 				'icon-ignore-placement': true,
+				'text-allow-overlap': true,
+				'text-ignore-placement': true,
+				'symbol-sort-key': 0,
 				'text-field': [
 					'step',
 					['zoom'],

@@ -1283,8 +1283,6 @@
 
 			<TargetNetworkLayer {isLayerVisible} targetNetworkHorizons={params.targetNetworkHorizons} />
 
-			<VelovLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
-
 			<ParkingLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<BusLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
@@ -1313,6 +1311,8 @@
 			<SchoolLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
 			<AdditionalPOILayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
+
+			<VelovLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 		</MapLibre>
 
 		<a

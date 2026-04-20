@@ -114,3 +114,31 @@ export function filterFeaturesInsideBoundary(
 
 	return { type: 'FeatureCollection', features: kept };
 }
+
+type YearGetter = (feature: Feature) => number | null | undefined;
+
+export function filterFeaturesByYear(
+	data: FeatureCollection,
+	yearGetter: string | YearGetter,
+	range: [number, number],
+): FeatureCollection {
+	const [from, to] = range;
+
+	const getYear: YearGetter =
+		typeof yearGetter === 'function'
+			? yearGetter
+			: (f) => {
+					const v = (f.properties as Record<string, unknown> | null)?.[yearGetter];
+					if (v == null) return null;
+					const n = typeof v === 'number' ? v : Number(v);
+					return Number.isNaN(n) ? null : n;
+				};
+
+	const features = data.features.filter((f) => {
+		const year = getYear(f);
+		if (year == null) return true;
+		return year >= from && year <= to;
+	});
+
+	return { type: 'FeatureCollection', features };
+}

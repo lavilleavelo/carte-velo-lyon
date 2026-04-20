@@ -2,7 +2,7 @@
 	import { GeoJSONSource, SymbolLayer, CircleLayer, ImageLoader } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import FountainIcon from '$lib/assets/icons/fontaine.png?url';
-	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import { filterFeaturesInsideBoundary, filterFeaturesByYear } from '$lib/utils/geoFilter';
 	import type { FeatureCollection } from 'geojson';
 
 	let {
@@ -10,11 +10,13 @@
 		handleMouseEnter,
 		handleMouseLeave,
 		boundary,
+		yearRange,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		handleMouseEnter: () => void;
 		handleMouseLeave: () => void;
 		boundary?: FeatureCollection;
+		yearRange?: [number, number];
 	} = $props();
 
 	const fountainsQuery = createQuery(() => ({
@@ -31,9 +33,20 @@
 	}));
 
 	const fountainData = $derived.by(() => {
-		const base = fountainsQuery.data ?? { type: 'FeatureCollection' as const, features: [] };
-		if (!boundary) return base;
-		return filterFeaturesInsideBoundary(base, boundary);
+		let base: FeatureCollection = fountainsQuery.data ?? {
+			type: 'FeatureCollection' as const,
+			features: [],
+		};
+
+		if (boundary) {
+			base = filterFeaturesInsideBoundary(base, boundary);
+		}
+
+		if (yearRange) {
+			base = filterFeaturesByYear(base, 'anneepose', yearRange);
+		}
+
+		return base;
 	});
 	const features = $derived(fountainData.features || []);
 </script>

@@ -11,10 +11,12 @@
 		layers,
 		boundary,
 		map,
+		yearRange,
 	}: {
 		layers: string[];
 		boundary?: FeatureCollection;
 		map?: maplibregl.Map;
+		yearRange?: [number, number];
 	} = $props();
 
 	const isParkingVisible = (id: string) => layers.includes('parking') && id.startsWith('parking-');
@@ -28,17 +30,12 @@
 	function noop() {}
 </script>
 
-<VelovLayer
-	isLayerVisible={isVelovVisible}
-	handleMouseEnter={noop}
-	handleMouseLeave={noop}
-	{boundary}
-/>
 <ParkingLayer
 	isLayerVisible={isParkingVisible}
 	handleMouseEnter={noop}
 	handleMouseLeave={noop}
 	{boundary}
+	{yearRange}
 />
 <PumpLayer
 	isLayerVisible={isPumpVisible}
@@ -51,5 +48,12 @@
 	handleMouseEnter={noop}
 	handleMouseLeave={noop}
 	{boundary}
+	{yearRange}
 />
-<VoiesLyonnaisesLayer isLayerVisible={isVLVisible} {map} {boundary} />
+<VoiesLyonnaisesLayer isLayerVisible={isVLVisible} {map} {boundary} {yearRange} />
+<VelovLayer
+	isLayerVisible={isVelovVisible}
+	handleMouseEnter={noop}
+	handleMouseLeave={noop}
+	{boundary}
+/>

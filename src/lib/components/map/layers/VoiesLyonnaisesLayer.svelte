@@ -2,8 +2,8 @@
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
-	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
-	import type { FeatureCollection } from 'geojson';
+	import { filterFeaturesByYear, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import type { Feature, FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
 
 	type ProjectVLSubLayer = {
@@ -22,13 +22,29 @@
 		projectVLStatuses = ['wip', 'planned', 'variante'],
 		projectVLSubLayers = [],
 		boundary,
+		yearRange,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		map: maplibregl.Map | undefined;
 		projectVLStatuses?: string[];
 		projectVLSubLayers?: readonly ProjectVLSubLayer[];
 		boundary?: FeatureCollection;
+		yearRange?: [number, number];
 	} = $props();
+
+	function getVlYear(f: Feature): number | null {
+		const props = f.properties as Record<string, unknown> | null;
+		if (props?.status !== 'done') {
+			return null;
+		}
+		const doneAt = props?.doneAt;
+		if (typeof doneAt !== 'string') {
+			return null;
+		}
+
+		const match = doneAt.match(/(\d{4})/);
+		return match ? Number(match[1]) : null;
+	}
 
 	const vlQuery = createQuery(() => ({
 		queryKey: ['voies-lyonnaises'],
@@ -83,13 +99,22 @@
 			return undefined;
 		}
 
-		if (!boundary) {
+		if (!boundary && !yearRange) {
 			return vlQuery.data.grouped;
 		}
 
 		const out: Record<number, FeatureCollection> = {};
 		for (const [key, fc] of Object.entries(vlQuery.data.grouped)) {
-			out[Number(key)] = filterFeaturesInsideBoundary(fc as FeatureCollection, boundary);
+			let filtered = fc as FeatureCollection;
+			if (boundary) {
+				filtered = filterFeaturesInsideBoundary(filtered, boundary);
+			}
+
+			if (yearRange) {
+				filtered = filterFeaturesByYear(filtered, getVlYear, yearRange);
+			}
+
+			out[Number(key)] = filtered;
 		}
 
 		return out;
