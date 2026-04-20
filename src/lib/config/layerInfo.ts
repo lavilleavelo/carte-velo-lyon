@@ -55,6 +55,13 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 		source: 'La Ville à Vélo / Cyclopolis',
 		sourceUrl: 'https://github.com/lavilleavelo/cyclopolis',
 	},
+	'Infrastructures Cyclables (OSM)': {
+		description:
+			'Aménagements cyclables issus d’OpenStreetMap (highway=cycleway, cycleway:lane/track, bicycle_road, etc.). © les contributeurs OpenStreetMap, licence ODbL.',
+		source: 'OpenStreetMap contributors (Overpass API)',
+		sourceUrl: 'https://overpass-turbo.eu/',
+		links: [],
+	},
 	'Voies Lyonnaises (OSM)': {
 		description:
 			'Voies Lyonnaises telles que cartographiées dans OpenStreetMap (tag cycle_network). © les contributeurs OpenStreetMap. Les données sont disponibles sous la licence ODbL.',

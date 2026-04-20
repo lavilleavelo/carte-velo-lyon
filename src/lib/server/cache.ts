@@ -136,7 +136,11 @@ function overpassFetcher(query: string): () => Promise<unknown> {
 	return async () => {
 		const response = await fetch('https://overpass-api.de/api/interpreter', {
 			method: 'POST',
-			headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+			headers: {
+				'Content-Type': 'application/x-www-form-urlencoded',
+				Accept: '*/*',
+				'User-Agent': 'carte-velo-lyon/1.0 (+https://github.com/hverlin/carte-velo-lyon)',
+			},
 			body: `data=${encodeURIComponent(query)}`,
 		});
 		if (!response.ok) {
@@ -151,6 +155,13 @@ registerEntry('overpassVL', overpassFetcher(OVERPASS_VL_QUERY));
 
 export async function getCachedOverpassVLData(): Promise<unknown> {
 	return getCached('overpassVL');
+}
+
+const OVERPASS_CYCLEWAYS_QUERY = `[out:json][timeout:180];(way["highway"="cycleway"](${OVERPASS_BBOX});way["bicycle_road"="yes"](${OVERPASS_BBOX});way["cyclestreet"="yes"](${OVERPASS_BBOX});way["cycleway"~"^(lane|track|share_busway|shared_busway|opposite|opposite_lane|opposite_track)$"](${OVERPASS_BBOX});way["cycleway:left"~"^(lane|track|share_busway|shared_busway|opposite|opposite_lane|opposite_track)$"](${OVERPASS_BBOX});way["cycleway:right"~"^(lane|track|share_busway|shared_busway|opposite|opposite_lane|opposite_track)$"](${OVERPASS_BBOX});way["cycleway:both"~"^(lane|track|share_busway|shared_busway|opposite|opposite_lane|opposite_track)$"](${OVERPASS_BBOX});way["highway"="path"]["bicycle"="designated"](${OVERPASS_BBOX});way["highway"="living_street"](${OVERPASS_BBOX});way["oneway:bicycle"="no"]["oneway"="yes"](${OVERPASS_BBOX}););out geom;`;
+registerEntry('overpassCycleways', overpassFetcher(OVERPASS_CYCLEWAYS_QUERY));
+
+export async function getCachedOverpassCyclewaysData(): Promise<unknown> {
+	return getCached('overpassCycleways');
 }
 
 const OVERPASS_TOILETS_QUERY = `[out:json][timeout:60];(node["amenity"="toilets"](${OVERPASS_BBOX});way["amenity"="toilets"](${OVERPASS_BBOX});relation["amenity"="toilets"](${OVERPASS_BBOX}););out center;`;

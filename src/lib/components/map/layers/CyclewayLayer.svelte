@@ -18,11 +18,6 @@
 		['literal', ['Couloir bus vélo élargi', 'Couloir bus vélo non élargi']],
 	];
 	const filterDsc: any = ['==', ['get', 'typeamenagement'], 'Double sens cyclable'];
-	const filterCvcb: any = [
-		'==',
-		['get', 'typeamenagement'],
-		'Chaussée à voie centrale banalisée (CVCB)',
-	];
 
 	const visibility = $derived(isLayerVisible('cycleways') ? 'visible' : 'none');
 </script>
@@ -80,18 +75,6 @@
 			'line-dasharray': [0.2, 1.6],
 		}}
 		layout={{ 'line-cap': 'round', visibility }}
-	/>
-
-	<LineLayer
-		id="cw-cvcb"
-		filter={filterCvcb}
-		paint={{
-			'line-color': COLOR,
-			'line-width': 3,
-			'line-opacity': 0.9,
-			'line-dasharray': [3, 1, 1, 1],
-		}}
-		layout={{ visibility }}
 	/>
 
 	<LineLayer

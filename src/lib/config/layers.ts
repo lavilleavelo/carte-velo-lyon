@@ -1,11 +1,16 @@
 import { Icons } from './icons';
 import { vlColors } from '$lib/utils/mapUtils';
 
+export interface PopupContext {
+	isLayerVisible?: (id: string) => boolean;
+}
+
 export interface LayerConfig {
 	id: string;
 	label: string;
 	category:
 		| 'cycling'
+		| 'osm-cycling'
 		| 'parking'
 		| 'transport'
 		| 'services'
@@ -20,7 +25,7 @@ export interface LayerConfig {
 	interactableLayerIds: string[];
 	featureType: string;
 	defaultEnabled?: boolean;
-	formatPopup?: (properties: any) => string;
+	formatPopup?: (properties: any, context?: PopupContext) => string;
 	minZoomPopup?: number;
 }
 
@@ -40,6 +45,32 @@ export const layerConfigs: LayerConfig[] = [
 					<div class="flex flex-col">
 						<span class="font-bold text-sm">${p.typeamenagement}</span>
 						${p.localisation ? `<span class="text-xs">${p.localisation}</span>` : ''}
+					</div>
+				</div>`;
+		},
+		minZoomPopup: 15,
+	},
+
+	// Cycling infrastructure (OSM)
+	{
+		id: 'osm-cycleways',
+		label: 'Aménagements cyclables (OSM)',
+		category: 'osm-cycling',
+		interactableLayerIds: ['osm-cycleways-layer-hitarea'],
+		featureType: 'osm-cycleway',
+		formatPopup: (p, ctx) => {
+			const name = p.name ? `<span class="text-xs">${p.name}</span>` : '';
+			const showSource = ctx?.isLayerVisible?.('cycleways') === true;
+			const source = showSource
+				? `<span class="text-xs text-gray-500">Source: OpenStreetMap</span>`
+				: '';
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.bike('#0369a1')}</div>
+					<div class="flex flex-col">
+						<span class="font-bold text-sm">${p.typeamenagement || 'Aménagement cyclable'}</span>
+						${name}
+						${source}
 					</div>
 				</div>`;
 		},

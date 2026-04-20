@@ -72,6 +72,7 @@
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
 	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
+	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
 	import {
 		navigationProviders,
 		loadDefaultProvider,
@@ -164,11 +165,6 @@
 			{ id: 'Couloir bus vélo élargi', label: 'Couloir bus vélo élargi', color: '#eab308' },
 			{ id: 'Couloir bus vélo non élargi', label: 'Couloir bus vélo non élargi', color: '#f59e0b' },
 			{ id: 'Double sens cyclable', label: 'Double sens cyclable', color: '#06b6d4' },
-			{
-				id: 'Chaussée à voie centrale banalisée (CVCB)',
-				label: 'CVCB',
-				color: '#8b5cf6',
-			},
 			{ id: 'Goulotte ou rampe', label: 'Goulotte ou rampe', color: '#ec4899' },
 		],
 		localisation: [
@@ -185,6 +181,12 @@
 			color: '#19181a',
 			category: 'Infrastructures Cyclables',
 			hasSubFilters: true,
+		},
+		{
+			id: 'osm-cycleways',
+			label: 'Aménagements cyclables (OSM)',
+			color: '#0369a1',
+			category: 'Infrastructures Cyclables (OSM)',
 		},
 		{
 			id: 'parking-arceaux',
@@ -428,6 +430,7 @@
 	] as const;
 
 	const optionalCategories = [
+		'Infrastructures Cyclables (OSM)',
 		'Voies Lyonnaises (OSM)',
 		'Compteurs',
 		'Confort & Repos',
@@ -1258,7 +1261,7 @@
 							{/if}
 							<div class="flex flex-col gap-1">
 								{#if feature.config?.formatPopup}
-									{@html feature.config.formatPopup(feature.properties)}
+									{@html feature.config.formatPopup(feature.properties, { isLayerVisible })}
 								{:else}
 									<span class="text-sm font-bold">
 										{feature.properties.name ||
@@ -1301,6 +1304,8 @@
 			<CountersLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<OverpassVLLayer {isLayerVisible} {map} />
+
+			<OsmCyclewayLayer {isLayerVisible} />
 
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
