@@ -50,26 +50,49 @@
 	let innerWidth = $state(0);
 
 	const paramsSchema = type({
-		layers: type('string[]').default(() => ['cycleways']),
+		layers: type('string[]').default(() => ['osm-cycleways']),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),
 		yearFrom: type('number').default(() => MIN_YEAR),
 		yearTo: type('number').default(() => MAX_YEAR),
 		cyclewayTypes: type('string[]').default(() => []),
+		filterByYear: type('boolean').default(() => false),
 	});
 
 	const params = useSearchParams(paramsSchema, { pushHistory: false, noScroll: true });
 
 	const yearRange = $derived<[number, number]>([params.yearFrom, params.yearTo]);
-	const isFullYearRange = $derived(params.yearFrom <= MIN_YEAR && params.yearTo >= MAX_YEAR);
+	const effectiveYearRange = $derived<[number, number] | undefined>(
+		params.filterByYear ? yearRange : undefined,
+	);
 
-	const layerToggles = [
-		{ id: 'cycleways', label: 'Aménagements cyclables' },
-		{ id: 'osm-cycleways', label: 'Aménagements cyclables (OSM)' },
-		{ id: 'vl', label: 'Voies Lyonnaises' },
-		{ id: 'velov', label: 'Vélo’v' },
-		{ id: 'parking', label: 'Stationnement' },
-		{ id: 'pumps', label: 'Pompes' },
-		{ id: 'fountains', label: 'Fontaines' },
+	const YEAR_INCOMPATIBLE_IDS = new Set(['osm-cycleways', 'velov', 'pumps', 'fountains']);
+
+	function isLayerActive(id: string): boolean {
+		if (!params.layers.includes(id)) return false;
+		if (params.filterByYear && YEAR_INCOMPATIBLE_IDS.has(id)) return false;
+		return true;
+	}
+
+	const effectiveLayers = $derived(params.layers.filter(isLayerActive));
+
+	const layerToggleGroups = [
+		{
+			label: 'Aménagements cyclables',
+			toggles: [
+				{ id: 'cycleways', label: 'Grand Lyon' },
+				{ id: 'osm-cycleways', label: 'OpenStreetMap', disableWhenYearFiltered: true },
+				{ id: 'vl', label: 'Voies Lyonnaises' },
+			],
+		},
+		{
+			label: 'Autres',
+			toggles: [
+				{ id: 'velov', label: 'Vélo’v', disableWhenYearFiltered: true },
+				{ id: 'parking', label: 'Stationnement' },
+				{ id: 'pumps', label: 'Pompes', disableWhenYearFiltered: true },
+				{ id: 'fountains', label: 'Fontaines', disableWhenYearFiltered: true },
+			],
+		},
 	];
 
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
@@ -99,8 +122,8 @@
 	const voirieInside = $derived.by(() => {
 		if (!voirieQuery.data) return undefined;
 		let filtered = filterFeaturesInsideBoundary(voirieQuery.data, boundary);
-		if (!isFullYearRange) {
-			filtered = filterFeaturesByYear(filtered, 'anneelivraison', yearRange);
+		if (effectiveYearRange) {
+			filtered = filterFeaturesByYear(filtered, 'anneelivraison', effectiveYearRange);
 		}
 		const activeTypes = params.cyclewayTypes ?? [];
 		if (activeTypes.length > 0) {
@@ -124,14 +147,13 @@
 	const allConfigs = getAllLayerConfigs();
 
 	function isConfigLayerVisible(configId: string): boolean {
-		const layers = params.layers || [];
-		if (configId === 'cycleways') return layers.includes('cycleways');
-		if (configId === 'osm-cycleways') return layers.includes('osm-cycleways');
-		if (configId.startsWith('vl-') || configId === 'project-vl') return layers.includes('vl');
-		if (configId === 'velov') return layers.includes('velov');
-		if (configId.startsWith('parking-')) return layers.includes('parking');
-		if (configId === 'pumps') return layers.includes('pumps');
-		if (configId === 'water-fountains') return layers.includes('fountains');
+		if (configId === 'cycleways') return isLayerActive('cycleways');
+		if (configId === 'osm-cycleways') return isLayerActive('osm-cycleways');
+		if (configId.startsWith('vl-') || configId === 'project-vl') return isLayerActive('vl');
+		if (configId === 'velov') return isLayerActive('velov');
+		if (configId.startsWith('parking-')) return isLayerActive('parking');
+		if (configId === 'pumps') return isLayerActive('pumps');
+		if (configId === 'water-fountains') return isLayerActive('fountains');
 		return false;
 	}
 
@@ -351,22 +373,17 @@
 		{/if}
 
 		<CyclewayLayer
-			isLayerVisible={(id) => id === 'cycleways' && params.layers.includes('cycleways')}
+			isLayerVisible={(id) => id === 'cycleways' && isLayerActive('cycleways')}
 			voirieData={voirieInside}
 		/>
 
 		<OsmCyclewayLayer
-			isLayerVisible={(id) => id === 'osm-cycleways' && params.layers.includes('osm-cycleways')}
+			isLayerVisible={(id) => id === 'osm-cycleways' && isLayerActive('osm-cycleways')}
 			{boundary}
 			activeLegendIds={params.cyclewayTypes}
 		/>
 
-		<CommuneMapLayers
-			layers={params.layers}
-			{boundary}
-			{map}
-			yearRange={isFullYearRange ? undefined : yearRange}
-		/>
+		<CommuneMapLayers layers={effectiveLayers} {boundary} {map} yearRange={effectiveYearRange} />
 	</MapLibre>
 </div>
 
@@ -396,17 +413,25 @@
 	</MobileDrawer>
 {/if}
 
-<YearRangeFilter
-	range={yearRange}
-	min={MIN_YEAR}
-	max={MAX_YEAR}
-	onRangeChange={(next) => {
-		params.yearFrom = next[0];
-		params.yearTo = next[1];
-	}}
-/>
+{#snippet yearFilterSlot()}
+	<YearRangeFilter
+		range={yearRange}
+		min={MIN_YEAR}
+		max={MAX_YEAR}
+		plain
+		onRangeChange={(next) => {
+			params.yearFrom = next[0];
+			params.yearTo = next[1];
+		}}
+	/>
+{/snippet}
 
-<CommuneLayerToggles bind:layers={params.layers} toggles={layerToggles} />
+<CommuneLayerToggles
+	bind:layers={params.layers}
+	bind:filterByYear={params.filterByYear}
+	groups={layerToggleGroups}
+	{yearFilterSlot}
+/>
 
 <CyclewayLegend activeIds={params.cyclewayTypes} onToggle={toggleCyclewayType} />
 

@@ -77,11 +77,25 @@
 				visibility: isLayerVisible('parking-arceaux') ? 'visible' : 'none',
 			}}
 			paint={{
-				'circle-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.6, 14, 0.8, 16, 1],
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 1.5, 14, 2, 16, 4, 18, 6],
+				'circle-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.5, 13, 0.7, 14, 0.85, 16, 1],
+				'circle-radius': [
+					'interpolate',
+					['linear'],
+					['zoom'],
+					11,
+					1.2,
+					13,
+					1.8,
+					14,
+					2.2,
+					16,
+					4,
+					18,
+					6,
+				],
 				'circle-color': '#4ade80',
 				'circle-stroke-color': '#166534',
-				'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 14, 0, 16, 1],
+				'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 12, 0, 14, 0.4, 16, 1],
 			}}
 		/>
 
