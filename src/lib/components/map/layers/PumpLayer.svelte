@@ -2,8 +2,20 @@
 	import { GeoJSONSource, CircleLayer, SymbolLayer, ImageLoader } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import PumpIcon from '$lib/assets/icons/pump.png?url';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import type { FeatureCollection } from 'geojson';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave } = $props();
+	let {
+		isLayerVisible,
+		handleMouseEnter,
+		handleMouseLeave,
+		boundary,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		handleMouseEnter: () => void;
+		handleMouseLeave: () => void;
+		boundary?: FeatureCollection;
+	} = $props();
 
 	const pumpsQuery = createQuery(() => ({
 		queryKey: ['pumps'],
@@ -18,7 +30,15 @@
 		enabled: isLayerVisible('pumps'),
 	}));
 
-	const features = $derived(pumpsQuery.data?.features || []);
+	const pumpsData = $derived.by(() => {
+		const base = pumpsQuery.data ?? { type: 'FeatureCollection' as const, features: [] };
+		if (!boundary) {
+			return base;
+		}
+
+		return filterFeaturesInsideBoundary(base, boundary);
+	});
+	const features = $derived(pumpsData.features || []);
 </script>
 
 <ImageLoader images={{ pump: PumpIcon }}>

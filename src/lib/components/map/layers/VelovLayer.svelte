@@ -3,9 +3,20 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import velovDataUrl from '$lib/data/velov-data-grand-lyon.json?url';
 	import { fetchVelovAvailability } from '$lib/utils/velovUtils';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import type { FeatureCollection, Point } from 'geojson';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave } = $props();
+	let {
+		isLayerVisible,
+		handleMouseEnter,
+		handleMouseLeave,
+		boundary,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		handleMouseEnter: () => void;
+		handleMouseLeave: () => void;
+		boundary?: FeatureCollection;
+	} = $props();
 
 	const velovQuery = createQuery(() => ({
 		queryKey: ['velov-availability'],
@@ -46,9 +57,21 @@
 		refetchOnWindowFocus: false,
 		staleTime: Infinity, // until reload
 	}));
+
+	const velovSourceData = $derived.by(() => {
+		if (!velovQuery.data) {
+			return undefined;
+		}
+
+		if (!boundary) {
+			return velovQuery.data;
+		}
+
+		return filterFeaturesInsideBoundary(velovQuery.data, boundary);
+	});
 </script>
 
-<GeoJSONSource maxzoom={14} id="velov-stations-source" data={velovQuery.data ?? velovDataUrl}>
+<GeoJSONSource maxzoom={14} id="velov-stations-source" data={velovSourceData ?? velovDataUrl}>
 	<ImageLoader images={{ velov: '/velov-station.png' }}>
 		<SymbolLayer
 			id="velov-stations-layer"

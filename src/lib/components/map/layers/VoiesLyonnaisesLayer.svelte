@@ -2,6 +2,8 @@
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import type { FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
 
 	type ProjectVLSubLayer = {
@@ -19,11 +21,13 @@
 		map,
 		projectVLStatuses = ['wip', 'planned', 'variante'],
 		projectVLSubLayers = [],
+		boundary,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		map: maplibregl.Map | undefined;
 		projectVLStatuses?: string[];
 		projectVLSubLayers?: readonly ProjectVLSubLayer[];
+		boundary?: FeatureCollection;
 	} = $props();
 
 	const vlQuery = createQuery(() => ({
@@ -73,13 +77,30 @@
 		expression.push(['literal', [1, 0]]);
 		return expression as maplibregl.DataDrivenPropertyValueSpecification<number[]>;
 	});
+
+	const groupedLineData = $derived.by(() => {
+		if (!vlQuery.data) {
+			return undefined;
+		}
+
+		if (!boundary) {
+			return vlQuery.data.grouped;
+		}
+
+		const out: Record<number, FeatureCollection> = {};
+		for (const [key, fc] of Object.entries(vlQuery.data.grouped)) {
+			out[Number(key)] = filterFeaturesInsideBoundary(fc as FeatureCollection, boundary);
+		}
+
+		return out;
+	});
 </script>
 
 {#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
 	{@const layerId = `vl-${lineNumber}`}
 	{@const lineIndex = lineNumber - 1}
-	{#if vlQuery.data?.grouped[lineNumber]}
-		<GeoJSONSource id={`vl-${lineNumber}-source`} data={vlQuery.data.grouped[lineNumber]}>
+	{#if groupedLineData?.[lineNumber]}
+		<GeoJSONSource id={`vl-${lineNumber}-source`} data={groupedLineData[lineNumber]}>
 			<LineLayer
 				id={`vl-${lineNumber}-line-contour`}
 				layout={{
@@ -183,8 +204,8 @@
 
 {#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
 	{@const layerId = 'project-vl'}
-	{#if vlQuery.data?.grouped[lineNumber]}
-		<GeoJSONSource id={`vl-project-${lineNumber}-source`} data={vlQuery.data.grouped[lineNumber]}>
+	{#if groupedLineData?.[lineNumber]}
+		<GeoJSONSource id={`vl-project-${lineNumber}-source`} data={groupedLineData[lineNumber]}>
 			<LineLayer
 				id={`vl-project-${lineNumber}-casing`}
 				paint={{

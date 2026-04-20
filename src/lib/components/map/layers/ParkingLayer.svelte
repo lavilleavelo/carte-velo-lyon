@@ -6,8 +6,20 @@
 	import parkingVelostationIcon from '$lib/assets/icons/parking-velostation.png?url';
 	import parkingBoxIcon from '$lib/assets/icons/box_securisee_velo.png?url';
 	import parkingLpaIcon from '$lib/assets/icons/parking-lpa.png?url';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import type { FeatureCollection } from 'geojson';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave } = $props();
+	let {
+		isLayerVisible,
+		handleMouseEnter,
+		handleMouseLeave,
+		boundary,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		handleMouseEnter: () => void;
+		handleMouseLeave: () => void;
+		boundary?: FeatureCollection;
+	} = $props();
 
 	const parkingQuery = createQuery(() => ({
 		queryKey: ['parking'],
@@ -28,9 +40,14 @@
 			isLayerVisible('parking-lpa'),
 	}));
 
-	const parkingData = $derived(
-		parkingQuery.data || { type: 'FeatureCollection' as const, features: [] },
-	);
+	const parkingData = $derived.by(() => {
+		const base = parkingQuery.data || { type: 'FeatureCollection' as const, features: [] };
+		if (!boundary) {
+			return base;
+		}
+
+		return filterFeaturesInsideBoundary(base, boundary);
+	});
 </script>
 
 <ImageLoader
