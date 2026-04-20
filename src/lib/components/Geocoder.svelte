@@ -1,11 +1,20 @@
 <script lang="ts">
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Debounced } from 'runed';
+	import { goto } from '$app/navigation';
 	import Check from '@lucide/svelte/icons/check';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
-	import SearchIcon from '@lucide/svelte/icons/search';
+	import Building2 from '@lucide/svelte/icons/building-2';
 	import { cn } from '$lib/utils';
 	import * as Command from '$lib/components/ui/command';
+	import communesIndex from '$lib/data/communes/_index.json';
+
+	function normalize(s: string): string {
+		return s
+			.normalize('NFD')
+			.replace(/\p{Diacritic}/gu, '')
+			.toLowerCase();
+	}
 
 	interface GeocoderResult {
 		properties: {
@@ -84,6 +93,21 @@
 	const results = $derived(geocoderQuery.data ?? []);
 	const isLoading = $derived(geocoderQuery.isLoading);
 	const isSearching = $derived(isLoading || inputValue !== debouncedQuery.current);
+
+	const communeMatches = $derived.by(() => {
+		const q = inputValue.trim();
+		if (q.length < 2) {
+			return [];
+		}
+
+		const nq = normalize(q);
+		const withLyonWhole = [
+			{ slug: 'lyon', name: 'Lyon (ville entière)', insee: '69123' },
+			...communesIndex,
+		];
+
+		return withLyonWhole.filter((c) => normalize(c.name).includes(nq)).slice(0, 5);
+	});
 
 	function getResultTitle(props: GeocoderResult['properties']): string {
 		if (props.name) return props.name;
@@ -169,6 +193,12 @@
 		onSelect?.(result.geometry.coordinates, name);
 	}
 
+	function handleCommuneSelect(slug: string, name: string) {
+		inputValue = name;
+		open = false;
+		goto(`/communes/${slug}`);
+	}
+
 	function handleClickOutside(event: MouseEvent) {
 		if (wrapperRef && !wrapperRef.contains(event.target as Node)) {
 			open = false;
@@ -199,21 +229,44 @@
 			class="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
 		/>
 
-		{#if open && (results.length > 0 || inputValue.length >= 2)}
+		{#if open && (results.length > 0 || communeMatches.length > 0 || inputValue.length >= 2)}
 			<div
 				class="absolute top-[calc(100%+4px)] left-0 w-full animate-in rounded-md border bg-popover text-popover-foreground shadow-md fade-in-0 outline-none zoom-in-95"
 			>
 				<Command.List class="max-h-[300px] overflow-x-hidden overflow-y-auto p-1">
+					{#if communeMatches.length > 0}
+						<Command.Group>
+							<div
+								class="px-2 pt-1 pb-0.5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase"
+							>
+								Communes
+							</div>
+							{#each communeMatches as commune (commune.slug)}
+								<Command.Item
+									value={`commune-${commune.slug}`}
+									onSelect={() => handleCommuneSelect(commune.slug, commune.name)}
+									class="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+								>
+									<Building2 class="mr-2 h-4 w-4 shrink-0 text-brand-navy" />
+									<div class="flex flex-col">
+										<span class="font-medium">{commune.name}</span>
+										<span class="text-xs text-muted-foreground">Voir la carte de la commune</span>
+									</div>
+								</Command.Item>
+							{/each}
+						</Command.Group>
+					{/if}
+
 					{#if isSearching}
 						<div class="flex items-center justify-center py-6 text-sm text-muted-foreground">
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 							Recherche en cours...
 						</div>
-					{:else if results.length === 0}
+					{:else if results.length === 0 && communeMatches.length === 0}
 						<Command.Empty class="py-6 text-center text-sm">Aucun résultat trouvé.</Command.Empty>
 					{/if}
 
-					{#if !isSearching}
+					{#if !isSearching && results.length > 0}
 						<Command.Group>
 							{#each results as result, i}
 								{@const title = getResultTitle(result.properties)}
