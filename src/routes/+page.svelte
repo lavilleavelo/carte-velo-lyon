@@ -138,7 +138,7 @@
 	}
 
 	const mapSearchParamsSchema = type({
-		layers: type('string[]').default(() => ['cycleways', 'vl']),
+		layers: type('string[]').default(() => ['osm-cycleways', 'vl']),
 		commune: 'string = ""',
 		zoom: 'number = 11',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
@@ -179,17 +179,17 @@
 
 	const availableLayers = [
 		{
-			id: 'cycleways',
+			id: 'osm-cycleways',
 			label: 'Aménagements cyclables',
-			color: '#19181a',
+			color: '#0369a1',
 			category: 'Infrastructures Cyclables',
-			hasSubFilters: true,
 		},
 		{
-			id: 'osm-cycleways',
-			label: 'Aménagements cyclables (OSM)',
-			color: '#0369a1',
-			category: 'Infrastructures Cyclables (OSM)',
+			id: 'cycleways',
+			label: 'Aménagements cyclables (Grand Lyon)',
+			color: '#19181a',
+			category: 'Infrastructures Cyclables (Grand Lyon)',
+			hasSubFilters: true,
 		},
 		{
 			id: 'parking-arceaux',
@@ -433,7 +433,7 @@
 	] as const;
 
 	const optionalCategories = [
-		'Infrastructures Cyclables (OSM)',
+		'Infrastructures Cyclables (Grand Lyon)',
 		'Voies Lyonnaises (OSM)',
 		'Compteurs',
 		'Confort & Repos',
@@ -488,7 +488,7 @@
 	}
 
 	function resetLayers() {
-		params.layers = ['cycleways', 'vl'];
+		params.layers = ['osm-cycleways', 'vl'];
 	}
 
 	const visibleLayers = $derived(new Set(expandLayers(params.layers || [])));
@@ -504,7 +504,7 @@
 	);
 
 	const hasNonDefaultFilters = $derived.by(() => {
-		const defaultSet = new Set(expandLayers(['cycleways', 'vl']));
+		const defaultSet = new Set(expandLayers(['osm-cycleways', 'vl']));
 		if (visibleLayers.size !== defaultSet.size) return true;
 		for (const id of visibleLayers) {
 			if (!defaultSet.has(id)) return true;

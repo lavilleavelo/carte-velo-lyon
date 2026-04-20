@@ -12,7 +12,7 @@ export const presetQuickFilters: QuickFilter[] = [
 		color: '#152B68',
 		layerIds: Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`),
 	},
-	{ id: 'qf-pistes', label: 'Pistes', color: '#15803d', layerIds: ['cycleways'] },
+	{ id: 'qf-pistes', label: 'Pistes', color: '#15803d', layerIds: ['osm-cycleways'] },
 	{ id: 'qf-velov', label: "Vélo'v", color: '#EA2127', layerIds: ['velov'] },
 	{
 		id: 'qf-parking',
@@ -75,7 +75,7 @@ const shortLabels: Record<string, string> = {
 	communes: 'Communes',
 	'target-network': 'Réseau 2040',
 	'project-vl': 'VL projet',
-	cycleways: 'Pistes',
+	'osm-cycleways': 'Pistes',
 };
 
 const DEFAULT_QF_IDS = [
