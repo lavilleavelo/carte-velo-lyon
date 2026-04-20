@@ -1279,11 +1279,7 @@
 
 			<CommunesLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
-			<CyclewayLayer
-				{isLayerVisible}
-				voirieData={filteredVoirieData}
-				mapStyle={mapStyleState.mapStyle}
-			/>
+			<CyclewayLayer {isLayerVisible} voirieData={filteredVoirieData} />
 
 			<TargetNetworkLayer {isLayerVisible} targetNetworkHorizons={params.targetNetworkHorizons} />
 
