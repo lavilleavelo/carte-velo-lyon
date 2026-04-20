@@ -1,0 +1,17 @@
+{
+  "slug": "craponne",
+  "name": "Craponne",
+  "nomReduit": "Craponne",
+  "insee": "69069",
+  "surfaceKm2": 4.71,
+  "bbox": [
+    4.70650377,
+    45.73540568,
+    4.7524913,
+    45.75580082
+  ],
+  "center": [
+    4.729497535,
+    45.74560325
+  ]
+}

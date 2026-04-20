@@ -1,0 +1,17 @@
+{
+  "slug": "caluire-et-cuire",
+  "name": "Caluire-et-Cuire",
+  "nomReduit": "Caluire",
+  "insee": "69034",
+  "surfaceKm2": 10.38,
+  "bbox": [
+    4.81891865,
+    45.7789194,
+    4.87938025,
+    45.81830759
+  ],
+  "center": [
+    4.84914945,
+    45.798613495
+  ]
+}

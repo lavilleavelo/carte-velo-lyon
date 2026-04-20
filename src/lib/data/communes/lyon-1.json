@@ -1,0 +1,17 @@
+{
+  "slug": "lyon-1",
+  "name": "Lyon 1er Arrondissement",
+  "nomReduit": "Lyon 1",
+  "insee": "69381",
+  "surfaceKm2": null,
+  "bbox": [
+    4.8130699,
+    45.76454407,
+    4.83977238,
+    45.77478396
+  ],
+  "center": [
+    4.826421140000001,
+    45.769664015000004
+  ]
+}

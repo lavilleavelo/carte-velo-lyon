@@ -1,0 +1,17 @@
+{
+  "slug": "la-tour-de-salvagny",
+  "name": "La Tour-de-Salvagny",
+  "nomReduit": "La Tour",
+  "insee": "69250",
+  "surfaceKm2": 8.42,
+  "bbox": [
+    4.69278452,
+    45.78756997,
+    4.7334339,
+    45.82949735
+  ],
+  "center": [
+    4.71310921,
+    45.808533659999995
+  ]
+}

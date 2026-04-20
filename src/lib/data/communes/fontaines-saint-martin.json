@@ -1,0 +1,17 @@
+{
+  "slug": "fontaines-saint-martin",
+  "name": "Fontaines-Saint-Martin",
+  "nomReduit": "Fontaines-St-M",
+  "insee": "69087",
+  "surfaceKm2": 2.73,
+  "bbox": [
+    4.83727977,
+    45.83287853,
+    4.86683592,
+    45.8561876
+  ],
+  "center": [
+    4.852057845,
+    45.844533065
+  ]
+}

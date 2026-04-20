@@ -1,0 +1,17 @@
+{
+  "slug": "sathonay-village",
+  "name": "Sathonay-Village",
+  "nomReduit": "Sathonay-V",
+  "insee": "69293",
+  "surfaceKm2": 5.12,
+  "bbox": [
+    4.86305275,
+    45.82767162,
+    4.90846297,
+    45.85110187
+  ],
+  "center": [
+    4.88575786,
+    45.839386745
+  ]
+}

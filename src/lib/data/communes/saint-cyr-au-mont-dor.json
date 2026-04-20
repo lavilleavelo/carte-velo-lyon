@@ -1,0 +1,17 @@
+{
+  "slug": "saint-cyr-au-mont-dor",
+  "name": "Saint-Cyr-au-Mont-d'Or",
+  "nomReduit": "St-Cyr",
+  "insee": "69191",
+  "surfaceKm2": 7.27,
+  "bbox": [
+    4.79334124,
+    45.79929038,
+    4.83913994,
+    45.84392664
+  ],
+  "center": [
+    4.81624059,
+    45.821608510000004
+  ]
+}

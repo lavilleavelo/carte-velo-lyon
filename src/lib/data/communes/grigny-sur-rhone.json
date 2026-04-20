@@ -1,0 +1,17 @@
+{
+  "slug": "grigny-sur-rhone",
+  "name": "Grigny-sur-Rhône",
+  "nomReduit": "Grigny",
+  "insee": "69096",
+  "surfaceKm2": 5.94,
+  "bbox": [
+    4.76406424,
+    45.59049736,
+    4.80738334,
+    45.63029021
+  ],
+  "center": [
+    4.7857237900000005,
+    45.610393785
+  ]
+}

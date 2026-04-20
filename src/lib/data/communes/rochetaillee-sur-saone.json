@@ -1,0 +1,17 @@
+{
+  "slug": "rochetaillee-sur-saone",
+  "name": "Rochetaillée-sur-Saône",
+  "nomReduit": "Rochetaillée",
+  "insee": "69168",
+  "surfaceKm2": 1.38,
+  "bbox": [
+    4.83210049,
+    45.83350692,
+    4.84706772,
+    45.85187869
+  ],
+  "center": [
+    4.839584105,
+    45.842692805
+  ]
+}

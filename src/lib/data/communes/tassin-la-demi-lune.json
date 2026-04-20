@@ -1,0 +1,17 @@
+{
+  "slug": "tassin-la-demi-lune",
+  "name": "Tassin-la-Demi-Lune",
+  "nomReduit": "Tassin",
+  "insee": "69244",
+  "surfaceKm2": 7.98,
+  "bbox": [
+    4.71155734,
+    45.75023183,
+    4.79263509,
+    45.77691621
+  ],
+  "center": [
+    4.752096215,
+    45.76357402
+  ]
+}

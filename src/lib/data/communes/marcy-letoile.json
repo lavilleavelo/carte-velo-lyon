@@ -1,0 +1,17 @@
+{
+  "slug": "marcy-letoile",
+  "name": "Marcy-l'Étoile",
+  "nomReduit": "Marcy-l'E",
+  "insee": "69127",
+  "surfaceKm2": 5.37,
+  "bbox": [
+    4.69176524,
+    45.77354938,
+    4.73419862,
+    45.79743371
+  ],
+  "center": [
+    4.71298193,
+    45.785491545
+  ]
+}

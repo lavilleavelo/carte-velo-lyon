@@ -1,0 +1,17 @@
+{
+  "slug": "lyon-5",
+  "name": "Lyon 5e Arrondissement",
+  "nomReduit": "Lyon 5",
+  "insee": "69385",
+  "surfaceKm2": null,
+  "bbox": [
+    4.77179584,
+    45.74424504,
+    4.83049422,
+    45.76798435
+  ],
+  "center": [
+    4.801145030000001,
+    45.756114695
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "slug": "lyon-6",
+  "name": "Lyon 6e Arrondissement",
+  "nomReduit": "Lyon 6",
+  "insee": "69386",
+  "surfaceKm2": null,
+  "bbox": [
+    4.83944962,
+    45.7635558,
+    4.86994393,
+    45.7871488
+  ],
+  "center": [
+    4.854696775,
+    45.775352299999994
+  ]
+}

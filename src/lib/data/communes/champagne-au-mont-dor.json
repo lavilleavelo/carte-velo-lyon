@@ -1,0 +1,17 @@
+{
+  "slug": "champagne-au-mont-dor",
+  "name": "Champagne-au-Mont-d'Or",
+  "nomReduit": "Champagne",
+  "insee": "69040",
+  "surfaceKm2": 2.57,
+  "bbox": [
+    4.77024863,
+    45.78924743,
+    4.80221121,
+    45.81187772
+  ],
+  "center": [
+    4.78622992,
+    45.800562575
+  ]
+}

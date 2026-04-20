@@ -1,0 +1,17 @@
+{
+  "slug": "charbonnieres-les-bains",
+  "name": "Charbonnières-les-Bains",
+  "nomReduit": "Charbonnières",
+  "insee": "69044",
+  "surfaceKm2": 4.12,
+  "bbox": [
+    4.72475479,
+    45.76762919,
+    4.76112396,
+    45.79065147
+  ],
+  "center": [
+    4.742939375000001,
+    45.779140330000004
+  ]
+}

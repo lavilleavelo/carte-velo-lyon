@@ -1,0 +1,17 @@
+{
+  "slug": "fleurieu-sur-saone",
+  "name": "Fleurieu-sur-Saône",
+  "nomReduit": "Fleurieu",
+  "insee": "69085",
+  "surfaceKm2": 2.95,
+  "bbox": [
+    4.83655469,
+    45.84815733,
+    4.87668305,
+    45.86827059
+  ],
+  "center": [
+    4.85661887,
+    45.85821396
+  ]
+}

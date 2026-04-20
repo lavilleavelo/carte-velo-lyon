@@ -1,0 +1,17 @@
+{
+  "slug": "oullins-pierre-benite",
+  "name": "Oullins-Pierre-Bénite",
+  "nomReduit": "Oullins-Pierre-Bénite",
+  "insee": "69149",
+  "surfaceKm2": 8.86,
+  "bbox": [
+    4.77843549,
+    45.69150915,
+    4.84415619,
+    45.7245549
+  ],
+  "center": [
+    4.81129584,
+    45.708032025
+  ]
+}

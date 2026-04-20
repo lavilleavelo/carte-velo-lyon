@@ -1,0 +1,17 @@
+{
+  "slug": "sainte-foy-les-lyon",
+  "name": "Sainte-Foy-lès-Lyon",
+  "nomReduit": "Ste-Foy",
+  "insee": "69202",
+  "surfaceKm2": 6.84,
+  "bbox": [
+    4.77168533,
+    45.72079454,
+    4.81339491,
+    45.75177202
+  ],
+  "center": [
+    4.79254012,
+    45.736283279999995
+  ]
+}

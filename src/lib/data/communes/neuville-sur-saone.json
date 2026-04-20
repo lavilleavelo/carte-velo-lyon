@@ -1,0 +1,17 @@
+{
+  "slug": "neuville-sur-saone",
+  "name": "Neuville-sur-Saône",
+  "nomReduit": "Neuville",
+  "insee": "69143",
+  "surfaceKm2": 5.46,
+  "bbox": [
+    4.81441494,
+    45.86564882,
+    4.8663061,
+    45.89858259
+  ],
+  "center": [
+    4.84036052,
+    45.882115705
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "slug": "collonges-au-mont-dor",
+  "name": "Collonges-au-Mont-d'Or",
+  "nomReduit": "Collonges",
+  "insee": "69063",
+  "surfaceKm2": 3.8,
+  "bbox": [
+    4.82692604,
+    45.80321569,
+    4.85806535,
+    45.83415171
+  ],
+  "center": [
+    4.842495695,
+    45.8186837
+  ]
+}

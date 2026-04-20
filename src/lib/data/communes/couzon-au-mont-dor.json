@@ -1,0 +1,17 @@
+{
+  "slug": "couzon-au-mont-dor",
+  "name": "Couzon-au-Mont-d'Or",
+  "nomReduit": "Couzon",
+  "insee": "69068",
+  "surfaceKm2": 3.13,
+  "bbox": [
+    4.80554911,
+    45.83946861,
+    4.83729467,
+    45.85622128
+  ],
+  "center": [
+    4.82142189,
+    45.847844945
+  ]
+}

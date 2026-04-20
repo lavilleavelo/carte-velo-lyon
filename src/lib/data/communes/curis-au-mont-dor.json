@@ -1,0 +1,17 @@
+{
+  "slug": "curis-au-mont-dor",
+  "name": "Curis-au-Mont-d'Or",
+  "nomReduit": "Curis",
+  "insee": "69071",
+  "surfaceKm2": 3.09,
+  "bbox": [
+    4.80733362,
+    45.85460412,
+    4.83291441,
+    45.88194252
+  ],
+  "center": [
+    4.820124014999999,
+    45.86827332
+  ]
+}

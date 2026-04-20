@@ -1,0 +1,17 @@
+{
+  "slug": "saint-genis-laval",
+  "name": "Saint-Genis-Laval",
+  "nomReduit": "St-Genis-Laval",
+  "insee": "69204",
+  "surfaceKm2": 12.91,
+  "bbox": [
+    4.76440992,
+    45.6647681,
+    4.82127388,
+    45.71974147
+  ],
+  "center": [
+    4.7928419,
+    45.692254785
+  ]
+}

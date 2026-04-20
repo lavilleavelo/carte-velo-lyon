@@ -1,0 +1,17 @@
+{
+  "slug": "lyon-7",
+  "name": "Lyon 7e Arrondissement",
+  "nomReduit": "Lyon 7",
+  "insee": "69387",
+  "surfaceKm2": null,
+  "bbox": [
+    4.81868138,
+    45.70736553,
+    4.85995549,
+    45.75679246
+  ],
+  "center": [
+    4.839318435,
+    45.732078994999995
+  ]
+}

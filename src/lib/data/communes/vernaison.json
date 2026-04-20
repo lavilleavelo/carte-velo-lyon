@@ -1,0 +1,17 @@
+{
+  "slug": "vernaison",
+  "name": "Vernaison",
+  "nomReduit": "Vernaison",
+  "insee": "69260",
+  "surfaceKm2": 4.18,
+  "bbox": [
+    4.79618267,
+    45.62949233,
+    4.82781548,
+    45.66351021
+  ],
+  "center": [
+    4.811999075,
+    45.64650127
+  ]
+}

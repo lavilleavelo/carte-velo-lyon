@@ -1,0 +1,17 @@
+{
+  "slug": "lyon-8",
+  "name": "Lyon 8e Arrondissement",
+  "nomReduit": "Lyon 8",
+  "insee": "69388",
+  "surfaceKm2": null,
+  "bbox": [
+    4.84763219,
+    45.71878868,
+    4.89213741,
+    45.74943724
+  ],
+  "center": [
+    4.8698847999999995,
+    45.734112960000004
+  ]
+}

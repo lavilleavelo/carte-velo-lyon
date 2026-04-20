@@ -1,0 +1,17 @@
+{
+  "slug": "saint-romain-au-mont-dor",
+  "name": "Saint-Romain-au-Mont-d'Or",
+  "nomReduit": "St-Romain",
+  "insee": "69233",
+  "surfaceKm2": 2.62,
+  "bbox": [
+    4.80606817,
+    45.82751239,
+    4.83873572,
+    45.84337263
+  ],
+  "center": [
+    4.822401944999999,
+    45.83544251
+  ]
+}

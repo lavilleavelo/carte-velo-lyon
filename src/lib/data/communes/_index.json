@@ -1,0 +1,332 @@
+[
+  {
+    "slug": "albigny-sur-saone",
+    "name": "Albigny-sur-Saône",
+    "insee": "69003"
+  },
+  {
+    "slug": "bron",
+    "name": "Bron",
+    "insee": "69029"
+  },
+  {
+    "slug": "cailloux-sur-fontaines",
+    "name": "Cailloux-sur-Fontaines",
+    "insee": "69033"
+  },
+  {
+    "slug": "caluire-et-cuire",
+    "name": "Caluire-et-Cuire",
+    "insee": "69034"
+  },
+  {
+    "slug": "champagne-au-mont-dor",
+    "name": "Champagne-au-Mont-d'Or",
+    "insee": "69040"
+  },
+  {
+    "slug": "charbonnieres-les-bains",
+    "name": "Charbonnières-les-Bains",
+    "insee": "69044"
+  },
+  {
+    "slug": "charly",
+    "name": "Charly",
+    "insee": "69046"
+  },
+  {
+    "slug": "chassieu",
+    "name": "Chassieu",
+    "insee": "69271"
+  },
+  {
+    "slug": "collonges-au-mont-dor",
+    "name": "Collonges-au-Mont-d'Or",
+    "insee": "69063"
+  },
+  {
+    "slug": "corbas",
+    "name": "Corbas",
+    "insee": "69273"
+  },
+  {
+    "slug": "couzon-au-mont-dor",
+    "name": "Couzon-au-Mont-d'Or",
+    "insee": "69068"
+  },
+  {
+    "slug": "craponne",
+    "name": "Craponne",
+    "insee": "69069"
+  },
+  {
+    "slug": "curis-au-mont-dor",
+    "name": "Curis-au-Mont-d'Or",
+    "insee": "69071"
+  },
+  {
+    "slug": "dardilly",
+    "name": "Dardilly",
+    "insee": "69072"
+  },
+  {
+    "slug": "decines-charpieu",
+    "name": "Décines-Charpieu",
+    "insee": "69275"
+  },
+  {
+    "slug": "ecully",
+    "name": "Écully",
+    "insee": "69081"
+  },
+  {
+    "slug": "feyzin",
+    "name": "Feyzin",
+    "insee": "69276"
+  },
+  {
+    "slug": "fleurieu-sur-saone",
+    "name": "Fleurieu-sur-Saône",
+    "insee": "69085"
+  },
+  {
+    "slug": "fontaines-saint-martin",
+    "name": "Fontaines-Saint-Martin",
+    "insee": "69087"
+  },
+  {
+    "slug": "fontaines-sur-saone",
+    "name": "Fontaines-sur-Saône",
+    "insee": "69088"
+  },
+  {
+    "slug": "francheville",
+    "name": "Francheville",
+    "insee": "69089"
+  },
+  {
+    "slug": "genay",
+    "name": "Genay",
+    "insee": "69278"
+  },
+  {
+    "slug": "givors",
+    "name": "Givors",
+    "insee": "69091"
+  },
+  {
+    "slug": "grigny-sur-rhone",
+    "name": "Grigny-sur-Rhône",
+    "insee": "69096"
+  },
+  {
+    "slug": "irigny",
+    "name": "Irigny",
+    "insee": "69100"
+  },
+  {
+    "slug": "jonage",
+    "name": "Jonage",
+    "insee": "69279"
+  },
+  {
+    "slug": "la-mulatiere",
+    "name": "La Mulatière",
+    "insee": "69142"
+  },
+  {
+    "slug": "la-tour-de-salvagny",
+    "name": "La Tour-de-Salvagny",
+    "insee": "69250"
+  },
+  {
+    "slug": "limonest",
+    "name": "Limonest",
+    "insee": "69116"
+  },
+  {
+    "slug": "lissieu",
+    "name": "Lissieu",
+    "insee": "69117"
+  },
+  {
+    "slug": "lyon-1",
+    "name": "Lyon 1er Arrondissement",
+    "insee": "69381"
+  },
+  {
+    "slug": "lyon-2",
+    "name": "Lyon 2e Arrondissement",
+    "insee": "69382"
+  },
+  {
+    "slug": "lyon-3",
+    "name": "Lyon 3e Arrondissement",
+    "insee": "69383"
+  },
+  {
+    "slug": "lyon-4",
+    "name": "Lyon 4e Arrondissement",
+    "insee": "69384"
+  },
+  {
+    "slug": "lyon-5",
+    "name": "Lyon 5e Arrondissement",
+    "insee": "69385"
+  },
+  {
+    "slug": "lyon-6",
+    "name": "Lyon 6e Arrondissement",
+    "insee": "69386"
+  },
+  {
+    "slug": "lyon-7",
+    "name": "Lyon 7e Arrondissement",
+    "insee": "69387"
+  },
+  {
+    "slug": "lyon-8",
+    "name": "Lyon 8e Arrondissement",
+    "insee": "69388"
+  },
+  {
+    "slug": "lyon-9",
+    "name": "Lyon 9e Arrondissement",
+    "insee": "69389"
+  },
+  {
+    "slug": "marcy-letoile",
+    "name": "Marcy-l'Étoile",
+    "insee": "69127"
+  },
+  {
+    "slug": "meyzieu",
+    "name": "Meyzieu",
+    "insee": "69282"
+  },
+  {
+    "slug": "mions",
+    "name": "Mions",
+    "insee": "69283"
+  },
+  {
+    "slug": "montanay",
+    "name": "Montanay",
+    "insee": "69284"
+  },
+  {
+    "slug": "neuville-sur-saone",
+    "name": "Neuville-sur-Saône",
+    "insee": "69143"
+  },
+  {
+    "slug": "oullins-pierre-benite",
+    "name": "Oullins-Pierre-Bénite",
+    "insee": "69149"
+  },
+  {
+    "slug": "poleymieux-au-mont-dor",
+    "name": "Poleymieux-au-Mont-d'Or",
+    "insee": "69153"
+  },
+  {
+    "slug": "quincieux",
+    "name": "Quincieux",
+    "insee": "69163"
+  },
+  {
+    "slug": "rillieux-la-pape",
+    "name": "Rillieux-la-Pape",
+    "insee": "69286"
+  },
+  {
+    "slug": "rochetaillee-sur-saone",
+    "name": "Rochetaillée-sur-Saône",
+    "insee": "69168"
+  },
+  {
+    "slug": "saint-cyr-au-mont-dor",
+    "name": "Saint-Cyr-au-Mont-d'Or",
+    "insee": "69191"
+  },
+  {
+    "slug": "saint-didier-au-mont-dor",
+    "name": "Saint-Didier-au-Mont-d'Or",
+    "insee": "69194"
+  },
+  {
+    "slug": "saint-fons",
+    "name": "Saint-Fons",
+    "insee": "69199"
+  },
+  {
+    "slug": "saint-genis-laval",
+    "name": "Saint-Genis-Laval",
+    "insee": "69204"
+  },
+  {
+    "slug": "saint-genis-les-ollieres",
+    "name": "Saint-Genis-les-Ollières",
+    "insee": "69205"
+  },
+  {
+    "slug": "saint-germain-au-mont-dor",
+    "name": "Saint-Germain-au-Mont-d'Or",
+    "insee": "69207"
+  },
+  {
+    "slug": "saint-priest",
+    "name": "Saint-Priest",
+    "insee": "69290"
+  },
+  {
+    "slug": "saint-romain-au-mont-dor",
+    "name": "Saint-Romain-au-Mont-d'Or",
+    "insee": "69233"
+  },
+  {
+    "slug": "sainte-foy-les-lyon",
+    "name": "Sainte-Foy-lès-Lyon",
+    "insee": "69202"
+  },
+  {
+    "slug": "sathonay-camp",
+    "name": "Sathonay-Camp",
+    "insee": "69292"
+  },
+  {
+    "slug": "sathonay-village",
+    "name": "Sathonay-Village",
+    "insee": "69293"
+  },
+  {
+    "slug": "solaize",
+    "name": "Solaize",
+    "insee": "69296"
+  },
+  {
+    "slug": "tassin-la-demi-lune",
+    "name": "Tassin-la-Demi-Lune",
+    "insee": "69244"
+  },
+  {
+    "slug": "vaulx-en-velin",
+    "name": "Vaulx-en-Velin",
+    "insee": "69256"
+  },
+  {
+    "slug": "venissieux",
+    "name": "Vénissieux",
+    "insee": "69259"
+  },
+  {
+    "slug": "vernaison",
+    "name": "Vernaison",
+    "insee": "69260"
+  },
+  {
+    "slug": "villeurbanne",
+    "name": "Villeurbanne",
+    "insee": "69266"
+  }
+]

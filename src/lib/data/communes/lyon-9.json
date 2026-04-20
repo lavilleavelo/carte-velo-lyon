@@ -1,0 +1,17 @@
+{
+  "slug": "lyon-9",
+  "name": "Lyon 9e Arrondissement",
+  "nomReduit": "Lyon 9",
+  "insee": "69389",
+  "surfaceKm2": null,
+  "bbox": [
+    4.78399142,
+    45.7586718,
+    4.84124586,
+    45.80828794
+  ],
+  "center": [
+    4.81261864,
+    45.78347987
+  ]
+}

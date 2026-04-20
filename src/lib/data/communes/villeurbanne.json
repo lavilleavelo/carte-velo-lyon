@@ -1,0 +1,17 @@
+{
+  "slug": "villeurbanne",
+  "name": "Villeurbanne",
+  "nomReduit": "Villeurbanne",
+  "insee": "69266",
+  "surfaceKm2": 14.94,
+  "bbox": [
+    4.858329,
+    45.74845641,
+    4.92124323,
+    45.79558689
+  ],
+  "center": [
+    4.889786115,
+    45.77202165
+  ]
+}

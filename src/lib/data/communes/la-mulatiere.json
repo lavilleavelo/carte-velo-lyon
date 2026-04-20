@@ -1,0 +1,17 @@
+{
+  "slug": "la-mulatiere",
+  "name": "La Mulatière",
+  "nomReduit": "La Mulatière",
+  "insee": "69142",
+  "surfaceKm2": 1.85,
+  "bbox": [
+    4.8028271,
+    45.7178976,
+    4.82094173,
+    45.74965127
+  ],
+  "center": [
+    4.811884415,
+    45.733774435
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "slug": "cailloux-sur-fontaines",
+  "name": "Cailloux-sur-Fontaines",
+  "nomReduit": "Cailloux",
+  "insee": "69033",
+  "surfaceKm2": 8.46,
+  "bbox": [
+    4.85456371,
+    45.83827904,
+    4.90897914,
+    45.88019022
+  ],
+  "center": [
+    4.881771425,
+    45.85923463
+  ]
+}

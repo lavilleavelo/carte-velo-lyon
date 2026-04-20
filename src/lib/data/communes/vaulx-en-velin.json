@@ -1,0 +1,17 @@
+{
+  "slug": "vaulx-en-velin",
+  "name": "Vaulx-en-Velin",
+  "nomReduit": "Vaulx",
+  "insee": "69256",
+  "surfaceKm2": 21.1,
+  "bbox": [
+    4.87938025,
+    45.74431874,
+    4.9703681,
+    45.81116813
+  ],
+  "center": [
+    4.924874174999999,
+    45.777743435
+  ]
+}

@@ -1,0 +1,17 @@
+{
+  "slug": "poleymieux-au-mont-dor",
+  "name": "Poleymieux-au-Mont-d'Or",
+  "nomReduit": "Poleymieux",
+  "insee": "69153",
+  "surfaceKm2": 6.33,
+  "bbox": [
+    4.77116178,
+    45.84203944,
+    4.81435716,
+    45.87002545
+  ],
+  "center": [
+    4.79275947,
+    45.856032445
+  ]
+}

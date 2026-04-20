@@ -1,0 +1,17 @@
+{
+  "slug": "francheville",
+  "name": "Francheville",
+  "nomReduit": "Francheville",
+  "insee": "69089",
+  "surfaceKm2": 8.25,
+  "bbox": [
+    4.72562636,
+    45.72507101,
+    4.78185342,
+    45.75188378
+  ],
+  "center": [
+    4.75373989,
+    45.738477395000004
+  ]
+}

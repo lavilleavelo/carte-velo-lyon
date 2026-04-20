@@ -1,0 +1,17 @@
+{
+  "slug": "limonest",
+  "name": "Limonest",
+  "nomReduit": "Limonest",
+  "insee": "69116",
+  "surfaceKm2": 9.1,
+  "bbox": [
+    4.74635974,
+    45.80271497,
+    4.79002725,
+    45.85065989
+  ],
+  "center": [
+    4.768193495,
+    45.82668743
+  ]
+}

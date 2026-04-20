@@ -1,0 +1,17 @@
+{
+  "slug": "saint-genis-les-ollieres",
+  "name": "Saint-Genis-les-Ollières",
+  "nomReduit": "St-Genis-Les-O",
+  "insee": "69205",
+  "surfaceKm2": 3.76,
+  "bbox": [
+    4.70589928,
+    45.75159515,
+    4.74379634,
+    45.77125791
+  ],
+  "center": [
+    4.72484781,
+    45.76142653
+  ]
+}

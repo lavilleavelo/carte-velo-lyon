@@ -1,0 +1,17 @@
+{
+  "slug": "venissieux",
+  "name": "Vénissieux",
+  "nomReduit": "Vénissieux",
+  "insee": "69259",
+  "surfaceKm2": 15.47,
+  "bbox": [
+    4.84974568,
+    45.67156109,
+    4.9113198,
+    45.73069948
+  ],
+  "center": [
+    4.88053274,
+    45.701130285
+  ]
+}

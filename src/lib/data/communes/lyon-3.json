@@ -1,0 +1,17 @@
+{
+  "slug": "lyon-3",
+  "name": "Lyon 3e Arrondissement",
+  "nomReduit": "Lyon 3",
+  "insee": "69383",
+  "surfaceKm2": null,
+  "bbox": [
+    4.83841956,
+    45.73901766,
+    4.89837389,
+    45.76373056
+  ],
+  "center": [
+    4.868396725,
+    45.75137411
+  ]
+}

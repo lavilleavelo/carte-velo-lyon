@@ -1,0 +1,17 @@
+{
+  "slug": "saint-didier-au-mont-dor",
+  "name": "Saint-Didier-au-Mont-d'Or",
+  "nomReduit": "St-Didier",
+  "insee": "69194",
+  "surfaceKm2": 8.33,
+  "bbox": [
+    4.78218229,
+    45.78899468,
+    4.81840312,
+    45.84285006
+  ],
+  "center": [
+    4.800292705,
+    45.81592237
+  ]
+}

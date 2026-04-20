@@ -1,0 +1,17 @@
+{
+  "slug": "rillieux-la-pape",
+  "name": "Rillieux-la-Pape",
+  "nomReduit": "Rillieux",
+  "insee": "69286",
+  "surfaceKm2": 14.55,
+  "bbox": [
+    4.86635926,
+    45.79558689,
+    4.9237498,
+    45.85761393
+  ],
+  "center": [
+    4.89505453,
+    45.82660041
+  ]
+}

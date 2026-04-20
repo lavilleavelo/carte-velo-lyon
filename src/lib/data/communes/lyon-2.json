@@ -1,0 +1,17 @@
+{
+  "slug": "lyon-2",
+  "name": "Lyon 2e Arrondissement",
+  "nomReduit": "Lyon 2",
+  "insee": "69382",
+  "surfaceKm2": null,
+  "bbox": [
+    4.81303039,
+    45.72649185,
+    4.83980475,
+    45.76627867
+  ],
+  "center": [
+    4.82641757,
+    45.74638526
+  ]
+}

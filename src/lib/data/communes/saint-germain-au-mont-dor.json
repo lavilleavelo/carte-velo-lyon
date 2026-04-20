@@ -1,0 +1,17 @@
+{
+  "slug": "saint-germain-au-mont-dor",
+  "name": "Saint-Germain-au-Mont-d'Or",
+  "nomReduit": "St-Germain",
+  "insee": "69207",
+  "surfaceKm2": 5.43,
+  "bbox": [
+    4.78726657,
+    45.86896858,
+    4.81970268,
+    45.89922496
+  ],
+  "center": [
+    4.803484624999999,
+    45.88409677
+  ]
+}

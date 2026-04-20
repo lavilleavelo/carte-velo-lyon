@@ -1,0 +1,17 @@
+{
+  "slug": "lyon-4",
+  "name": "Lyon 4e Arrondissement",
+  "nomReduit": "Lyon 4",
+  "insee": "69384",
+  "surfaceKm2": null,
+  "bbox": [
+    4.80902579,
+    45.77111811,
+    4.84303188,
+    45.78972616
+  ],
+  "center": [
+    4.826028835,
+    45.780422135
+  ]
+}

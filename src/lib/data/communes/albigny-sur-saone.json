@@ -1,0 +1,17 @@
+{
+  "slug": "albigny-sur-saone",
+  "name": "Albigny-sur-Saône",
+  "nomReduit": "Albigny",
+  "insee": "69003",
+  "surfaceKm2": 2.61,
+  "bbox": [
+    4.81766246,
+    45.85398665,
+    4.83943894,
+    45.87945667
+  ],
+  "center": [
+    4.8285507,
+    45.86672166
+  ]
+}

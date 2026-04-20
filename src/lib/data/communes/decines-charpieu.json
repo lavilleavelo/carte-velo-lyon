@@ -1,0 +1,17 @@
+{
+  "slug": "decines-charpieu",
+  "name": "Décines-Charpieu",
+  "nomReduit": "Décines",
+  "insee": "69275",
+  "surfaceKm2": 17.12,
+  "bbox": [
+    4.93262415,
+    45.74431874,
+    4.98547246,
+    45.80766162
+  ],
+  "center": [
+    4.959048305,
+    45.775990179999994
+  ]
+}

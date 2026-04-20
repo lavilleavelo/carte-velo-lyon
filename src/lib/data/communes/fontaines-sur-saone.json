@@ -1,0 +1,17 @@
+{
+  "slug": "fontaines-sur-saone",
+  "name": "Fontaines-sur-Saône",
+  "nomReduit": "Fontaines-s-S",
+  "insee": "69088",
+  "surfaceKm2": 2.33,
+  "bbox": [
+    4.84067177,
+    45.81448707,
+    4.86690364,
+    45.83908887
+  ],
+  "center": [
+    4.853787705,
+    45.82678797
+  ]
+}

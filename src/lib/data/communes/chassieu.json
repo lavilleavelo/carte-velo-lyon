@@ -1,0 +1,17 @@
+{
+  "slug": "chassieu",
+  "name": "Chassieu",
+  "nomReduit": "Chassieu",
+  "insee": "69271",
+  "surfaceKm2": 11.57,
+  "bbox": [
+    4.93262415,
+    45.7192007,
+    4.99512864,
+    45.7539101
+  ],
+  "center": [
+    4.963876395,
+    45.7365554
+  ]
+}
