@@ -202,6 +202,16 @@
 				'icon-image': 'parking-velostation',
 				'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.3, 17, 0.7],
 				'icon-allow-overlap': true,
+				'text-field': ['step', ['zoom'], '', 14, ['to-string', ['get', 'capacite']]],
+				'text-offset': [0, 1.4],
+				'text-size': 11,
+				'text-anchor': 'top',
+				'text-font': ['Open Sans Bold'],
+			}}
+			paint={{
+				'text-color': '#1e40af',
+				'text-halo-color': '#ffffff',
+				'text-halo-width': 2,
 			}}
 		/>
 
