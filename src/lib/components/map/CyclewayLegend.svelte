@@ -6,11 +6,19 @@
 	const items: {
 		id: LegendId;
 		label: string;
-		render: 'solid' | 'solid-thin' | 'double' | 'dashed' | 'dotted' | 'velorue' | 'arrow';
+		render:
+			| 'solid'
+			| 'solid-thin'
+			| 'double'
+			| 'dashed'
+			| 'dotted'
+			| 'dotted-bold'
+			| 'velorue'
+			| 'arrow';
 	}[] = [
 		{ id: 'piste-bidir', label: 'Piste cyclable (bidirectionnelle)', render: 'solid' },
 		{ id: 'piste-unidir', label: 'Piste cyclable (unidirectionnelle)', render: 'solid-thin' },
-		{ id: 'voie-verte', label: 'Voie verte', render: 'double' },
+		{ id: 'voie-verte', label: 'Voie verte', render: 'dotted-bold' },
 		{ id: 'bande', label: 'Bande cyclable', render: 'dashed' },
 		{ id: 'bus-velo', label: 'Voie bus-vélo', render: 'dotted' },
 		{ id: 'velorue', label: 'Vélorue', render: 'velorue' },
@@ -115,6 +123,17 @@
 									stroke-linecap="round"
 									stroke-dasharray="0.1 5"
 								/>
+							{:else if item.render === 'dotted-bold'}
+								<line
+									x1="0"
+									y1="6"
+									x2="48"
+									y2="6"
+									stroke={COLOR}
+									stroke-width="4"
+									stroke-linecap="round"
+									stroke-dasharray="0.1 6"
+								/>
 							{:else if item.render === 'velorue'}
 								<line
 									x1="0"
@@ -183,6 +202,17 @@
 									stroke-width="3"
 									stroke-linecap="round"
 									stroke-dasharray="0.1 5"
+								/>
+							{:else if item.render === 'dotted-bold'}
+								<line
+									x1="0"
+									y1="6"
+									x2="48"
+									y2="6"
+									stroke={COLOR}
+									stroke-width="4"
+									stroke-linecap="round"
+									stroke-dasharray="0.1 6"
 								/>
 							{:else if item.render === 'velorue'}
 								<line

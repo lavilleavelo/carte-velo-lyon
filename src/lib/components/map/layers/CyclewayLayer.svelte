@@ -46,11 +46,11 @@
 		filter={filterVoieVerte}
 		paint={{
 			'line-color': COLOR,
-			'line-width': 1.2,
-			'line-gap-width': 2,
+			'line-width': 4,
 			'line-opacity': 0.9,
+			'line-dasharray': [0.3, 1.6],
 		}}
-		layout={{ visibility }}
+		layout={{ 'line-cap': 'round', visibility }}
 	/>
 
 	<LineLayer

@@ -4,6 +4,7 @@
 	import type { FeatureCollection, Feature } from 'geojson';
 	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
+	import { classifyOsmCycleway, type Side } from '$lib/utils/osmCycleway';
 
 	let {
 		isLayerVisible,
@@ -16,102 +17,6 @@
 	} = $props();
 
 	const COLOR = '#0369a1';
-
-	type Side = 'left' | 'right' | 'center';
-	type Classification = {
-		typeamenagement: string;
-		side: Side;
-		bidirectional?: boolean;
-	};
-
-	function classifyValue(value?: string): string | null {
-		if (!value || value === 'no' || value === 'separate' || value === 'shared_lane') return null;
-		if (value === 'track' || value === 'opposite_track') return 'Piste Cyclable';
-		if (value === 'lane' || value === 'opposite_lane') return 'Bande Cyclable';
-		if (value === 'opposite') return 'Double sens cyclable';
-		if (value === 'share_busway' || value === 'shared_busway') return 'Couloir bus vélo';
-		return null;
-	}
-
-	function classifyOsmCycleway(tags: Record<string, any>): Classification[] {
-		const results: Classification[] = [];
-
-		if (tags.highway === 'cycleway') {
-			const onewayBicycle = tags['oneway:bicycle'];
-			const oneway = tags.oneway;
-			const bidirectional = onewayBicycle === 'no' || (oneway !== 'yes' && onewayBicycle !== 'yes');
-			results.push({ typeamenagement: 'Piste Cyclable', side: 'center', bidirectional });
-			return results;
-		}
-
-		if (tags.bicycle_road === 'yes' || tags.cyclestreet === 'yes') {
-			results.push({ typeamenagement: 'Vélorue', side: 'center', bidirectional: true });
-			return results;
-		}
-
-		if (tags.highway === 'path' && tags.bicycle === 'designated') {
-			results.push({ typeamenagement: 'Voie verte', side: 'center', bidirectional: true });
-			return results;
-		}
-
-		const hasSideTags = tags['cycleway:left'] || tags['cycleway:right'] || tags['cycleway:both'];
-
-		if (tags['cycleway:both']) {
-			const type = classifyValue(tags['cycleway:both']);
-			if (type === 'Double sens cyclable') {
-				results.push({ typeamenagement: type, side: 'center' });
-			} else if (type) {
-				results.push({ typeamenagement: type, side: 'left' });
-				results.push({ typeamenagement: type, side: 'right' });
-			}
-		} else {
-			if (tags['cycleway:left']) {
-				const type = classifyValue(tags['cycleway:left']);
-				if (type) {
-					results.push({
-						typeamenagement: type,
-						side: type === 'Double sens cyclable' ? 'center' : 'left',
-					});
-				}
-			}
-			if (tags['cycleway:right']) {
-				const type = classifyValue(tags['cycleway:right']);
-				if (type) {
-					results.push({
-						typeamenagement: type,
-						side: type === 'Double sens cyclable' ? 'center' : 'right',
-					});
-				}
-			}
-		}
-
-		if (tags.cycleway && !hasSideTags) {
-			const type = classifyValue(tags.cycleway);
-			if (type) {
-				if (String(tags.cycleway).startsWith('opposite')) {
-					results.push({ typeamenagement: type, side: 'center' });
-				} else {
-					results.push({ typeamenagement: type, side: 'left' });
-					results.push({ typeamenagement: type, side: 'right' });
-				}
-			}
-		}
-
-		const alreadyHasDsc = results.some((r) => r.typeamenagement === 'Double sens cyclable');
-		if (!alreadyHasDsc) {
-			const isOneway = tags.oneway === 'yes';
-			const onewayBicycle = tags['oneway:bicycle'];
-			const isContresens = isOneway && onewayBicycle === 'no';
-			const isLivingStreet = tags.highway === 'living_street';
-			if (isContresens) {
-				results.push({ typeamenagement: 'Double sens cyclable', side: 'center' });
-			} else if (isLivingStreet && isOneway && onewayBicycle !== 'yes') {
-				results.push({ typeamenagement: 'Double sens cyclable', side: 'center' });
-			}
-		}
-
-		return results;
-	}
 
 	function sideOffset(side: Side): number {
 		if (side === 'left') return -3;
@@ -243,12 +148,12 @@
 		filter={filterVoieVerte}
 		paint={{
 			'line-color': COLOR,
-			'line-width': 1.2,
-			'line-gap-width': 2,
+			'line-width': 4,
 			'line-opacity': 0.9,
+			'line-dasharray': [0.3, 1.6],
 			'line-offset': lineOffset,
 		}}
-		layout={{ visibility }}
+		layout={{ 'line-cap': 'round', visibility }}
 	/>
 
 	<LineLayer
@@ -284,10 +189,10 @@
 			'line-color': COLOR,
 			'line-width': 4,
 			'line-opacity': 0.9,
-			'line-dasharray': [2, 1],
+			'line-dasharray': [2.5, 1.2],
 			'line-offset': lineOffset,
 		}}
-		layout={{ visibility }}
+		layout={{ 'line-cap': 'butt', visibility }}
 	/>
 
 	<LineLayer
