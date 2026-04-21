@@ -11,7 +11,7 @@
 		Marker,
 	} from 'svelte-maplibre-gl';
 	import { untrack } from 'svelte';
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createQuery, useIsFetching } from '@tanstack/svelte-query';
 	import { useSearchParams } from 'runed/kit';
 	import { type } from 'arktype';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
@@ -118,6 +118,32 @@
 		staleTime: Infinity,
 		refetchOnWindowFocus: false,
 	}));
+
+	const layerQueryKeys: Record<string, unknown[]> = {
+		cycleways: ['voirie-data'],
+		'osm-cycleways': ['overpass-cycleways'],
+		vl: ['voies-lyonnaises'],
+		parking: ['parking'],
+		velov: ['velov-availability'],
+		pumps: ['pumps'],
+		fountains: ['fountains'],
+	};
+
+	const fetchingCounts = {
+		cycleways: useIsFetching({ queryKey: layerQueryKeys.cycleways }),
+		'osm-cycleways': useIsFetching({ queryKey: layerQueryKeys['osm-cycleways'] }),
+		vl: useIsFetching({ queryKey: layerQueryKeys.vl }),
+		parking: useIsFetching({ queryKey: layerQueryKeys.parking }),
+		velov: useIsFetching({ queryKey: layerQueryKeys.velov }),
+		pumps: useIsFetching({ queryKey: layerQueryKeys.pumps }),
+		fountains: useIsFetching({ queryKey: layerQueryKeys.fountains }),
+	};
+
+	const pendingLayers = $derived(
+		(Object.keys(fetchingCounts) as (keyof typeof fetchingCounts)[]).filter(
+			(id) => isLayerActive(id) && fetchingCounts[id].current > 0,
+		),
+	);
 
 	const voirieInside = $derived.by(() => {
 		if (!voirieQuery.data) return undefined;
@@ -270,7 +296,7 @@
 <svelte:window bind:innerWidth />
 
 <div class="relative h-[60vh] min-h-80 overflow-hidden rounded-lg shadow">
-	{#if voirieQuery.isPending && params.layers.includes('cycleways')}
+	{#if pendingLayers.length > 0}
 		<div
 			class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/40 backdrop-blur-[1px]"
 			role="status"
@@ -283,9 +309,7 @@
 					class="block h-4 w-4 animate-spin rounded-full border-2 border-brand-navy border-t-transparent"
 					aria-hidden="true"
 				></span>
-				<span class="text-sm font-medium text-brand-navy">
-					Chargement des aménagements cyclables…
-				</span>
+				<span class="text-sm font-medium text-brand-navy">Chargement…</span>
 			</div>
 		</div>
 	{/if}
