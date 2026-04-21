@@ -39,6 +39,7 @@
 					type: 'Feature',
 					properties: {
 						...tags,
+						id: `osm-cw-${element.id}-${c.typeamenagement}-${c.bidirectional ? 'bi' : 'uni'}`,
 						osmId: element.id,
 						osmType: element.type,
 						typeamenagement: c.typeamenagement,

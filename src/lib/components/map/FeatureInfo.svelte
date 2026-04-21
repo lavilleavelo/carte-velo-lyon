@@ -3,6 +3,7 @@
 	import ParkingDetails from './details/ParkingDetails.svelte';
 	import VoieLyonnaiseDetails from './details/VoieLyonnaiseDetails.svelte';
 	import CyclewayDetails from './details/CyclewayDetails.svelte';
+	import OsmCyclewayDetails from './details/OsmCyclewayDetails.svelte';
 	import PumpDetails from './details/PumpDetails.svelte';
 	import WaterFountainDetails from './details/WaterFountainDetails.svelte';
 	import ToiletDetails from './details/ToiletDetails.svelte';
@@ -32,6 +33,7 @@
 		if (type === 'velov') return VelovDetails;
 		if (type === 'parking') return ParkingDetails;
 		if (type === 'cycleway') return CyclewayDetails;
+		if (type === 'osm-cycleway') return OsmCyclewayDetails;
 		if (type === 'counter') return CounterDetails;
 		if (type === 'pump') return PumpDetails;
 		if (type === 'water-fountain') return WaterFountainDetails;
