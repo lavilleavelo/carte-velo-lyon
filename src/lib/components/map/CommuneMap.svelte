@@ -49,6 +49,18 @@
 	let map: maplibregl.Map | undefined = $state();
 	let innerWidth = $state(0);
 
+	$effect(() => {
+		if (!map) return;
+		const [sw, ne] = bounds;
+		map.fitBounds(
+			[
+				[sw[0], sw[1]],
+				[ne[0], ne[1]],
+			],
+			{ padding: 24, duration: 600 },
+		);
+	});
+
 	const paramsSchema = type({
 		layers: type('string[]').default(() => ['osm-cycleways']),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),

@@ -2,10 +2,14 @@
 	import '../app.css';
 	import favicon from '$lib/assets/favicon.ico';
 	import { onNavigate } from '$app/navigation';
-	import { navigating } from '$app/state';
+	import { navigating, page } from '$app/state';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
 	import { onMount } from 'svelte';
+	import Navbar from '$lib/components/Navbar.svelte';
+	import Footer from '$lib/components/Footer.svelte';
 	let { children }: { children: any } = $props();
+
+	const showNavbar = $derived(page.url.pathname !== '/');
 
 	const queryClient = new QueryClient();
 
@@ -48,8 +52,16 @@
 	{/if}
 
 	<div class="flex min-h-screen flex-col">
+		{#if showNavbar}
+			<Navbar currentPath={page.url.pathname} />
+		{/if}
 		<main class="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8">
 			{@render children()}
 		</main>
+		{#if showNavbar}
+			<div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
+				<Footer />
+			</div>
+		{/if}
 	</div>
 </QueryClientProvider>
