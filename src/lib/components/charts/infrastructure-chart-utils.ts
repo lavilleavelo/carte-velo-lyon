@@ -1,5 +1,6 @@
 import type * as Chart from '$lib/components/ui/chart/index.js';
 import type { ChartContextValue } from 'layerchart';
+import { cubicInOut } from 'svelte/easing';
 
 export interface StackLabel {
 	label: string;
@@ -64,6 +65,86 @@ export const parkingTypeColors: Record<string, string> = {
 	Vélostation: 'var(--chart-8)',
 	'Autre mobilier': '#6b7280',
 };
+
+export const baseChartConfig = {
+	bikeLanesKm: { label: 'Aménagements cyclables (km)', color: 'var(--chart-1)' },
+	cumulativeBikeLanesKm: { label: 'Aménagements cyclables (km)', color: 'var(--chart-1)' },
+	parkingPlaces: { label: 'Places de stationnement', color: 'var(--chart-2)' },
+	cumulativeParkingPlaces: { label: 'Places de stationnement', color: 'var(--chart-2)' },
+} satisfies Chart.ChartConfig;
+
+export function createSharedAreaProps(
+	isMobile: boolean,
+	activeChart: 'bikeLanesKm' | 'parkingPlaces',
+) {
+	return {
+		area: {
+			'fill-opacity': 0.6,
+			line: { class: 'stroke-1' },
+			motion: { type: 'tween' as const, duration: 500, easing: cubicInOut },
+		},
+		highlight: { area: { fill: 'none' } },
+		xAxis: {
+			format: (d: number) => String(d),
+			ticks: isMobile ? 4 : 10,
+		},
+		yAxis: {
+			format: (d: number) =>
+				activeChart === 'bikeLanesKm'
+					? `${d.toLocaleString('fr-FR')}\xa0km`
+					: d.toLocaleString('fr-FR'),
+		},
+	};
+}
+
+export function createSharedBarProps(
+	context: ChartContextValue | undefined,
+	isMobile: boolean,
+	activeChart: 'bikeLanesKm' | 'parkingPlaces',
+	stacked: boolean = false,
+) {
+	return {
+		bars: {
+			stroke: 'none',
+			rounded: stacked ? ('none' as const) : ('top' as const),
+			initialY: context?.height,
+			initialHeight: 0,
+			motion: {
+				y: { type: 'tween' as const, duration: 500, easing: cubicInOut },
+				height: { type: 'tween' as const, duration: 500, easing: cubicInOut },
+			},
+		},
+		highlight: { area: { fill: 'none' } },
+		xAxis: {
+			format: (d: number) => String(d),
+			ticks: isMobile ? 4 : undefined,
+		},
+		yAxis: {
+			format: (d: number) =>
+				activeChart === 'bikeLanesKm'
+					? `${d.toLocaleString('fr-FR')}\xa0km`
+					: d.toLocaleString('fr-FR'),
+		},
+	};
+}
+
+export function createSingleSeries(
+	activeChart: 'bikeLanesKm' | 'parkingPlaces',
+	showCumulative: boolean,
+) {
+	const key = showCumulative
+		? activeChart === 'bikeLanesKm'
+			? 'cumulativeBikeLanesKm'
+			: 'cumulativeParkingPlaces'
+		: activeChart;
+	return [
+		{
+			key,
+			label: baseChartConfig[activeChart].label,
+			color: baseChartConfig[activeChart].color,
+		},
+	];
+}
 
 export function createTypeChartConfig(facilityTypes: string[]): Chart.ChartConfig {
 	return facilityTypes.reduce((acc, type) => {

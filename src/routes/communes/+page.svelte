@@ -1,5 +1,10 @@
 <script lang="ts">
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
+	import Map from '@lucide/svelte/icons/map';
+	import ChartLine from '@lucide/svelte/icons/chart-line';
+	import MetropoleInfrastructureChart from '$lib/components/charts/MetropoleInfrastructureChart.svelte';
+	import CommuneSelectorMap from '$lib/components/map/CommuneSelectorMap.svelte';
+	import * as Tabs from '$lib/components/ui/tabs';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -23,6 +28,25 @@
 			Sélectionnez une commune pour afficher ses limites et son aménagement cyclable.
 		</p>
 	</header>
+
+	<Tabs.Root value="map" class="w-full gap-4">
+		<Tabs.List>
+			<Tabs.Trigger value="map">
+				<Map />
+				Carte
+			</Tabs.Trigger>
+			<Tabs.Trigger value="chart">
+				<ChartLine />
+				Statistiques
+			</Tabs.Trigger>
+		</Tabs.List>
+		<Tabs.Content value="map">
+			<CommuneSelectorMap communes={data.communes} />
+		</Tabs.Content>
+		<Tabs.Content value="chart">
+			<MetropoleInfrastructureChart />
+		</Tabs.Content>
+	</Tabs.Root>
 
 	<section class="space-y-4">
 		<h2 class="text-xl font-semibold text-brand-navy">Lyon, vue d'ensemble</h2>
