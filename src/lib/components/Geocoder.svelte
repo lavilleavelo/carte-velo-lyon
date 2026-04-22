@@ -211,6 +211,20 @@
 			document.removeEventListener('mousedown', handleClickOutside);
 		};
 	});
+
+	$effect(() => {
+		function handleKeydown(e: KeyboardEvent) {
+			if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+				e.preventDefault();
+				e.stopImmediatePropagation();
+				inputRef?.focus();
+				inputRef?.select?.();
+				open = true;
+			}
+		}
+		window.addEventListener('keydown', handleKeydown, { capture: true });
+		return () => window.removeEventListener('keydown', handleKeydown, { capture: true });
+	});
 </script>
 
 <div
