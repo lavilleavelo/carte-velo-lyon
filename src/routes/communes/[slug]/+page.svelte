@@ -1,6 +1,7 @@
 <script lang="ts">
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import CommuneMap from '$lib/components/map/CommuneMap.svelte';
+	import InfrastructureEvolutionChart from '$lib/components/charts/InfrastructureEvolutionChart.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -41,4 +42,6 @@
 	</dl>
 
 	<CommuneMap boundary={data.boundary} {bounds} />
+
+	<InfrastructureEvolutionChart communeName={commune.name} boundary={data.boundary} />
 </div>
