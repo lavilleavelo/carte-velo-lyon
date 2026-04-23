@@ -3,6 +3,7 @@ import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { EntryGenerator, PageServerLoad } from './$types';
 import communesIndex from '$lib/data/communes/_index.json';
 import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
+import { codePostalBySlug } from '$lib/data/codePostalBySlug';
 
 export interface Commune {
 	slug: string;
@@ -12,6 +13,7 @@ export interface Commune {
 	surfaceKm2: number | null;
 	bbox: [number, number, number, number];
 	center: [number, number];
+	codePostal?: string | null;
 }
 
 export const entries: EntryGenerator = () => {
@@ -34,7 +36,7 @@ export const load: PageServerLoad = async ({ params }) => {
 	};
 
 	return {
-		commune,
+		commune: { ...commune, codePostal: codePostalBySlug[commune.slug] ?? null },
 		boundary,
 	};
 };

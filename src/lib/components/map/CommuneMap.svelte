@@ -18,7 +18,7 @@
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
-	import CyclewayLegend from '$lib/components/map/CyclewayLegend.svelte';
+	import CyclewayLegendControl from '$lib/components/map/CyclewayLegendControl.svelte';
 	import CommuneMapLayers from '$lib/components/map/CommuneMapLayers.svelte';
 	import CommuneLayerToggles from '$lib/components/map/CommuneLayerToggles.svelte';
 	import YearRangeFilter from '$lib/components/map/YearRangeFilter.svelte';
@@ -31,7 +31,14 @@
 		createLayerToFeatureTypeMap,
 	} from '$lib/config/layers';
 	import { filterFeaturesByYear, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
-	import { toggleLegendId, voirieFeatureToLegendId } from '$lib/utils/cyclewayLegend';
+	import { featureLineLengthMeters } from '$lib/utils/geoLength';
+	import {
+		toggleLegendId,
+		voirieFeatureToLegendId,
+		osmFeatureToLegendId,
+		type LegendId,
+	} from '$lib/utils/cyclewayLegend';
+	import { osmCyclewaysQueryOptions, voirieQueryOptions } from '$lib/queries/cyclewayQueries';
 	import type { FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
 
@@ -120,16 +127,11 @@
 		});
 	});
 
-	const voirieQuery = createQuery(() => ({
-		queryKey: ['voirie-data'],
-		queryFn: async () => {
-			const response = await fetch('/api/grandlyon/voirie');
-			if (!response.ok) throw new Error('Failed to fetch voirie data');
-			return response.json();
-		},
-		staleTime: Infinity,
-		refetchOnWindowFocus: false,
-	}));
+	const voirieQuery = createQuery(() => voirieQueryOptions());
+
+	const osmCyclewaysQuery = createQuery(() =>
+		osmCyclewaysQueryOptions(isLayerActive('osm-cycleways')),
+	);
 
 	const layerQueryKeys: Record<string, unknown[]> = {
 		cycleways: ['voirie-data'],
@@ -157,29 +159,59 @@
 		),
 	);
 
-	const voirieInside = $derived.by(() => {
+	const voirieBoundaryYearFiltered = $derived.by(() => {
 		if (!voirieQuery.data) return undefined;
 		let filtered = filterFeaturesInsideBoundary(voirieQuery.data, boundary);
 		if (effectiveYearRange) {
 			filtered = filterFeaturesByYear(filtered, 'anneelivraison', effectiveYearRange);
 		}
-		const activeTypes = params.cyclewayTypes ?? [];
-		if (activeTypes.length > 0) {
-			const allowed = new Set(activeTypes);
-			filtered = {
-				...filtered,
-				features: filtered.features.filter((f: any) => {
-					const id = voirieFeatureToLegendId(f.properties);
-					return id ? allowed.has(id) : false;
-				}),
-			};
-		}
 		return filtered;
+	});
+
+	const voirieInside = $derived.by(() => {
+		const filtered = voirieBoundaryYearFiltered;
+		if (!filtered) return undefined;
+		const activeTypes = params.cyclewayTypes ?? [];
+		if (activeTypes.length === 0) return filtered;
+		const allowed = new Set(activeTypes);
+		return {
+			...filtered,
+			features: filtered.features.filter((f: any) => {
+				const id = voirieFeatureToLegendId(f.properties);
+				return id ? allowed.has(id) : false;
+			}),
+		};
 	});
 
 	function toggleCyclewayType(id: string) {
 		params.cyclewayTypes = toggleLegendId(params.cyclewayTypes ?? [], id);
 	}
+
+	const osmInsideBoundary = $derived.by(() => {
+		if (!osmCyclewaysQuery.data) return { type: 'FeatureCollection' as const, features: [] };
+		return filterFeaturesInsideBoundary(osmCyclewaysQuery.data, boundary);
+	});
+
+	const lengthByLegendId = $derived.by(() => {
+		const totals: Partial<Record<LegendId, number>> = {};
+		if (isLayerActive('osm-cycleways') && osmCyclewaysQuery.data) {
+			for (const f of osmInsideBoundary.features) {
+				const id = osmFeatureToLegendId(f.properties);
+				if (!id) continue;
+				totals[id] = (totals[id] ?? 0) + featureLineLengthMeters(f);
+			}
+			return totals;
+		}
+		if (isLayerActive('cycleways') && voirieBoundaryYearFiltered) {
+			for (const f of voirieBoundaryYearFiltered.features) {
+				const id = voirieFeatureToLegendId(f.properties);
+				if (!id) continue;
+				const length = Number((f.properties as any)?.longueur) || 0;
+				totals[id] = (totals[id] ?? 0) + length;
+			}
+		}
+		return totals;
+	});
 
 	const layerToFeatureType = createLayerToFeatureTypeMap();
 	const allConfigs = getAllLayerConfigs();
@@ -357,7 +389,7 @@
 		onmovestart={handleMapMoveStart}
 		onzoomstart={handleMapMoveStart}
 	>
-		<AttributionControl compact={true} position="bottom-left" />
+		<AttributionControl compact={true} position="top-left" />
 		<NavigationControl position="top-right" showCompass={false} />
 		<FullScreenControl position="top-right" />
 		<MapStyleToggle
@@ -420,6 +452,13 @@
 		/>
 
 		<CommuneMapLayers layers={effectiveLayers} {boundary} {map} yearRange={effectiveYearRange} />
+
+		<CyclewayLegendControl
+			activeIds={params.cyclewayTypes}
+			onToggle={toggleCyclewayType}
+			{lengthByLegendId}
+			position="bottom-left"
+		/>
 	</MapLibre>
 </div>
 
@@ -462,14 +501,14 @@
 	/>
 {/snippet}
 
-<CommuneLayerToggles
-	bind:layers={params.layers}
-	bind:filterByYear={params.filterByYear}
-	groups={layerToggleGroups}
-	{yearFilterSlot}
-/>
-
-<CyclewayLegend activeIds={params.cyclewayTypes} onToggle={toggleCyclewayType} />
+<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+	<CommuneLayerToggles
+		bind:layers={params.layers}
+		bind:filterByYear={params.filterByYear}
+		groups={layerToggleGroups}
+		{yearFilterSlot}
+	/>
+</div>
 
 {#if showPanoramax && selectedLngLat}
 	<PanoramaxViewer

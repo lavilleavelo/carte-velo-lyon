@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import CommuneMap from '$lib/components/map/CommuneMap.svelte';
 	import InfrastructureEvolutionChart from '$lib/components/charts/InfrastructureEvolutionChart.svelte';
@@ -19,43 +18,45 @@
 	<title>{commune.name} – Carte des aménagements cyclables</title>
 </svelte:head>
 
-<div class="space-y-6 py-6">
-	<header class="flex flex-col gap-3">
-		<a
-			href="/communes"
-			class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-navy"
-		>
-			<ArrowLeft class="h-4 w-4" />
-			Retour aux communes
-		</a>
-		<div class="flex flex-wrap items-baseline justify-between gap-3">
-			<h1 class="text-3xl font-bold text-brand-navy md:text-4xl">{commune.name}</h1>
+<div class="space-y-6 py-4">
+	<header class="flex flex-col gap-1">
+		<div class="flex flex-wrap items-center gap-x-3 gap-y-2">
+			<h1 class="text-2xl font-bold text-brand-navy md:text-3xl">{commune.name}</h1>
 			<a
 				href={veloscoreUrl}
 				target="_blank"
 				rel="noopener noreferrer"
-				class="inline-flex items-center gap-1.5 rounded-full border border-brand-navy/20 bg-white px-3 py-1.5 text-sm font-medium text-brand-navy shadow-sm transition-colors hover:border-brand-navy hover:bg-brand-navy hover:text-white"
+				class="ml-auto inline-flex items-center gap-1.5 rounded-full border border-brand-navy/20 bg-white px-3 py-1.5 text-sm font-medium text-brand-navy shadow-sm transition-colors hover:border-brand-navy hover:bg-brand-navy hover:text-white"
 			>
 				Voir le vélo-score
 				<ExternalLink class="h-4 w-4" />
 			</a>
 		</div>
+		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+			<span>
+				<span class="uppercase">INSEE</span>
+				<span class="font-semibold text-gray-700">{commune.insee}</span>
+			</span>
+			{#if commune.codePostal}
+				<span class="text-gray-300">·</span>
+				<span>
+					<span class="uppercase">Code postal</span>
+					<span class="font-semibold text-gray-700">{commune.codePostal}</span>
+				</span>
+			{/if}
+			{#if commune.surfaceKm2 !== null}
+				<span class="text-gray-300">·</span>
+				<span>
+					<span class="uppercase">Surface</span>
+					<span class="font-semibold text-gray-700">{commune.surfaceKm2}&nbsp;km²</span>
+				</span>
+			{/if}
+		</div>
 	</header>
 
-	<dl class="grid grid-cols-2 gap-4 rounded-lg bg-white p-4 shadow sm:grid-cols-3">
-		<div>
-			<dt class="text-xs text-gray-500 uppercase">Code INSEE</dt>
-			<dd class="text-base font-semibold">{commune.insee}</dd>
-		</div>
-		{#if commune.surfaceKm2 !== null}
-			<div>
-				<dt class="text-xs text-gray-500 uppercase">Surface</dt>
-				<dd class="text-base font-semibold">{commune.surfaceKm2} km²</dd>
-			</div>
-		{/if}
-	</dl>
-
-	<CommuneMap boundary={data.boundary} {bounds} />
+	<div class="mx-[calc(50%-50vw)]">
+		<CommuneMap boundary={data.boundary} {bounds} />
+	</div>
 
 	<InfrastructureEvolutionChart communeName={commune.name} boundary={data.boundary} />
 </div>

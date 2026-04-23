@@ -1,10 +1,10 @@
 <script lang="ts">
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
-	import type { FeatureCollection, Feature } from 'geojson';
+	import type { FeatureCollection } from 'geojson';
 	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
-	import { classifyOsmCycleway, type Side } from '$lib/utils/osmCycleway';
+	import { osmCyclewaysQueryOptions } from '$lib/queries/cyclewayQueries';
 
 	let {
 		isLayerVisible,
@@ -18,61 +18,9 @@
 
 	const COLOR = '#0369a1';
 
-	function sideOffset(side: Side): number {
-		if (side === 'left') return -3;
-		if (side === 'right') return 3;
-		return 0;
-	}
-
-	function overpassToGeoJSON(data: any): FeatureCollection {
-		const features: Feature[] = [];
-		for (const element of data?.elements ?? []) {
-			if (element.type !== 'way' || !element.geometry) continue;
-			const tags = element.tags ?? {};
-			const classifications = classifyOsmCycleway(tags);
-			if (classifications.length === 0) continue;
-
-			const coordinates = element.geometry.map((p: { lon: number; lat: number }) => [p.lon, p.lat]);
-
-			for (const c of classifications) {
-				features.push({
-					type: 'Feature',
-					properties: {
-						...tags,
-						id: `osm-cw-${element.id}-${c.typeamenagement}-${c.bidirectional ? 'bi' : 'uni'}`,
-						osmId: element.id,
-						osmType: element.type,
-						typeamenagement: c.typeamenagement,
-						side: c.side,
-						bidirectional: c.bidirectional ?? false,
-						offset: sideOffset(c.side),
-					},
-					geometry: {
-						type: 'LineString',
-						coordinates,
-					},
-				});
-			}
-		}
-		return { type: 'FeatureCollection', features };
-	}
-
 	const enabled = $derived(isLayerVisible('osm-cycleways'));
 
-	const query = createQuery(() => ({
-		queryKey: ['overpass-cycleways'],
-		queryFn: async () => {
-			const response = await fetch('/api/overpass-cycleways');
-			if (!response.ok) {
-				throw new Error('Failed to fetch Overpass cycleways data');
-			}
-			const data = await response.json();
-			return overpassToGeoJSON(data);
-		},
-		staleTime: Infinity,
-		enabled,
-		refetchOnWindowFocus: false,
-	}));
+	const query = createQuery(() => osmCyclewaysQueryOptions(enabled));
 
 	const visibility = $derived(enabled ? 'visible' : 'none');
 
@@ -177,10 +125,10 @@
 			'line-color': COLOR,
 			'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 1.6, 17, 2.5],
 			'line-opacity': 0.9,
-			'line-dasharray': [0.2, 1.6],
+			'line-dasharray': [2, 2.5],
 			'line-offset': zoomedOffset,
 		}}
-		layout={{ 'line-cap': 'round', visibility }}
+		layout={{ 'line-cap': 'butt', visibility }}
 	/>
 
 	<LineLayer

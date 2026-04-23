@@ -72,9 +72,9 @@
 			'line-color': COLOR,
 			'line-width': 2.5,
 			'line-opacity': 0.9,
-			'line-dasharray': [0.2, 1.6],
+			'line-dasharray': [2, 2.5],
 		}}
-		layout={{ 'line-cap': 'round', visibility }}
+		layout={{ 'line-cap': 'butt', visibility }}
 	/>
 
 	<LineLayer

@@ -7,6 +7,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import { MediaQuery } from 'svelte/reactivity';
 	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import { voirieQueryOptions } from '$lib/queries/cyclewayQueries';
 	import type { FeatureCollection } from 'geojson';
 	import {
 		typeColors,
@@ -32,16 +33,7 @@
 
 	let { communeName, boundary }: Props = $props();
 
-	const voirieQuery = createQuery(() => ({
-		queryKey: ['voirie-data'],
-		queryFn: async () => {
-			const response = await fetch('/api/grandlyon/voirie');
-			if (!response.ok) throw new Error('Failed to fetch voirie data');
-			return response.json();
-		},
-		staleTime: Infinity,
-		refetchOnWindowFocus: false,
-	}));
+	const voirieQuery = createQuery(() => voirieQueryOptions());
 
 	const parkingQuery = createQuery(() => ({
 		queryKey: ['parking'],
@@ -572,5 +564,16 @@
 				>
 			</div>
 		{/if}
+		<p class="mt-6 border-t border-gray-100 pt-3 text-xs text-gray-500">
+			Source&nbsp;:&nbsp;
+			<a
+				href="https://data.grandlyon.com/portail/fr/jeux-de-donnees/amenagements-cyclables-metropole-lyon/donnees"
+				target="_blank"
+				rel="noopener noreferrer"
+				class="underline hover:text-brand-navy"
+			>
+				data.grandlyon.com
+			</a>
+		</p>
 	</div>
 </section>

@@ -11,6 +11,7 @@
 			| 'solid-thin'
 			| 'double'
 			| 'dashed'
+			| 'dashed-long'
 			| 'dotted'
 			| 'dotted-bold'
 			| 'velorue'
@@ -20,7 +21,7 @@
 		{ id: 'piste-unidir', label: 'Piste cyclable (unidirectionnelle)', render: 'solid-thin' },
 		{ id: 'voie-verte', label: 'Voie verte', render: 'dotted-bold' },
 		{ id: 'bande', label: 'Bande cyclable', render: 'dashed' },
-		{ id: 'bus-velo', label: 'Voie bus-vélo', render: 'dotted' },
+		{ id: 'bus-velo', label: 'Voie bus-vélo', render: 'dashed-long' },
 		{ id: 'velorue', label: 'Vélorue', render: 'velorue' },
 		{ id: 'dsc', label: 'Double sens cyclable', render: 'arrow' },
 	];
@@ -112,6 +113,16 @@
 									stroke-width="3"
 									stroke-dasharray="5 3"
 								/>
+							{:else if item.render === 'dashed-long'}
+								<line
+									x1="0"
+									y1="6"
+									x2="48"
+									y2="6"
+									stroke={COLOR}
+									stroke-width="3"
+									stroke-dasharray="8 4"
+								/>
 							{:else if item.render === 'dotted'}
 								<line
 									x1="0"
@@ -191,6 +202,16 @@
 									stroke={COLOR}
 									stroke-width="3"
 									stroke-dasharray="5 3"
+								/>
+							{:else if item.render === 'dashed-long'}
+								<line
+									x1="0"
+									y1="6"
+									x2="48"
+									y2="6"
+									stroke={COLOR}
+									stroke-width="3"
+									stroke-dasharray="8 4"
 								/>
 							{:else if item.render === 'dotted'}
 								<line

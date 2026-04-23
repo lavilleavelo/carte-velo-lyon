@@ -1,3 +1,5 @@
+import type { Feature, FeatureCollection } from 'geojson';
+
 export type Side = 'left' | 'right' | 'center';
 
 export type Classification = {
@@ -5,6 +7,45 @@ export type Classification = {
 	side: Side;
 	bidirectional?: boolean;
 };
+
+function sideOffset(side: Side): number {
+	if (side === 'left') return -3;
+	if (side === 'right') return 3;
+	return 0;
+}
+
+export function overpassToGeoJSON(data: any): FeatureCollection {
+	const features: Feature[] = [];
+	for (const element of data?.elements ?? []) {
+		if (element.type !== 'way' || !element.geometry) continue;
+		const tags = element.tags ?? {};
+		const classifications = classifyOsmCycleway(tags);
+		if (classifications.length === 0) continue;
+
+		const coordinates = element.geometry.map((p: { lon: number; lat: number }) => [p.lon, p.lat]);
+
+		for (const c of classifications) {
+			features.push({
+				type: 'Feature',
+				properties: {
+					...tags,
+					id: `osm-cw-${element.id}-${c.typeamenagement}-${c.bidirectional ? 'bi' : 'uni'}`,
+					osmId: element.id,
+					osmType: element.type,
+					typeamenagement: c.typeamenagement,
+					side: c.side,
+					bidirectional: c.bidirectional ?? false,
+					offset: sideOffset(c.side),
+				},
+				geometry: {
+					type: 'LineString',
+					coordinates,
+				},
+			});
+		}
+	}
+	return { type: 'FeatureCollection', features };
+}
 
 export function classifyValue(value?: string): string | null {
 	if (!value || value === 'no' || value === 'separate' || value === 'shared_lane') return null;
@@ -65,8 +106,7 @@ export function classifyOsmCycleway(tags: Record<string, any>): Classification[]
 
 	const hasSideTags = tags['cycleway:left'] || tags['cycleway:right'] || tags['cycleway:both'];
 
-	const isCentered = (type: string) =>
-		type === 'Double sens cyclable' || type === 'Couloir bus vélo';
+	const isCentered = (type: string) => type === 'Double sens cyclable';
 
 	const sideIsBidir = (sideKey: string) => {
 		const ow = tags[`${sideKey}:oneway`];
@@ -121,6 +161,8 @@ export function classifyOsmCycleway(tags: Record<string, any>): Classification[]
 			const bidir = isAdvisory && type === 'Bande Cyclable';
 			if (isCentered(type) || String(tags.cycleway).startsWith('opposite')) {
 				results.push({ typeamenagement: type, side: 'center', bidirectional: bidir });
+			} else if (type === 'Couloir bus vélo' || tags.oneway === 'yes') {
+				results.push({ typeamenagement: type, side: 'right', bidirectional: bidir });
 			} else {
 				results.push({ typeamenagement: type, side: 'left', bidirectional: bidir });
 				results.push({ typeamenagement: type, side: 'right', bidirectional: bidir });

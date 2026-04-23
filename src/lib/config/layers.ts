@@ -39,11 +39,16 @@ export const layerConfigs: LayerConfig[] = [
 		featureType: 'cycleway',
 		defaultEnabled: true,
 		formatPopup: (p) => {
+			const isPiste = p.typeamenagement === 'Piste Cyclable';
+			const bidir = p.senscirculation === 'Double';
+			const label = isPiste
+				? `${p.typeamenagement} (${bidir ? 'bidirectionnelle' : 'unidirectionnelle'})`
+				: p.typeamenagement;
 			return `
 				<div class="flex items-start gap-2">
 					<div class="mt-0.5 shrink-0">${Icons.bike('#15803d')}</div>
 					<div class="flex flex-col">
-						<span class="font-bold text-sm">${p.typeamenagement}</span>
+						<span class="font-bold text-sm">${label}</span>
 						${p.localisation ? `<span class="text-xs">${p.localisation}</span>` : ''}
 					</div>
 				</div>`;
@@ -64,11 +69,15 @@ export const layerConfigs: LayerConfig[] = [
 			const source = showSource
 				? `<span class="text-xs text-gray-500">Source: OpenStreetMap</span>`
 				: '';
+			const isPiste = p.typeamenagement === 'Piste Cyclable';
+			const label = isPiste
+				? `${p.typeamenagement} (${p.bidirectional ? 'bidirectionnelle' : 'unidirectionnelle'})`
+				: p.typeamenagement || 'Aménagement cyclable';
 			return `
 				<div class="flex items-start gap-2">
 					<div class="mt-0.5 shrink-0">${Icons.bike('#0369a1')}</div>
 					<div class="flex flex-col">
-						<span class="font-bold text-sm">${p.typeamenagement || 'Aménagement cyclable'}</span>
+						<span class="font-bold text-sm">${label}</span>
 						${name}
 						${source}
 					</div>
