@@ -1,5 +1,25 @@
 import type { Feature, FeatureCollection } from 'geojson';
 
+export const PAVED_SURFACES = new Set([
+	'asphalt',
+	'paved',
+	'concrete',
+	'concrete:plates',
+	'paving_stones',
+	'sett',
+	'cobblestone',
+	'unhewn_cobblestone',
+	'metal',
+]);
+
+export function isPavedSurface(surface: string | undefined | null): boolean {
+	if (!surface) {
+		return true;
+	}
+
+	return PAVED_SURFACES.has(surface);
+}
+
 export type Side = 'left' | 'right' | 'center';
 
 export type Classification = {

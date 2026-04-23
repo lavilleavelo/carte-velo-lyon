@@ -1,5 +1,6 @@
 import { Icons } from './icons';
 import { vlColors } from '$lib/utils/mapUtils';
+import { isPavedSurface } from '$lib/utils/osmCycleway';
 
 export interface PopupContext {
 	isLayerVisible?: (id: string) => boolean;
@@ -70,15 +71,28 @@ export const layerConfigs: LayerConfig[] = [
 				? `<span class="text-xs text-gray-500">Source: OpenStreetMap</span>`
 				: '';
 			const isPiste = p.typeamenagement === 'Piste Cyclable';
+			const isVoieVerte = p.typeamenagement === 'Voie verte';
 			const label = isPiste
-				? `${p.typeamenagement} (${p.bidirectional ? 'bidirectionnelle' : 'unidirectionnelle'})`
+				? `${p.typeamenagement} (${p.bidirectional ? 'bidir.' : 'unidir.'})`
 				: p.typeamenagement || 'Aménagement cyclable';
+			let surfaceLine = '';
+			if (isVoieVerte) {
+				const rawSurface = typeof p.surface === 'string' ? p.surface : '';
+				if (rawSurface) {
+					const paved = isPavedSurface(rawSurface);
+					const tone = paved ? 'text-emerald-700' : 'text-amber-700';
+					surfaceLine = `<span class="text-xs ${tone}"><span class="text-gray-400">(${rawSurface})</span></span>`;
+				} else {
+					surfaceLine = `<span class="text-xs text-gray-500">Revêtement non renseigné</span>`;
+				}
+			}
 			return `
 				<div class="flex items-start gap-2">
 					<div class="mt-0.5 shrink-0">${Icons.bike('#0369a1')}</div>
 					<div class="flex flex-col">
 						<span class="font-bold text-sm">${label}</span>
 						${name}
+						${surfaceLine}
 						${source}
 					</div>
 				</div>`;

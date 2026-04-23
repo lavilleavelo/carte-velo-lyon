@@ -23,8 +23,11 @@
 	import CommuneLayerToggles from '$lib/components/map/CommuneLayerToggles.svelte';
 	import YearRangeFilter from '$lib/components/map/YearRangeFilter.svelte';
 	import FeatureInfo from '$lib/components/map/FeatureInfo.svelte';
+	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
+	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
+	import { loadDefaultProvider } from '$lib/config/navigationProviders';
 	import {
 		getAllLayerConfigs,
 		getInteractableLayerIds,
@@ -187,6 +190,8 @@
 		params.cyclewayTypes = toggleLegendId(params.cyclewayTypes ?? [], id);
 	}
 
+	let hoveredLegendId: LegendId | null = $state(null);
+
 	const osmInsideBoundary = $derived.by(() => {
 		if (!osmCyclewaysQuery.data) return { type: 'FeatureCollection' as const, features: [] };
 		return filterFeaturesInsideBoundary(osmCyclewaysQuery.data, boundary);
@@ -235,6 +240,17 @@
 	let selectedLngLat: { lng: number; lat: number } | null = $state(null);
 	let showPanoramax = $state(false);
 	let hoveredPhotoLocation: { lng: number; lat: number } | null = $state(null);
+
+	let contextMenuVisible = $state(false);
+	let contextMenuX = $state(0);
+	let contextMenuY = $state(0);
+	let contextMenuLngLat: { lng: number; lat: number } | null = $state(null);
+	let contextMenuPhotoLocation: { lng: number; lat: number } | null = $state(null);
+	let defaultNavProvider = $state('osm');
+
+	$effect(() => {
+		defaultNavProvider = loadDefaultProvider();
+	});
 
 	function enrichFeatures(features: any[]) {
 		return features
@@ -315,6 +331,25 @@
 		cursor = undefined;
 	}
 
+	function handleMapContextMenu(event: any) {
+		event.preventDefault();
+		const e = event.originalEvent as MouseEvent;
+		contextMenuVisible = true;
+		contextMenuX = e.clientX;
+		contextMenuY = e.clientY;
+		contextMenuLngLat = {
+			lng: event.lngLat.lng,
+			lat: event.lngLat.lat,
+		};
+		contextMenuPhotoLocation = null;
+	}
+
+	function closeContextMenu() {
+		contextMenuVisible = false;
+		contextMenuLngLat = null;
+		contextMenuPhotoLocation = null;
+	}
+
 	function handleMapClick(e: any) {
 		if (!map) return;
 		const interactableLayers = getInteractables();
@@ -384,6 +419,7 @@
 		maxZoom={18}
 		{cursor}
 		onclick={handleMapClick}
+		oncontextmenu={handleMapContextMenu}
 		onmousemove={handleMapMouseMove}
 		onmouseleave={handleMapMouseLeave}
 		onmovestart={handleMapMoveStart}
@@ -412,6 +448,10 @@
 
 		{#if hoveredPhotoLocation}
 			<Marker lnglat={hoveredPhotoLocation} />
+		{/if}
+
+		{#if contextMenuPhotoLocation}
+			<GeocoderMarker pulse={false} lnglat={contextMenuPhotoLocation} />
 		{/if}
 
 		{#if hoverPopupFeatures && hoverPopupFeatures.features.length > 0}
@@ -449,6 +489,7 @@
 			isLayerVisible={(id) => id === 'osm-cycleways' && isLayerActive('osm-cycleways')}
 			{boundary}
 			activeLegendIds={params.cyclewayTypes}
+			{hoveredLegendId}
 		/>
 
 		<CommuneMapLayers layers={effectiveLayers} {boundary} {map} yearRange={effectiveYearRange} />
@@ -456,10 +497,21 @@
 		<CyclewayLegendControl
 			activeIds={params.cyclewayTypes}
 			onToggle={toggleCyclewayType}
+			onHover={(id) => (hoveredLegendId = id)}
 			{lengthByLegendId}
 			position="bottom-left"
 		/>
 	</MapLibre>
+
+	<MapContextMenu
+		visible={contextMenuVisible}
+		x={contextMenuX}
+		y={contextMenuY}
+		lngLat={contextMenuLngLat}
+		{defaultNavProvider}
+		onClose={closeContextMenu}
+		onPhotoFound={(loc) => (contextMenuPhotoLocation = loc)}
+	/>
 </div>
 
 {#if innerWidth < 768 && selectedFeatures.length > 0}

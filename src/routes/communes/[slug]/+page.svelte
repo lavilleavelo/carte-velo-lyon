@@ -28,7 +28,7 @@
 				rel="noopener noreferrer"
 				class="ml-auto inline-flex items-center gap-1.5 rounded-full border border-brand-navy/20 bg-white px-3 py-1.5 text-sm font-medium text-brand-navy shadow-sm transition-colors hover:border-brand-navy hover:bg-brand-navy hover:text-white"
 			>
-				Voir le vélo-score
+				Vélo-score
 				<ExternalLink class="h-4 w-4" />
 			</a>
 		</div>

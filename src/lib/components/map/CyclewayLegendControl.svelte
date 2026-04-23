@@ -29,12 +29,14 @@
 	let {
 		activeIds,
 		onToggle,
+		onHover,
 		lengthByLegendId,
 		position = 'bottom-right',
 		initiallyOpen = true,
 	}: {
 		activeIds?: string[];
 		onToggle?: (id: string) => void;
+		onHover?: (id: LegendId | null) => void;
 		lengthByLegendId?: Partial<Record<LegendId, number>>;
 		position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 		initiallyOpen?: boolean;
@@ -87,7 +89,6 @@
 	<CustomControl {position}>
 		<div
 			class="cycleway-legend-control rounded-lg bg-white/85 shadow-md ring-1 ring-black/5 backdrop-blur-sm"
-			style="min-width: 380px;"
 		>
 			<button
 				type="button"
@@ -109,8 +110,8 @@
 
 			{#if open}
 				<ul
-					class="grid grid-flow-col grid-cols-2 gap-x-4 gap-y-1 px-3 pb-2"
-					style="grid-template-rows: repeat({Math.ceil(visibleItems.length / 2)}, minmax(0, auto));"
+					class="cycleway-legend-grid grid grid-cols-1 gap-x-4 gap-y-1 px-3 pb-2 sm:grid-flow-col sm:grid-cols-2"
+					style="--legend-rows: {Math.ceil(visibleItems.length / 2)};"
 				>
 					{#each visibleItems as item (item.id)}
 						{@const active = isActive(item.id)}
@@ -120,6 +121,10 @@
 								<button
 									type="button"
 									onclick={() => onToggle?.(item.id)}
+									onpointerenter={() => onHover?.(item.id)}
+									onpointerleave={() => onHover?.(null)}
+									onfocus={() => onHover?.(item.id)}
+									onblur={() => onHover?.(null)}
 									aria-pressed={active}
 									class="flex w-full items-center gap-2 rounded-md py-0.5 text-left text-xs whitespace-nowrap text-gray-700 transition-colors hover:text-brand-navy [&_svg]:shrink-0"
 									class:opacity-40={!active}
@@ -323,6 +328,15 @@
 <style>
 	:global(.cycleway-legend-control) {
 		width: auto !important;
+		max-width: calc(100vw - 16px);
+	}
+	@media (min-width: 640px) {
+		:global(.cycleway-legend-control) {
+			min-width: 380px;
+		}
+		:global(.cycleway-legend-grid) {
+			grid-template-rows: repeat(var(--legend-rows), minmax(0, auto));
+		}
 	}
 	:global(.cycleway-legend-control button) {
 		width: auto !important;

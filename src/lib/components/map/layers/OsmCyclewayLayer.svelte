@@ -4,32 +4,42 @@
 	import type { FeatureCollection } from 'geojson';
 	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
+	import { PAVED_SURFACES } from '$lib/utils/osmCycleway';
 	import { osmCyclewaysQueryOptions } from '$lib/queries/cyclewayQueries';
 
 	let {
 		isLayerVisible,
 		boundary,
 		activeLegendIds,
+		hoveredLegendId,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		boundary?: FeatureCollection;
 		activeLegendIds?: string[];
+		hoveredLegendId?: string | null;
 	} = $props();
+
+	const DIMMED_OPACITY = 0.2;
+	const NORMAL_OPACITY = 0.9;
+
+	function opacityFor(...legendIds: string[]): number {
+		if (!hoveredLegendId) return NORMAL_OPACITY;
+		return legendIds.includes(hoveredLegendId) ? NORMAL_OPACITY : DIMMED_OPACITY;
+	}
+
+	const opacityPisteBidir = $derived(opacityFor('piste-bidir'));
+	const opacityPisteUnidir = $derived(opacityFor('piste-unidir'));
+	const opacityVoieVerte = $derived(opacityFor('voie-verte'));
+	const opacityBande = $derived(opacityFor('bande'));
+	const opacityBusVelo = $derived(opacityFor('bus-velo'));
+	const opacityVelorue = $derived(opacityFor('velorue'));
+	const opacityDsc = $derived(opacityFor('dsc'));
+	const opacityDscBase = $derived(
+		hoveredLegendId ? (hoveredLegendId === 'dsc' ? 0.5 : DIMMED_OPACITY) : 0.5,
+	);
 
 	const COLOR = '#0369a1';
 	const COLOR_NON_PAVED = '#03527d';
-
-	const PAVED_SURFACES = new Set([
-		'asphalt',
-		'paved',
-		'concrete',
-		'concrete:plates',
-		'paving_stones',
-		'sett',
-		'cobblestone',
-		'unhewn_cobblestone',
-		'metal',
-	]);
 
 	const enabled = $derived(isLayerVisible('osm-cycleways'));
 
@@ -102,7 +112,7 @@
 		paint={{
 			'line-color': COLOR,
 			'line-width': 4,
-			'line-opacity': 0.9,
+			'line-opacity': opacityPisteBidir,
 			'line-offset': lineOffset,
 		}}
 		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
@@ -114,7 +124,7 @@
 		paint={{
 			'line-color': COLOR,
 			'line-width': 2,
-			'line-opacity': 0.9,
+			'line-opacity': opacityPisteUnidir,
 			'line-offset': zoomedOffset,
 		}}
 		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
@@ -126,7 +136,7 @@
 		paint={{
 			'line-color': COLOR,
 			'line-width': 4,
-			'line-opacity': 0.9,
+			'line-opacity': opacityVoieVerte,
 			'line-dasharray': [0.3, 1.6],
 			'line-offset': lineOffset,
 		}}
@@ -139,12 +149,11 @@
 		paint={{
 			'line-color': COLOR_NON_PAVED,
 			'line-width': 4,
-			'line-opacity': 0.9,
+			'line-opacity': opacityVoieVerte,
 			'line-dasharray': [0.3, 1.6],
 			'line-offset': lineOffset,
 		}}
 		layout={{ 'line-cap': 'round', visibility }}
-	/>
 	/>
 
 	<LineLayer
@@ -153,7 +162,7 @@
 		paint={{
 			'line-color': COLOR,
 			'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.8, 14, 1.6, 17, 3],
-			'line-opacity': 0.9,
+			'line-opacity': opacityBande,
 			'line-dasharray': [1.5, 1],
 			'line-offset': zoomedOffset,
 		}}
@@ -166,7 +175,7 @@
 		paint={{
 			'line-color': COLOR,
 			'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 1.6, 17, 2.5],
-			'line-opacity': 0.9,
+			'line-opacity': opacityBusVelo,
 			'line-dasharray': [2, 2.5],
 			'line-offset': zoomedOffset,
 		}}
@@ -179,7 +188,7 @@
 		paint={{
 			'line-color': COLOR,
 			'line-width': 4,
-			'line-opacity': 0.9,
+			'line-opacity': opacityVelorue,
 			'line-dasharray': [2.5, 1.2],
 			'line-offset': lineOffset,
 		}}
@@ -189,7 +198,7 @@
 	<LineLayer
 		id="osm-cw-dsc-base"
 		filter={filterDsc}
-		paint={{ 'line-color': COLOR, 'line-width': 1.5, 'line-opacity': 0.5 }}
+		paint={{ 'line-color': COLOR, 'line-width': 1.5, 'line-opacity': opacityDscBase }}
 		layout={{ visibility }}
 	/>
 
@@ -208,7 +217,12 @@
 			'text-ignore-placement': true,
 			visibility,
 		}}
-		paint={{ 'text-color': COLOR, 'text-halo-color': '#ffffff', 'text-halo-width': 1 }}
+		paint={{
+			'text-color': COLOR,
+			'text-halo-color': '#ffffff',
+			'text-halo-width': 1,
+			'text-opacity': opacityDsc,
+		}}
 	/>
 
 	<LineLayer
