@@ -1,0 +1,666 @@
+{
+  "69003": {
+    "insee": "69003",
+    "name": "Albigny-sur-Saône",
+    "codePostal": "69250",
+    "population2022": 3013,
+    "population2021": 2991,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Albigny-sur-Sa%C3%B4ne",
+    "articles": []
+  },
+  "69029": {
+    "insee": "69029",
+    "name": "Bron",
+    "codePostal": "69500",
+    "population2022": 42850,
+    "population2021": 43049,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Bron",
+    "articles": []
+  },
+  "69033": {
+    "insee": "69033",
+    "name": "Cailloux-sur-Fontaines",
+    "codePostal": "69270",
+    "population2022": 2951,
+    "population2021": 2937,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Cailloux-sur-Fontaines",
+    "articles": []
+  },
+  "69034": {
+    "insee": "69034",
+    "name": "Caluire-et-Cuire",
+    "codePostal": "69300",
+    "population2022": 43479,
+    "population2021": 43572,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Caluire-et-Cuire",
+    "articles": [
+      {
+        "url": "https://lavilleavelo.org/2025/09/24/analyse-des-resultats-du-barometre-velo-2025-sur-le-plateau-nord/",
+        "title": "Analyse des résultats du Baromètre vélo 2025 sur le Plateau Nord",
+        "date": "2025-09-24",
+        "author": "La Ville à Vélo"
+      }
+    ]
+  },
+  "69040": {
+    "insee": "69040",
+    "name": "Champagne-au-Mont-d'Or",
+    "codePostal": "69410",
+    "population2022": 6124,
+    "population2021": 5936,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Champagne-au-Mont-d%27Or",
+    "articles": []
+  },
+  "69044": {
+    "insee": "69044",
+    "name": "Charbonnières-les-Bains",
+    "codePostal": "69260",
+    "population2022": 5272,
+    "population2021": 5311,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Charbonni%C3%A8res-les-Bains",
+    "articles": []
+  },
+  "69046": {
+    "insee": "69046",
+    "name": "Charly",
+    "codePostal": "69390",
+    "population2022": 4670,
+    "population2021": 4606,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Charly",
+    "articles": []
+  },
+  "69063": {
+    "insee": "69063",
+    "name": "Collonges-au-Mont-d'Or",
+    "codePostal": "69660",
+    "population2022": 4604,
+    "population2021": 4517,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Collonges-au-Mont-d%27Or",
+    "articles": []
+  },
+  "69068": {
+    "insee": "69068",
+    "name": "Couzon-au-Mont-d'Or",
+    "codePostal": "69270",
+    "population2022": 2541,
+    "population2021": 2452,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Couzon-au-Mont-d%27Or",
+    "articles": []
+  },
+  "69069": {
+    "insee": "69069",
+    "name": "Craponne",
+    "codePostal": "69290",
+    "population2022": 12170,
+    "population2021": 11903,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Craponne",
+    "articles": []
+  },
+  "69071": {
+    "insee": "69071",
+    "name": "Curis-au-Mont-d'Or",
+    "codePostal": "69250",
+    "population2022": 1186,
+    "population2021": 1179,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Curis-au-Mont-d%27Or",
+    "articles": []
+  },
+  "69072": {
+    "insee": "69072",
+    "name": "Dardilly",
+    "codePostal": "69570",
+    "population2022": 8980,
+    "population2021": 8828,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Dardilly",
+    "articles": []
+  },
+  "69081": {
+    "insee": "69081",
+    "name": "Écully",
+    "codePostal": "69130",
+    "population2022": 18019,
+    "population2021": 18361,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/%C3%89cully",
+    "articles": []
+  },
+  "69085": {
+    "insee": "69085",
+    "name": "Fleurieu-sur-Saône",
+    "codePostal": "69250",
+    "population2022": 1549,
+    "population2021": 1501,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Fleurieu-sur-Sa%C3%B4ne",
+    "articles": []
+  },
+  "69087": {
+    "insee": "69087",
+    "name": "Fontaines-Saint-Martin",
+    "codePostal": "69270",
+    "population2022": 3070,
+    "population2021": 3043,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Fontaines-Saint-Martin",
+    "articles": []
+  },
+  "69088": {
+    "insee": "69088",
+    "name": "Fontaines-sur-Saône",
+    "codePostal": "69270",
+    "population2022": 7005,
+    "population2021": 7047,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Fontaines-sur-Sa%C3%B4ne",
+    "articles": [
+      {
+        "url": "https://lavilleavelo.org/2025/09/24/analyse-des-resultats-du-barometre-velo-2025-sur-le-plateau-nord/",
+        "title": "Analyse des résultats du Baromètre vélo 2025 sur le Plateau Nord",
+        "date": "2025-09-24",
+        "author": "La Ville à Vélo"
+      }
+    ]
+  },
+  "69089": {
+    "insee": "69089",
+    "name": "Francheville",
+    "codePostal": "69340",
+    "population2022": 15664,
+    "population2021": 15204,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Francheville",
+    "articles": []
+  },
+  "69091": {
+    "insee": "69091",
+    "name": "Givors",
+    "codePostal": "69700",
+    "population2022": 20943,
+    "population2021": 20654,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Givors",
+    "articles": []
+  },
+  "69096": {
+    "insee": "69096",
+    "name": "Grigny-sur-Rhône",
+    "codePostal": "69520",
+    "population2022": 9941,
+    "population2021": 9851,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Grigny-sur-Rh%C3%B4ne",
+    "articles": []
+  },
+  "69100": {
+    "insee": "69100",
+    "name": "Irigny",
+    "codePostal": "69540",
+    "population2022": 8909,
+    "population2021": 8867,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Irigny",
+    "articles": []
+  },
+  "69116": {
+    "insee": "69116",
+    "name": "Limonest",
+    "codePostal": "69760",
+    "population2022": 3933,
+    "population2021": 3838,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Limonest",
+    "articles": []
+  },
+  "69117": {
+    "insee": "69117",
+    "name": "Lissieu",
+    "codePostal": "69380",
+    "population2022": 3193,
+    "population2021": 3188,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Lissieu",
+    "articles": []
+  },
+  "69123": {
+    "insee": "69123",
+    "name": "Lyon",
+    "codePostal": null,
+    "population2022": 520774,
+    "population2021": 522250,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Lyon",
+    "articles": [
+      {
+        "url": "https://lavilleavelo.org/2025/09/19/barometre-velo-2025-lyon-4eme-du-classement-des-grandes-villes-2/",
+        "title": "Baromètre Vélo 2025 : Lyon, 4ème du classement des grandes villes",
+        "date": "2025-09-19",
+        "author": "La Ville à Vélo"
+      }
+    ]
+  },
+  "69127": {
+    "insee": "69127",
+    "name": "Marcy-l'Étoile",
+    "codePostal": "69280",
+    "population2022": 3711,
+    "population2021": 3644,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Marcy-l%27%C3%89toile",
+    "articles": []
+  },
+  "69142": {
+    "insee": "69142",
+    "name": "La Mulatière",
+    "codePostal": "69350",
+    "population2022": 6554,
+    "population2021": 6595,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/La_Mulati%C3%A8re",
+    "articles": []
+  },
+  "69143": {
+    "insee": "69143",
+    "name": "Neuville-sur-Saône",
+    "codePostal": "69250",
+    "population2022": 7807,
+    "population2021": 7721,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Neuville-sur-Sa%C3%B4ne",
+    "articles": []
+  },
+  "69149": {
+    "insee": "69149",
+    "name": "Oullins-Pierre-Bénite",
+    "codePostal": "69600",
+    "population2022": 37928,
+    "population2021": 37628,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Oullins-Pierre-B%C3%A9nite",
+    "articles": []
+  },
+  "69153": {
+    "insee": "69153",
+    "name": "Poleymieux-au-Mont-d'Or",
+    "codePostal": "69250",
+    "population2022": 1394,
+    "population2021": 1403,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Poleymieux-au-Mont-d%27Or",
+    "articles": []
+  },
+  "69163": {
+    "insee": "69163",
+    "name": "Quincieux",
+    "codePostal": "69650",
+    "population2022": 3620,
+    "population2021": 3549,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Quincieux",
+    "articles": []
+  },
+  "69168": {
+    "insee": "69168",
+    "name": "Rochetaillée-sur-Saône",
+    "codePostal": "69270",
+    "population2022": 1546,
+    "population2021": 1543,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Rochetaill%C3%A9e-sur-Sa%C3%B4ne",
+    "articles": []
+  },
+  "69191": {
+    "insee": "69191",
+    "name": "Saint-Cyr-au-Mont-d'Or",
+    "codePostal": "69450",
+    "population2022": 6113,
+    "population2021": 5900,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Cyr-au-Mont-d%27Or",
+    "articles": []
+  },
+  "69194": {
+    "insee": "69194",
+    "name": "Saint-Didier-au-Mont-d'Or",
+    "codePostal": "69370",
+    "population2022": 7405,
+    "population2021": 7265,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Didier-au-Mont-d%27Or",
+    "articles": []
+  },
+  "69199": {
+    "insee": "69199",
+    "name": "Saint-Fons",
+    "codePostal": "69190",
+    "population2022": 19549,
+    "population2021": 19360,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Fons",
+    "articles": []
+  },
+  "69202": {
+    "insee": "69202",
+    "name": "Sainte-Foy-lès-Lyon",
+    "codePostal": "69110",
+    "population2022": 21893,
+    "population2021": 21858,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Sainte-Foy-l%C3%A8s-Lyon",
+    "articles": []
+  },
+  "69204": {
+    "insee": "69204",
+    "name": "Saint-Genis-Laval",
+    "codePostal": "69230",
+    "population2022": 21329,
+    "population2021": 20929,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Genis-Laval",
+    "articles": []
+  },
+  "69205": {
+    "insee": "69205",
+    "name": "Saint-Genis-les-Ollières",
+    "codePostal": "69290",
+    "population2022": 5370,
+    "population2021": 5300,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Genis-les-Olli%C3%A8res",
+    "articles": []
+  },
+  "69207": {
+    "insee": "69207",
+    "name": "Saint-Germain-au-Mont-d'Or",
+    "codePostal": "69650",
+    "population2022": 3037,
+    "population2021": 2978,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Germain-au-Mont-d%27Or",
+    "articles": []
+  },
+  "69233": {
+    "insee": "69233",
+    "name": "Saint-Romain-au-Mont-d'Or",
+    "codePostal": "69270",
+    "population2022": 1241,
+    "population2021": 1238,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Romain-au-Mont-d%27Or",
+    "articles": []
+  },
+  "69244": {
+    "insee": "69244",
+    "name": "Tassin-la-Demi-Lune",
+    "codePostal": "69160",
+    "population2022": 22792,
+    "population2021": 22676,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Tassin-la-Demi-Lune",
+    "articles": [
+      {
+        "url": "https://lavilleavelo.org/2025/10/24/tassin-politique-cyclable-bilan-pascal-charmot-2020-2026/",
+        "title": "Bilan de la politique cyclable à Tassin-la-Demi-Lune  : les cyclistes oubliés du mandat, le vélo au cœur des enjeux de demain",
+        "date": "2025-10-24",
+        "author": "La Ville à Vélo"
+      },
+      {
+        "url": "https://lavilleavelo.org/2025/10/22/barometre-velo-tassin-2025/",
+        "title": "Les résultats du Baromètre Vélo sont arrivés : Tassin progresse de F à E !",
+        "date": "2025-10-22",
+        "author": "La Ville à Vélo"
+      }
+    ]
+  },
+  "69250": {
+    "insee": "69250",
+    "name": "La Tour-de-Salvagny",
+    "codePostal": "69890",
+    "population2022": 4549,
+    "population2021": 4272,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/La_Tour-de-Salvagny",
+    "articles": []
+  },
+  "69256": {
+    "insee": "69256",
+    "name": "Vaulx-en-Velin",
+    "codePostal": "69120",
+    "population2022": 150995,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Vaulx-en-Velin",
+    "articles": []
+  },
+  "69259": {
+    "insee": "69259",
+    "name": "Vénissieux",
+    "codePostal": "69200",
+    "population2022": 68040,
+    "population2021": 66363,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/V%C3%A9nissieux",
+    "articles": []
+  },
+  "69260": {
+    "insee": "69260",
+    "name": "Vernaison",
+    "codePostal": "69390",
+    "population2022": 4728,
+    "population2021": 5140,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Vernaison",
+    "articles": []
+  },
+  "69266": {
+    "insee": "69266",
+    "name": "Villeurbanne",
+    "codePostal": "69100",
+    "population2022": 150994,
+    "population2021": 156928,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Villeurbanne",
+    "articles": []
+  },
+  "69271": {
+    "insee": "69271",
+    "name": "Chassieu",
+    "codePostal": "69680",
+    "population2022": 11214,
+    "population2021": 11092,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Chassieu",
+    "articles": []
+  },
+  "69273": {
+    "insee": "69273",
+    "name": "Corbas",
+    "codePostal": "69960",
+    "population2022": 11196,
+    "population2021": 10932,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Corbas",
+    "articles": []
+  },
+  "69275": {
+    "insee": "69275",
+    "name": "Décines-Charpieu",
+    "codePostal": "69150",
+    "population2022": 29905,
+    "population2021": 29731,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/D%C3%A9cines-Charpieu",
+    "articles": []
+  },
+  "69276": {
+    "insee": "69276",
+    "name": "Feyzin",
+    "codePostal": "69320",
+    "population2022": 9727,
+    "population2021": 9850,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Feyzin",
+    "articles": []
+  },
+  "69278": {
+    "insee": "69278",
+    "name": "Genay",
+    "codePostal": "69730",
+    "population2022": 5632,
+    "population2021": 5520,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Genay",
+    "articles": []
+  },
+  "69279": {
+    "insee": "69279",
+    "name": "Jonage",
+    "codePostal": "69330",
+    "population2022": 6109,
+    "population2021": 6160,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Jonage",
+    "articles": []
+  },
+  "69282": {
+    "insee": "69282",
+    "name": "Meyzieu",
+    "codePostal": "69330",
+    "population2022": 36437,
+    "population2021": 35882,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Meyzieu",
+    "articles": []
+  },
+  "69283": {
+    "insee": "69283",
+    "name": "Mions",
+    "codePostal": "69780",
+    "population2022": 13716,
+    "population2021": 13707,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Mions",
+    "articles": []
+  },
+  "69284": {
+    "insee": "69284",
+    "name": "Montanay",
+    "codePostal": "69250",
+    "population2022": 3270,
+    "population2021": 3249,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Montanay",
+    "articles": []
+  },
+  "69286": {
+    "insee": "69286",
+    "name": "Rillieux-la-Pape",
+    "codePostal": "69140",
+    "population2022": 31479,
+    "population2021": 31247,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Rillieux-la-Pape",
+    "articles": [
+      {
+        "url": "https://lavilleavelo.org/2025/09/24/analyse-des-resultats-du-barometre-velo-2025-sur-le-plateau-nord/",
+        "title": "Analyse des résultats du Baromètre vélo 2025 sur le Plateau Nord",
+        "date": "2025-09-24",
+        "author": "La Ville à Vélo"
+      }
+    ]
+  },
+  "69290": {
+    "insee": "69290",
+    "name": "Saint-Priest",
+    "codePostal": "69800",
+    "population2022": 49193,
+    "population2021": 48822,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Priest",
+    "articles": []
+  },
+  "69292": {
+    "insee": "69292",
+    "name": "Sathonay-Camp",
+    "codePostal": "69580",
+    "population2022": 7039,
+    "population2021": 6858,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Sathonay-Camp",
+    "articles": [
+      {
+        "url": "https://lavilleavelo.org/2025/09/24/analyse-des-resultats-du-barometre-velo-2025-sur-le-plateau-nord/",
+        "title": "Analyse des résultats du Baromètre vélo 2025 sur le Plateau Nord",
+        "date": "2025-09-24",
+        "author": "La Ville à Vélo"
+      }
+    ]
+  },
+  "69293": {
+    "insee": "69293",
+    "name": "Sathonay-Village",
+    "codePostal": "69580",
+    "population2022": 2560,
+    "population2021": 2423,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Sathonay-Village",
+    "articles": [
+      {
+        "url": "https://lavilleavelo.org/2025/12/14/sathonay-village-notee-g-au-barometre-velo/",
+        "title": "Sathonay-Village notée G au Baromètre Vélo",
+        "date": "2025-12-14",
+        "author": "La Ville à Vélo"
+      },
+      {
+        "url": "https://lavilleavelo.org/2025/09/24/analyse-des-resultats-du-barometre-velo-2025-sur-le-plateau-nord/",
+        "title": "Analyse des résultats du Baromètre vélo 2025 sur le Plateau Nord",
+        "date": "2025-09-24",
+        "author": "La Ville à Vélo"
+      }
+    ]
+  },
+  "69296": {
+    "insee": "69296",
+    "name": "Solaize",
+    "codePostal": "69360",
+    "population2022": 3135,
+    "population2021": 3082,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/Solaize",
+    "articles": []
+  },
+  "69381": {
+    "insee": "69381",
+    "name": "Lyon 1er Arrondissement",
+    "codePostal": "69001",
+    "population2022": 29016,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/1er_arrondissement_de_Lyon",
+    "articles": []
+  },
+  "69382": {
+    "insee": "69382",
+    "name": "Lyon 2e Arrondissement",
+    "codePostal": "69002",
+    "population2022": 30485,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/2e_arrondissement_de_Lyon",
+    "articles": []
+  },
+  "69383": {
+    "insee": "69383",
+    "name": "Lyon 3e Arrondissement",
+    "codePostal": "69003",
+    "population2022": 101302,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/3e_arrondissement_de_Lyon",
+    "articles": []
+  },
+  "69384": {
+    "insee": "69384",
+    "name": "Lyon 4e Arrondissement",
+    "codePostal": "69004",
+    "population2022": 35603,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/4e_arrondissement_de_Lyon",
+    "articles": []
+  },
+  "69385": {
+    "insee": "69385",
+    "name": "Lyon 5e Arrondissement",
+    "codePostal": "69005",
+    "population2022": 48711,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/5e_arrondissement_de_Lyon",
+    "articles": []
+  },
+  "69386": {
+    "insee": "69386",
+    "name": "Lyon 6e Arrondissement",
+    "codePostal": "69006",
+    "population2022": 52007,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/6e_arrondissement_de_Lyon",
+    "articles": []
+  },
+  "69387": {
+    "insee": "69387",
+    "name": "Lyon 7e Arrondissement",
+    "codePostal": "69007",
+    "population2022": 85897,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/7e_arrondissement_de_Lyon",
+    "articles": []
+  },
+  "69388": {
+    "insee": "69388",
+    "name": "Lyon 8e Arrondissement",
+    "codePostal": "69008",
+    "population2022": 86326,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/8e_arrondissement_de_Lyon",
+    "articles": []
+  },
+  "69389": {
+    "insee": "69389",
+    "name": "Lyon 9e Arrondissement",
+    "codePostal": "69009",
+    "population2022": 52903,
+    "population2021": null,
+    "wikipediaUrl": "https://fr.wikipedia.org/wiki/9e_arrondissement_de_Lyon",
+    "articles": []
+  }
+}

@@ -3,7 +3,7 @@ import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { EntryGenerator, PageServerLoad } from './$types';
 import communesIndex from '$lib/data/communes/_index.json';
 import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
-import { codePostalBySlug } from '$lib/data/codePostalBySlug';
+import communeMetadataJson from '$lib/data/communeMetadata.json';
 
 export interface Commune {
 	slug: string;
@@ -15,6 +15,25 @@ export interface Commune {
 	center: [number, number];
 	codePostal?: string | null;
 }
+
+export interface CommuneArticle {
+	url: string;
+	title: string;
+	date: string;
+	author: string;
+}
+
+export interface CommuneMetadata {
+	insee: string;
+	name: string;
+	codePostal: string | null;
+	population2022: number | null;
+	population2021: number | null;
+	wikipediaUrl: string | null;
+	articles: CommuneArticle[];
+}
+
+const metadataByInsee = communeMetadataJson as Record<string, CommuneMetadata>;
 
 export const entries: EntryGenerator = () => {
 	return communesIndex.map(({ slug }) => ({ slug }));
@@ -35,8 +54,11 @@ export const load: PageServerLoad = async ({ params }) => {
 		features: [feature],
 	};
 
+	const metadata = metadataByInsee[commune.insee] ?? null;
+
 	return {
-		commune: { ...commune, codePostal: codePostalBySlug[commune.slug] ?? null },
+		commune: { ...commune, codePostal: metadata?.codePostal ?? null },
 		boundary,
+		metadata,
 	};
 };
