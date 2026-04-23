@@ -96,9 +96,18 @@ export function classifyOsmCycleway(tags: Record<string, any>): Classification[]
 	}
 
 	if (
+		tags.highway === 'pedestrian' &&
+		(bikeDesignated || tags.bicycle === 'yes') &&
+		tags.segregated !== 'yes'
+	) {
+		results.push({ typeamenagement: 'Voie verte', side: 'center', bidirectional: true });
+		return results;
+	}
+
+	if (
 		(tags.highway === 'service' || tags.highway === 'track' || tags.highway === 'unclassified') &&
 		bikeDesignated &&
-		motorRestricted
+		(motorRestricted || tags.foot === 'designated')
 	) {
 		results.push({ typeamenagement: 'Voie verte', side: 'center', bidirectional: true });
 		return results;

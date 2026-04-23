@@ -157,7 +157,31 @@ export async function getCachedOverpassVLData(): Promise<unknown> {
 	return getCached('overpassVL');
 }
 
-const OVERPASS_CYCLEWAYS_QUERY = `[out:json][timeout:180];(way["highway"="cycleway"](${OVERPASS_BBOX});way["bicycle_road"="yes"](${OVERPASS_BBOX});way["cyclestreet"="yes"](${OVERPASS_BBOX});way["cycleway"~"^(lane|track|share_busway|shared_busway|opposite|opposite_lane|opposite_track)$"](${OVERPASS_BBOX});way["cycleway:left"~"^(lane|track|share_busway|shared_busway|opposite|opposite_lane|opposite_track)$"](${OVERPASS_BBOX});way["cycleway:right"~"^(lane|track|share_busway|shared_busway|opposite|opposite_lane|opposite_track)$"](${OVERPASS_BBOX});way["cycleway:both"~"^(lane|track|share_busway|shared_busway|opposite|opposite_lane|opposite_track)$"](${OVERPASS_BBOX});way["highway"="path"]["bicycle"="designated"](${OVERPASS_BBOX});way["highway"="living_street"](${OVERPASS_BBOX});way["oneway:bicycle"="no"]["oneway"="yes"](${OVERPASS_BBOX}););out geom;`;
+const CYCLEWAY_TYPES =
+	'^(lane|track|share_busway|shared_busway|opposite|opposite_lane|opposite_track)$';
+
+const OVERPASS_CYCLEWAYS_QUERY = [
+	`[out:json][timeout:180];`,
+	`(`,
+	// Dedicated cycleways and bicycle-priority streets
+	`  way["highway"="cycleway"](${OVERPASS_BBOX});`,
+	`  way["bicycle_road"="yes"](${OVERPASS_BBOX});`,
+	`  way["cyclestreet"="yes"](${OVERPASS_BBOX});`,
+	// Roads with cycleway infrastructure on the carriageway
+	`  way["cycleway"~"${CYCLEWAY_TYPES}"](${OVERPASS_BBOX});`,
+	`  way["cycleway:left"~"${CYCLEWAY_TYPES}"](${OVERPASS_BBOX});`,
+	`  way["cycleway:right"~"${CYCLEWAY_TYPES}"](${OVERPASS_BBOX});`,
+	`  way["cycleway:both"~"${CYCLEWAY_TYPES}"](${OVERPASS_BBOX});`,
+	// Paths and pedestrian areas where bicycles are allowed
+	`  way["highway"="path"]["bicycle"="designated"](${OVERPASS_BBOX});`,
+	`  way["highway"="pedestrian"]["bicycle"~"^(yes|designated)$"](${OVERPASS_BBOX});`,
+	`  way["highway"~"^(service|track|unclassified)$"]["bicycle"="designated"](${OVERPASS_BBOX});`,
+	// Living streets and contraflow cycling
+	`  way["highway"="living_street"](${OVERPASS_BBOX});`,
+	`  way["oneway:bicycle"="no"]["oneway"="yes"](${OVERPASS_BBOX});`,
+	`);`,
+	`out geom;`,
+].join('\n');
 registerEntry('overpassCycleways', overpassFetcher(OVERPASS_CYCLEWAYS_QUERY));
 
 export async function getCachedOverpassCyclewaysData(): Promise<unknown> {

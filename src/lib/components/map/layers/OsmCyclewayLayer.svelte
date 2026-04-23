@@ -17,6 +17,19 @@
 	} = $props();
 
 	const COLOR = '#0369a1';
+	const COLOR_NON_PAVED = '#03527d';
+
+	const PAVED_SURFACES = new Set([
+		'asphalt',
+		'paved',
+		'concrete',
+		'concrete:plates',
+		'paving_stones',
+		'sett',
+		'cobblestone',
+		'unhewn_cobblestone',
+		'metal',
+	]);
 
 	const enabled = $derived(isLayerVisible('osm-cycleways'));
 
@@ -53,7 +66,22 @@
 		['==', ['get', 'typeamenagement'], 'Piste Cyclable'],
 		['!', isBidir],
 	];
-	const filterVoieVerte: any = ['==', ['get', 'typeamenagement'], 'Voie verte'];
+	const pavedSurfacesLiteral: any = ['literal', Array.from(PAVED_SURFACES)];
+	const isPavedSurface: any = [
+		'any',
+		['!', ['has', 'surface']],
+		['in', ['get', 'surface'], pavedSurfacesLiteral],
+	];
+	const filterVoieVertePaved: any = [
+		'all',
+		['==', ['get', 'typeamenagement'], 'Voie verte'],
+		isPavedSurface,
+	];
+	const filterVoieVerteStabilise: any = [
+		'all',
+		['==', ['get', 'typeamenagement'], 'Voie verte'],
+		['!', isPavedSurface],
+	];
 	const filterBande: any = ['==', ['get', 'typeamenagement'], 'Bande Cyclable'];
 	const filterBusVelo: any = ['==', ['get', 'typeamenagement'], 'Couloir bus vélo'];
 	const filterDsc: any = ['==', ['get', 'typeamenagement'], 'Double sens cyclable'];
@@ -94,7 +122,7 @@
 
 	<LineLayer
 		id="osm-cw-voie-verte"
-		filter={filterVoieVerte}
+		filter={filterVoieVertePaved}
 		paint={{
 			'line-color': COLOR,
 			'line-width': 4,
@@ -103,6 +131,20 @@
 			'line-offset': lineOffset,
 		}}
 		layout={{ 'line-cap': 'round', visibility }}
+	/>
+
+	<LineLayer
+		id="osm-cw-voie-verte-stabilise-base"
+		filter={filterVoieVerteStabilise}
+		paint={{
+			'line-color': COLOR_NON_PAVED,
+			'line-width': 4,
+			'line-opacity': 0.9,
+			'line-dasharray': [0.3, 1.6],
+			'line-offset': lineOffset,
+		}}
+		layout={{ 'line-cap': 'round', visibility }}
+	/>
 	/>
 
 	<LineLayer
