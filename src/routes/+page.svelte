@@ -698,17 +698,15 @@
 		setLayers(Array.from(currentLayers));
 	}
 
-	function isLayerVisible(layerId: string): boolean {
-		return visibleLayers.has(layerId);
-	}
-
 	const enabledSpeedBuckets = $derived<SpeedBucket[]>(
 		SPEED_BUCKETS.filter((b) => visibleLayers.has(SPEED_BUCKET_LAYER_IDS[b])),
 	);
 	const speedLimitsLayerActive = $derived(enabledSpeedBuckets.length > 0);
-	const speedLimitsIsLayerVisible = $derived((id: string) =>
-		id === 'speed-limits' ? speedLimitsLayerActive : isLayerVisible(id),
-	);
+
+	function isLayerVisible(layerId: string): boolean {
+		if (layerId === 'speed-limits') return speedLimitsLayerActive;
+		return visibleLayers.has(layerId);
+	}
 
 	function toggleCategory(category: string) {
 		const categoryLayers = layersByCategory.get(category);
@@ -1381,10 +1379,7 @@
 
 			<OsmCyclewayLayer {isLayerVisible} />
 
-			<SpeedLimitsLayer
-				isLayerVisible={speedLimitsIsLayerVisible}
-				enabledBuckets={enabledSpeedBuckets}
-			/>
+			<SpeedLimitsLayer {isLayerVisible} enabledBuckets={enabledSpeedBuckets} />
 
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 

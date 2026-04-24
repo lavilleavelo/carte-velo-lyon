@@ -1,6 +1,7 @@
 import { Icons } from './icons';
 import { vlColors } from '$lib/utils/mapUtils';
 import { isPavedSurface } from '$lib/utils/osmCycleway';
+import { SPEED_BUCKET_COLORS, bucketForSpeed } from '$lib/utils/speedLimits';
 
 export interface PopupContext {
 	isLayerVisible?: (id: string) => boolean;
@@ -22,7 +23,8 @@ export interface LayerConfig {
 		| 'schools'
 		| 'local'
 		| 'comfort'
-		| 'safety';
+		| 'safety'
+		| 'voirie';
 	interactableLayerIds: string[];
 	featureType: string;
 	defaultEnabled?: boolean;
@@ -98,6 +100,48 @@ export const layerConfigs: LayerConfig[] = [
 				</div>`;
 		},
 		minZoomPopup: 15,
+	},
+
+	// Speed limits (GrandLyon pvochausseetrottoir)
+	{
+		id: 'speed-limits',
+		label: 'Limitations de vitesse',
+		category: 'voirie',
+		interactableLayerIds: ['speed-limits-hitarea'],
+		featureType: 'speed-limit',
+		formatPopup: (p) => {
+			const raw = p.limitationvitesse;
+			const bucket = bucketForSpeed(raw);
+			const color = SPEED_BUCKET_COLORS[bucket];
+			const street = p.nomvoie1 || p.nomvoie || p.nomvoie2 || '';
+			const streetLine = street
+				? `<span class="text-xs text-gray-700">${street}</span>`
+				: `<span class="text-xs text-gray-400 italic">Voie sans nom</span>`;
+			const speedLine =
+				raw !== undefined && raw !== null && raw !== ''
+					? `<span class="text-xs"><span class="text-gray-500">Limite :</span> <span class="font-semibold">${raw}&nbsp;km/h</span></span>`
+					: `<span class="text-xs text-gray-500 italic">Limite de vitesse inconnue</span>`;
+			const zone = p.reglementationzca
+				? `<span class="text-xs"><span class="text-gray-500">Zone :</span> ${p.reglementationzca}</span>`
+				: '';
+			const lengthMeters = Number(p.longueurcalculee);
+			const lengthLine =
+				Number.isFinite(lengthMeters) && lengthMeters > 0
+					? `<span class="text-xs"><span class="text-gray-500">Longueur :</span> ${Math.round(lengthMeters).toLocaleString('fr-FR')}&nbsp;m</span>`
+					: '';
+
+			return `
+				<div class="flex items-start gap-2">
+					<div class="mt-0.5 shrink-0">${Icons.gauge(color)}</div>
+					<div class="flex flex-col gap-0.5">
+						${streetLine}
+						${speedLine}
+						${zone}
+						${lengthLine}
+					</div>
+				</div>`;
+		},
+		minZoomPopup: 13,
 	},
 
 	// Parking

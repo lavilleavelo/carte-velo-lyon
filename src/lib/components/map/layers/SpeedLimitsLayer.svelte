@@ -94,4 +94,11 @@
 			'line-opacity': lineOpacity,
 		}}
 	/>
+
+	<LineLayer
+		id="speed-limits-hitarea"
+		filter={layerFilter}
+		layout={{ visibility }}
+		paint={{ 'line-color': 'transparent', 'line-width': 14, 'line-opacity': 0 }}
+	/>
 </GeoJSONSource>

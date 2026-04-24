@@ -278,6 +278,7 @@
 	function isConfigLayerVisible(configId: string): boolean {
 		if (configId === 'cycleways') return isLayerActive('cycleways');
 		if (configId === 'osm-cycleways') return isLayerActive('osm-cycleways');
+		if (configId === 'speed-limits') return isLayerActive('speed-limits');
 		if (configId.startsWith('vl-') || configId === 'project-vl') return isLayerActive('vl');
 		if (configId === 'velov') return isLayerActive('velov');
 		if (configId.startsWith('parking-')) return isLayerActive('parking');
@@ -349,7 +350,10 @@
 		}
 		const features = map.queryRenderedFeatures(e.point, { layers: interactableLayers });
 		if (features.length > 0) {
-			const enriched = enrichFeatures(features);
+			const zoom = map.getZoom();
+			const enriched = enrichFeatures(features).filter(
+				(f: any) => !(f.config?.minZoomPopup && zoom < f.config.minZoomPopup),
+			);
 			if (enriched.length > 0) {
 				cursor = 'pointer';
 				const targetLngLat = e.lngLat;
