@@ -72,6 +72,7 @@
 		staleTime: Infinity,
 		enabled: isLayerVisible('counters-velo') || isLayerVisible('counters-voiture'),
 		refetchOnWindowFocus: false,
+		meta: { loadingLabel: 'Compteurs' },
 	}));
 
 	// Circle radius based on last monthly count

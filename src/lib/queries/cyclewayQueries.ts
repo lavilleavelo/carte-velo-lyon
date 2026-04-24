@@ -13,6 +13,7 @@ export function osmCyclewaysQueryOptions(enabled = true) {
 		staleTime: Infinity,
 		refetchOnWindowFocus: false,
 		enabled,
+		meta: { loadingLabel: 'Aménagements cyclables' },
 	});
 }
 
@@ -26,6 +27,7 @@ export function voirieQueryOptions() {
 		},
 		staleTime: Infinity,
 		refetchOnWindowFocus: false,
+		meta: { loadingLabel: 'Aménagements cyclables (Grand Lyon)' },
 	});
 }
 
@@ -40,5 +42,6 @@ export function speedLimitsQueryOptions(enabled = true) {
 		staleTime: Infinity,
 		refetchOnWindowFocus: false,
 		enabled,
+		meta: { loadingLabel: 'Limitations de vitesse' },
 	});
 }

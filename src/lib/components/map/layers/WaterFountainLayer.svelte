@@ -30,6 +30,7 @@
 		},
 		staleTime: Infinity,
 		enabled: isLayerVisible('water-fountains'),
+		meta: { loadingLabel: 'Fontaines à eau' },
 	}));
 
 	const fountainData = $derived.by(() => {

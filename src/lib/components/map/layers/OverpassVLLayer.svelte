@@ -164,6 +164,7 @@
 		staleTime: Infinity,
 		enabled: anyOsmVLVisible,
 		refetchOnWindowFocus: false,
+		meta: { loadingLabel: 'Voies Lyonnaises (OSM)' },
 	}));
 
 	$effect(() => {

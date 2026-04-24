@@ -76,6 +76,7 @@
 		},
 		staleTime: Infinity,
 		enabled: anySchoolVisible,
+		meta: { loadingLabel: 'Établissements scolaires' },
 	}));
 
 	const features = $derived(schoolsQuery.data || []);

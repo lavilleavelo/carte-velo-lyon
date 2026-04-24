@@ -17,6 +17,7 @@
 		},
 		staleTime: Infinity,
 		enabled: isLayerVisible('tram'),
+		meta: { loadingLabel: 'Tramway' },
 	}));
 
 	$effect(() => {

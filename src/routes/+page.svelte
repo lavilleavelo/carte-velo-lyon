@@ -45,8 +45,9 @@
 		createLayerToFeatureTypeMap,
 	} from '$lib/config/layers';
 
-	import { createQuery } from '@tanstack/svelte-query';
+	import { createQuery, useIsFetching, useQueryClient } from '@tanstack/svelte-query';
 	import Geocoder from '$lib/components/Geocoder.svelte';
+	import MapLoadingIndicator from '$lib/components/map/MapLoadingIndicator.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
 	import { vlColors } from '$lib/utils/mapUtils';
 
@@ -106,6 +107,7 @@
 		},
 		staleTime: Infinity,
 		refetchOnWindowFocus: false,
+		meta: { loadingLabel: 'Aménagements cyclables (Grand Lyon)' },
 	}));
 
 	const layerToFeatureType = createLayerToFeatureTypeMap();
@@ -708,6 +710,22 @@
 		return visibleLayers.has(layerId);
 	}
 
+	const queryClient = useQueryClient();
+	const totalFetching = useIsFetching();
+
+	const loadingLayers = $derived.by(() => {
+		void totalFetching.current;
+		return queryClient
+			.getQueryCache()
+			.getAll()
+			.filter((q) => q.state.fetchStatus === 'fetching')
+			.map((q) => {
+				const label = (q.meta as { loadingLabel?: string } | undefined)?.loadingLabel;
+				return label ? { id: JSON.stringify(q.queryKey), label } : null;
+			})
+			.filter((x): x is { id: string; label: string } => x !== null);
+	});
+
 	function toggleCategory(category: string) {
 		const categoryLayers = layersByCategory.get(category);
 		if (!categoryLayers) return;
@@ -1205,6 +1223,12 @@
 					{/if}
 				</button>
 			</div>
+		</div>
+
+		<div
+			class="pointer-events-none absolute bottom-14 left-1/2 z-10 w-full max-w-xs -translate-x-1/2 px-4 sm:max-w-sm md:bottom-3 md:max-w-md"
+		>
+			<MapLoadingIndicator layers={loadingLayers} />
 		</div>
 
 		{#if selectedFeatures.length > 0}

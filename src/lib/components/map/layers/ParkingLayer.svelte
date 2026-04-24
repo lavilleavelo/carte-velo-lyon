@@ -40,6 +40,7 @@
 			isLayerVisible('parking-box') ||
 			isLayerVisible('parking-velostation') ||
 			isLayerVisible('parking-lpa'),
+		meta: { loadingLabel: 'Stationnements vélo' },
 	}));
 
 	const parkingData = $derived.by(() => {

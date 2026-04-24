@@ -58,6 +58,7 @@
 		},
 		staleTime: Infinity,
 		refetchOnWindowFocus: false,
+		meta: { loadingLabel: 'Voies Lyonnaises' },
 	}));
 
 	$effect(() => {

@@ -17,6 +17,7 @@
 		},
 		staleTime: Infinity,
 		enabled: isLayerVisible('metro'),
+		meta: { loadingLabel: 'Métro' },
 	}));
 
 	$effect(() => {

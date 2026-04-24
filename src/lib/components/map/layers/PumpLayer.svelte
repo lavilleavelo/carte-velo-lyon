@@ -28,6 +28,7 @@
 		},
 		staleTime: Infinity,
 		enabled: isLayerVisible('pumps'),
+		meta: { loadingLabel: 'Pompes' },
 	}));
 
 	const pumpsData = $derived.by(() => {

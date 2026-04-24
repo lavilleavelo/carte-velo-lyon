@@ -46,6 +46,7 @@
 		},
 		staleTime: Infinity,
 		enabled: isLayerVisible('toilets'),
+		meta: { loadingLabel: 'Toilettes' },
 	}));
 
 	const features = $derived(toiletsQuery.data || []);

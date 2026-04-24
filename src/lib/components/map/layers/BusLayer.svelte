@@ -17,6 +17,7 @@
 		},
 		staleTime: Infinity,
 		enabled: isLayerVisible('bus-other') || isLayerVisible('bus-main') || isLayerVisible('bus-tb'),
+		meta: { loadingLabel: 'Bus' },
 	}));
 
 	$effect(() => {

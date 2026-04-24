@@ -56,6 +56,7 @@
 		enabled: isLayerVisible('velov'),
 		refetchOnWindowFocus: false,
 		staleTime: Infinity, // until reload
+		meta: { loadingLabel: 'Stations Vélo’v' },
 	}));
 
 	const velovSourceData = $derived.by(() => {

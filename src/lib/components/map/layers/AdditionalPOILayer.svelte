@@ -96,6 +96,7 @@
 		},
 		staleTime: Infinity,
 		enabled: anyVisible,
+		meta: { loadingLabel: 'Points d’intérêt' },
 	}));
 
 	const features = $derived(poisQuery.data || []);
