@@ -76,6 +76,17 @@
 	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
+	import SpeedLimitsLayer from '$lib/components/map/layers/SpeedLimitsLayer.svelte';
+	import { SPEED_BUCKETS, type SpeedBucket } from '$lib/utils/speedLimits';
+
+	const SPEED_BUCKET_LAYER_IDS: Record<SpeedBucket, string> = {
+		'5': 'speed-limit-5',
+		'30': 'speed-limit-30',
+		'50': 'speed-limit-50',
+		'70': 'speed-limit-70',
+		unknown: 'speed-limit-unknown',
+	};
+
 	import {
 		navigationProviders,
 		loadDefaultProvider,
@@ -102,6 +113,13 @@
 	const layerGroups: Record<string, string[]> = {
 		vl: Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`),
 		'osm-vl': Array.from({ length: 12 }, (_, i) => `osm-vl-${i + 1}`),
+		'speed-limits': [
+			'speed-limit-5',
+			'speed-limit-30',
+			'speed-limit-50',
+			'speed-limit-70',
+			'speed-limit-unknown',
+		],
 	};
 
 	function expandLayers(layers: string[]): string[] {
@@ -396,6 +414,36 @@
 			category: 'Établissements scolaires',
 		},
 		{
+			id: 'speed-limit-5',
+			label: '≤ 5 km/h',
+			color: '#648FFF',
+			category: 'Limitations de vitesse',
+		},
+		{
+			id: 'speed-limit-30',
+			label: '≤ 30 km/h',
+			color: '#785EF0',
+			category: 'Limitations de vitesse',
+		},
+		{
+			id: 'speed-limit-50',
+			label: '50 km/h',
+			color: '#FFB000',
+			category: 'Limitations de vitesse',
+		},
+		{
+			id: 'speed-limit-70',
+			label: '70+ km/h',
+			color: '#ff0000',
+			category: 'Limitations de vitesse',
+		},
+		{
+			id: 'speed-limit-unknown',
+			label: 'Inconnu',
+			color: '#6b7280',
+			category: 'Limitations de vitesse',
+		},
+		{
 			id: 'target-network',
 			label: 'Réseau Cible LVV 2040',
 			color: '#9333ea',
@@ -435,6 +483,7 @@
 	const optionalCategories = [
 		'Infrastructures Cyclables (Grand Lyon)',
 		'Voies Lyonnaises (OSM)',
+		'Limitations de vitesse',
 		'Compteurs',
 		'Confort & Repos',
 		'Santé & Sécurité',
@@ -652,6 +701,14 @@
 	function isLayerVisible(layerId: string): boolean {
 		return visibleLayers.has(layerId);
 	}
+
+	const enabledSpeedBuckets = $derived<SpeedBucket[]>(
+		SPEED_BUCKETS.filter((b) => visibleLayers.has(SPEED_BUCKET_LAYER_IDS[b])),
+	);
+	const speedLimitsLayerActive = $derived(enabledSpeedBuckets.length > 0);
+	const speedLimitsIsLayerVisible = $derived((id: string) =>
+		id === 'speed-limits' ? speedLimitsLayerActive : isLayerVisible(id),
+	);
 
 	function toggleCategory(category: string) {
 		const categoryLayers = layersByCategory.get(category);
@@ -1323,6 +1380,11 @@
 			<OverpassVLLayer {isLayerVisible} {map} />
 
 			<OsmCyclewayLayer {isLayerVisible} />
+
+			<SpeedLimitsLayer
+				isLayerVisible={speedLimitsIsLayerVisible}
+				enabledBuckets={enabledSpeedBuckets}
+			/>
 
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 

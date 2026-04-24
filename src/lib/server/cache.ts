@@ -70,6 +70,8 @@ const GRAND_LYON_URLS = {
 		'https://data.grandlyon.com/fr/datapusher/ws/rdata/jcd_jcdecaux.jcdvelov/all.json?maxfeatures=1000&start=1',
 	voirie:
 		'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvoamenagementcyclable&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
+	speedLimits:
+		'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:pvo_patrimoine_voirie.pvochausseetrottoir&outputFormat=application/json&SRSNAME=EPSG:4171&sortBy=gid',
 } as const;
 
 export type GrandLyonDataType = keyof typeof GRAND_LYON_URLS;

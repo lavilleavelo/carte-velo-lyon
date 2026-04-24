@@ -28,3 +28,17 @@ export function voirieQueryOptions() {
 		refetchOnWindowFocus: false,
 	});
 }
+
+export function speedLimitsQueryOptions(enabled = true) {
+	return queryOptions({
+		queryKey: ['speed-limits'],
+		queryFn: async (): Promise<FeatureCollection> => {
+			const response = await fetch('/api/grandlyon/speedLimits');
+			if (!response.ok) throw new Error('Failed to fetch speed limits data');
+			return response.json();
+		},
+		staleTime: Infinity,
+		refetchOnWindowFocus: false,
+		enabled,
+	});
+}

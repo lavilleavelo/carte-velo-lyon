@@ -18,7 +18,9 @@
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
+	import SpeedLimitsLayer from '$lib/components/map/layers/SpeedLimitsLayer.svelte';
 	import CyclewayLegendControl from '$lib/components/map/CyclewayLegendControl.svelte';
+	import SpeedLimitsControl from '$lib/components/map/SpeedLimitsControl.svelte';
 	import CommuneMapLayers from '$lib/components/map/CommuneMapLayers.svelte';
 	import CommuneLayerToggles from '$lib/components/map/CommuneLayerToggles.svelte';
 	import YearRangeFilter from '$lib/components/map/YearRangeFilter.svelte';
@@ -41,7 +43,12 @@
 		osmFeatureToLegendId,
 		type LegendId,
 	} from '$lib/utils/cyclewayLegend';
-	import { osmCyclewaysQueryOptions, voirieQueryOptions } from '$lib/queries/cyclewayQueries';
+	import {
+		osmCyclewaysQueryOptions,
+		voirieQueryOptions,
+		speedLimitsQueryOptions,
+	} from '$lib/queries/cyclewayQueries';
+	import { computeSpeedLimitsStats, SPEED_BUCKETS, type SpeedBucket } from '$lib/utils/speedLimits';
 	import type { FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
 
@@ -77,6 +84,7 @@
 		yearFrom: type('number').default(() => MIN_YEAR),
 		yearTo: type('number').default(() => MAX_YEAR),
 		cyclewayTypes: type('string[]').default(() => []),
+		speedLimits: type('string[]').default(() => []),
 		filterByYear: type('boolean').default(() => false),
 	});
 
@@ -87,7 +95,13 @@
 		params.filterByYear ? yearRange : undefined,
 	);
 
-	const YEAR_INCOMPATIBLE_IDS = new Set(['osm-cycleways', 'velov', 'pumps', 'fountains']);
+	const YEAR_INCOMPATIBLE_IDS = new Set([
+		'osm-cycleways',
+		'velov',
+		'pumps',
+		'fountains',
+		'speed-limits',
+	]);
 
 	function isLayerActive(id: string): boolean {
 		if (!params.layers.includes(id)) return false;
@@ -104,6 +118,16 @@
 				{ id: 'cycleways', label: 'Grand Lyon' },
 				{ id: 'osm-cycleways', label: 'OpenStreetMap', disableWhenYearFiltered: true },
 				{ id: 'vl', label: 'Voies Lyonnaises' },
+			],
+		},
+		{
+			label: 'Voirie',
+			toggles: [
+				{
+					id: 'speed-limits',
+					label: 'Limitations de vitesse',
+					disableWhenYearFiltered: true,
+				},
 			],
 		},
 		{
@@ -136,9 +160,14 @@
 		osmCyclewaysQueryOptions(isLayerActive('osm-cycleways')),
 	);
 
+	const speedLimitsQuery = createQuery(() =>
+		speedLimitsQueryOptions(isLayerActive('speed-limits')),
+	);
+
 	const layerQueryKeys: Record<string, unknown[]> = {
 		cycleways: ['voirie-data'],
 		'osm-cycleways': ['overpass-cycleways'],
+		'speed-limits': ['speed-limits'],
 		vl: ['voies-lyonnaises'],
 		parking: ['parking'],
 		velov: ['velov-availability'],
@@ -149,6 +178,7 @@
 	const fetchingCounts = {
 		cycleways: useIsFetching({ queryKey: layerQueryKeys.cycleways }),
 		'osm-cycleways': useIsFetching({ queryKey: layerQueryKeys['osm-cycleways'] }),
+		'speed-limits': useIsFetching({ queryKey: layerQueryKeys['speed-limits'] }),
 		vl: useIsFetching({ queryKey: layerQueryKeys.vl }),
 		parking: useIsFetching({ queryKey: layerQueryKeys.parking }),
 		velov: useIsFetching({ queryKey: layerQueryKeys.velov }),
@@ -191,6 +221,30 @@
 	}
 
 	let hoveredLegendId: LegendId | null = $state(null);
+
+	const selectedSpeedBuckets = $derived<SpeedBucket[]>(
+		(params.speedLimits ?? []).filter((b): b is SpeedBucket =>
+			(SPEED_BUCKETS as string[]).includes(b),
+		),
+	);
+
+	function toggleSpeedBucket(bucket: SpeedBucket) {
+		const set = new Set(selectedSpeedBuckets);
+		if (set.has(bucket)) set.delete(bucket);
+		else set.add(bucket);
+		params.speedLimits = [...set];
+	}
+
+	function resetSpeedBuckets() {
+		params.speedLimits = [];
+	}
+
+	const speedLimitsInsideBoundary = $derived.by(() => {
+		if (!speedLimitsQuery.data) return undefined;
+		return filterFeaturesInsideBoundary(speedLimitsQuery.data, boundary);
+	});
+
+	const speedLimitsStats = $derived(computeSpeedLimitsStats(speedLimitsInsideBoundary?.features));
 
 	const osmInsideBoundary = $derived.by(() => {
 		if (!osmCyclewaysQuery.data) return { type: 'FeatureCollection' as const, features: [] };
@@ -492,6 +546,12 @@
 			{hoveredLegendId}
 		/>
 
+		<SpeedLimitsLayer
+			isLayerVisible={(id) => id === 'speed-limits' && isLayerActive('speed-limits')}
+			{boundary}
+			selectedBuckets={selectedSpeedBuckets}
+		/>
+
 		<CommuneMapLayers layers={effectiveLayers} {boundary} {map} yearRange={effectiveYearRange} />
 
 		<CyclewayLegendControl
@@ -501,6 +561,16 @@
 			{lengthByLegendId}
 			position="bottom-left"
 		/>
+
+		{#if isLayerActive('speed-limits')}
+			<SpeedLimitsControl
+				selected={selectedSpeedBuckets}
+				stats={speedLimitsStats}
+				onToggle={toggleSpeedBucket}
+				onReset={resetSpeedBuckets}
+				position="bottom-right"
+			/>
+		{/if}
 	</MapLibre>
 
 	<MapContextMenu

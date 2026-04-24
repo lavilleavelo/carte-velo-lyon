@@ -1,5 +1,7 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
+	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { Label } from '$lib/components/ui/label';
 
 	interface Toggle {
 		id: string;
@@ -35,17 +37,16 @@
 <div class="rounded-lg bg-white p-4 shadow">
 	<h2 class="mb-3 text-sm font-semibold text-brand-navy uppercase">Calques</h2>
 
-	<label
-		class="mb-3 inline-flex cursor-pointer items-center gap-2 text-sm font-medium text-gray-700"
-	>
-		<input
-			type="checkbox"
-			class="h-4 w-4 accent-brand-navy"
+	<div class="mb-3 flex items-center gap-2">
+		<Checkbox
+			id="filter-by-year"
 			checked={filterByYear}
-			onchange={(e) => (filterByYear = (e.target as HTMLInputElement).checked)}
+			onCheckedChange={(v) => (filterByYear = v === true)}
 		/>
-		Filtrer par date de réalisation
-	</label>
+		<Label for="filter-by-year" class="cursor-pointer text-sm font-medium text-gray-700">
+			Filtrer par date de réalisation
+		</Label>
+	</div>
 
 	{#if filterByYear && yearFilterSlot}
 		<div class="mb-4">
@@ -60,23 +61,22 @@
 				<ul class="flex flex-wrap gap-x-5 gap-y-2">
 					{#each group.toggles as t (t.id)}
 						{@const disabled = filterByYear && (t.disableWhenYearFiltered ?? false)}
-						<li>
-							<label
-								class="inline-flex items-center gap-2 text-sm"
-								class:cursor-pointer={!disabled}
-								class:cursor-not-allowed={disabled}
-								class:text-gray-400={disabled}
-								class:text-gray-700={!disabled}
+						{@const toggleId = `layer-toggle-${t.id}`}
+						<li class="flex items-center gap-2">
+							<Checkbox
+								id={toggleId}
+								checked={layers.includes(t.id)}
+								{disabled}
+								onCheckedChange={(v) => toggle(t.id, v === true)}
+							/>
+							<Label
+								for={toggleId}
+								class="text-sm {disabled
+									? 'cursor-not-allowed text-gray-400'
+									: 'cursor-pointer text-gray-700'}"
 							>
-								<input
-									type="checkbox"
-									class="h-4 w-4 accent-brand-navy"
-									checked={layers.includes(t.id)}
-									{disabled}
-									onchange={(e) => toggle(t.id, (e.target as HTMLInputElement).checked)}
-								/>
 								{t.label}
-							</label>
+							</Label>
 						</li>
 					{/each}
 				</ul>
