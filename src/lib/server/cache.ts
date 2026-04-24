@@ -1,6 +1,47 @@
+import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
+import { join } from 'node:path';
+
 const store = new Map<string, unknown>();
 const fetchers = new Map<string, () => Promise<unknown>>();
 const refreshing = new Set<string>();
+
+const CACHE_DIR = process.env.CACHE_DIR ?? '.cache';
+let cacheDirReady: Promise<void> | null = null;
+
+function ensureCacheDir(): Promise<void> {
+	if (!cacheDirReady) {
+		cacheDirReady = mkdir(CACHE_DIR, { recursive: true }).then(() => undefined);
+	}
+	return cacheDirReady;
+}
+
+function cacheFilePath(key: string): string {
+	return join(CACHE_DIR, `${key.replace(/[^a-zA-Z0-9_-]/g, '_')}.json`);
+}
+
+async function persistEntry(key: string, data: unknown): Promise<void> {
+	try {
+		await ensureCacheDir();
+		const path = cacheFilePath(key);
+		const tmp = `${path}.tmp`;
+		await writeFile(tmp, JSON.stringify(data));
+		await rename(tmp, path);
+	} catch (error) {
+		console.error(`[cache] failed to persist "${key}" to disk:`, error);
+	}
+}
+
+async function loadFromDisk(key: string): Promise<unknown | undefined> {
+	try {
+		const raw = await readFile(cacheFilePath(key), 'utf8');
+		return JSON.parse(raw);
+	} catch (error) {
+		if ((error as NodeJS.ErrnoException).code !== 'ENOENT') {
+			console.error(`[cache] failed to read "${key}" from disk:`, error);
+		}
+		return undefined;
+	}
+}
 
 async function refreshEntry(key: string): Promise<void> {
 	if (refreshing.has(key)) return;
@@ -10,6 +51,7 @@ async function refreshEntry(key: string): Promise<void> {
 	try {
 		const data = await fetcher();
 		store.set(key, data);
+		await persistEntry(key, data);
 	} catch (error) {
 		console.error(`[cache] background refresh failed for "${key}":`, error);
 	} finally {
@@ -26,13 +68,30 @@ async function getCached<T>(key: string): Promise<T> {
 	if (cached !== undefined) {
 		return cached as T;
 	}
+	const fromDisk = await loadFromDisk(key);
+	if (fromDisk !== undefined) {
+		store.set(key, fromDisk);
+		void refreshEntry(key);
+		return fromDisk as T;
+	}
 	const fetcher = fetchers.get(key);
 	if (!fetcher) {
 		throw new Error(`[cache] no fetcher registered for "${key}"`);
 	}
-	const data = await fetcher();
-	store.set(key, data);
-	return data as T;
+	try {
+		const data = await fetcher();
+		store.set(key, data);
+		await persistEntry(key, data);
+		return data as T;
+	} catch (error) {
+		const fallback = await loadFromDisk(key);
+		if (fallback !== undefined) {
+			console.warn(`[cache] upstream fetch failed for "${key}", serving stale disk copy`);
+			store.set(key, fallback);
+			return fallback as T;
+		}
+		throw error;
+	}
 }
 
 // Background refresh: every ~5min (with random jitter) re-fetch all populated entries

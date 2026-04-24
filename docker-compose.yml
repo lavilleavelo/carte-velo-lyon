@@ -4,8 +4,15 @@ services:
     restart: always
     ports:
       - '3000:3000'
+    environment:
+      - CACHE_DIR=/data/cache
+    volumes:
+      - cache-data:/data/cache
     networks:
       - scoobydoo
+
+volumes:
+  cache-data:
 
 networks:
   scoobydoo:
