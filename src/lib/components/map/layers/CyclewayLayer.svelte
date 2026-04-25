@@ -1,5 +1,18 @@
 <script lang="ts">
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
+	import {
+		BANDE_DASHARRAY,
+		BUS_VELO_DASHARRAY,
+		BUS_VELO_LINE_CAP,
+		DSC_ARROW_SYMBOL_SPACING,
+		DSC_ARROW_TEXT_SIZE,
+		NORMAL_LINE_OPACITY,
+		PISTE_BIDIR_LINE_WIDTH,
+		PISTE_UNIDIR_LINE_WIDTH,
+		VOIE_VERTE_DASHARRAY,
+		VOIE_VERTE_LINE_CAP,
+		VOIE_VERTE_LINE_WIDTH,
+	} from './cyclewayStyles';
 
 	let { isLayerVisible, voirieData } = $props();
 
@@ -30,14 +43,22 @@
 	<LineLayer
 		id="cw-piste-bidir"
 		filter={filterPisteBidir}
-		paint={{ 'line-color': COLOR, 'line-width': 4, 'line-opacity': 0.9 }}
+		paint={{
+			'line-color': COLOR,
+			'line-width': PISTE_BIDIR_LINE_WIDTH,
+			'line-opacity': NORMAL_LINE_OPACITY,
+		}}
 		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
 	/>
 
 	<LineLayer
 		id="cw-piste-unidir"
 		filter={filterPisteUnidir}
-		paint={{ 'line-color': COLOR, 'line-width': 2, 'line-opacity': 0.9 }}
+		paint={{
+			'line-color': COLOR,
+			'line-width': PISTE_UNIDIR_LINE_WIDTH,
+			'line-opacity': NORMAL_LINE_OPACITY,
+		}}
 		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
 	/>
 
@@ -46,11 +67,11 @@
 		filter={filterVoieVerte}
 		paint={{
 			'line-color': COLOR,
-			'line-width': 4,
-			'line-opacity': 0.9,
-			'line-dasharray': [0.3, 1.6],
+			'line-width': VOIE_VERTE_LINE_WIDTH,
+			'line-opacity': NORMAL_LINE_OPACITY,
+			'line-dasharray': VOIE_VERTE_DASHARRAY,
 		}}
-		layout={{ 'line-cap': 'round', visibility }}
+		layout={{ 'line-cap': VOIE_VERTE_LINE_CAP, visibility }}
 	/>
 
 	<LineLayer
@@ -59,8 +80,8 @@
 		paint={{
 			'line-color': COLOR,
 			'line-width': 3,
-			'line-opacity': 0.9,
-			'line-dasharray': [1.5, 1],
+			'line-opacity': NORMAL_LINE_OPACITY,
+			'line-dasharray': BANDE_DASHARRAY,
 		}}
 		layout={{ visibility }}
 	/>
@@ -71,10 +92,10 @@
 		paint={{
 			'line-color': COLOR,
 			'line-width': 2.5,
-			'line-opacity': 0.9,
-			'line-dasharray': [2, 2.5],
+			'line-opacity': NORMAL_LINE_OPACITY,
+			'line-dasharray': BUS_VELO_DASHARRAY,
 		}}
-		layout={{ 'line-cap': 'butt', visibility }}
+		layout={{ 'line-cap': BUS_VELO_LINE_CAP, visibility }}
 	/>
 
 	<LineLayer
@@ -89,9 +110,9 @@
 		filter={filterDsc}
 		layout={{
 			'symbol-placement': 'line',
-			'symbol-spacing': 40,
+			'symbol-spacing': DSC_ARROW_SYMBOL_SPACING,
 			'text-field': '→',
-			'text-size': 16,
+			'text-size': DSC_ARROW_TEXT_SIZE,
 			'text-keep-upright': false,
 			'text-rotation-alignment': 'map',
 			'text-pitch-alignment': 'map',

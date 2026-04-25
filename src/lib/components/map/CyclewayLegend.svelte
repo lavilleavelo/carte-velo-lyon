@@ -21,7 +21,7 @@
 		{ id: 'piste-unidir', label: 'Piste cyclable (unidirectionnelle)', render: 'solid-thin' },
 		{ id: 'voie-verte', label: 'Voie verte', render: 'dotted-bold' },
 		{ id: 'bande', label: 'Bande cyclable', render: 'dashed' },
-		{ id: 'bus-velo', label: 'Voie bus-vélo', render: 'dashed-long' },
+		{ id: 'bus-velo', label: 'Voie bus-vélo', render: 'dotted' },
 		{ id: 'velorue', label: 'Vélorue', render: 'velorue' },
 		{ id: 'dsc', label: 'Double sens cyclable', render: 'arrow' },
 	];

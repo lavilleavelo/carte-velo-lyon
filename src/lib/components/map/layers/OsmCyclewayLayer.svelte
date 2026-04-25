@@ -6,6 +6,20 @@
 	import { osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
 	import { PAVED_SURFACES } from '$lib/utils/osmCycleway';
 	import { osmCyclewaysQueryOptions } from '$lib/queries/cyclewayQueries';
+	import {
+		BANDE_DASHARRAY,
+		BUS_VELO_DASHARRAY,
+		BUS_VELO_LINE_CAP,
+		DSC_ARROW_SYMBOL_SPACING,
+		DSC_ARROW_TEXT_SIZE,
+		PISTE_BIDIR_LINE_WIDTH,
+		PISTE_UNIDIR_LINE_WIDTH,
+		VELORUE_DASHARRAY,
+		VELORUE_LINE_CAP,
+		VOIE_VERTE_DASHARRAY,
+		VOIE_VERTE_LINE_CAP,
+		VOIE_VERTE_LINE_WIDTH,
+	} from './cyclewayStyles';
 
 	let {
 		isLayerVisible,
@@ -111,7 +125,7 @@
 		filter={filterPisteBidir}
 		paint={{
 			'line-color': COLOR,
-			'line-width': 4,
+			'line-width': PISTE_BIDIR_LINE_WIDTH,
 			'line-opacity': opacityPisteBidir,
 			'line-offset': lineOffset,
 		}}
@@ -123,7 +137,7 @@
 		filter={filterPisteUnidir}
 		paint={{
 			'line-color': COLOR,
-			'line-width': 2,
+			'line-width': PISTE_UNIDIR_LINE_WIDTH,
 			'line-opacity': opacityPisteUnidir,
 			'line-offset': zoomedOffset,
 		}}
@@ -135,12 +149,12 @@
 		filter={filterVoieVertePaved}
 		paint={{
 			'line-color': COLOR,
-			'line-width': 4,
+			'line-width': VOIE_VERTE_LINE_WIDTH,
 			'line-opacity': opacityVoieVerte,
-			'line-dasharray': [0.3, 1.6],
+			'line-dasharray': VOIE_VERTE_DASHARRAY,
 			'line-offset': lineOffset,
 		}}
-		layout={{ 'line-cap': 'round', visibility }}
+		layout={{ 'line-cap': VOIE_VERTE_LINE_CAP, visibility }}
 	/>
 
 	<LineLayer
@@ -148,12 +162,12 @@
 		filter={filterVoieVerteStabilise}
 		paint={{
 			'line-color': COLOR_NON_PAVED,
-			'line-width': 4,
+			'line-width': VOIE_VERTE_LINE_WIDTH,
 			'line-opacity': opacityVoieVerte,
-			'line-dasharray': [0.3, 1.6],
+			'line-dasharray': VOIE_VERTE_DASHARRAY,
 			'line-offset': lineOffset,
 		}}
-		layout={{ 'line-cap': 'round', visibility }}
+		layout={{ 'line-cap': VOIE_VERTE_LINE_CAP, visibility }}
 	/>
 
 	<LineLayer
@@ -163,7 +177,7 @@
 			'line-color': COLOR,
 			'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.8, 14, 1.6, 17, 3],
 			'line-opacity': opacityBande,
-			'line-dasharray': [1.5, 1],
+			'line-dasharray': BANDE_DASHARRAY,
 			'line-offset': zoomedOffset,
 		}}
 		layout={{ visibility }}
@@ -176,10 +190,10 @@
 			'line-color': COLOR,
 			'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 1.6, 17, 2.5],
 			'line-opacity': opacityBusVelo,
-			'line-dasharray': [2, 2.5],
+			'line-dasharray': BUS_VELO_DASHARRAY,
 			'line-offset': zoomedOffset,
 		}}
-		layout={{ 'line-cap': 'butt', visibility }}
+		layout={{ 'line-cap': BUS_VELO_LINE_CAP, visibility }}
 	/>
 
 	<LineLayer
@@ -189,10 +203,10 @@
 			'line-color': COLOR,
 			'line-width': 4,
 			'line-opacity': opacityVelorue,
-			'line-dasharray': [2.5, 1.2],
+			'line-dasharray': VELORUE_DASHARRAY,
 			'line-offset': lineOffset,
 		}}
-		layout={{ 'line-cap': 'butt', visibility }}
+		layout={{ 'line-cap': VELORUE_LINE_CAP, visibility }}
 	/>
 
 	<LineLayer
@@ -207,9 +221,9 @@
 		filter={filterDsc}
 		layout={{
 			'symbol-placement': 'line',
-			'symbol-spacing': 40,
+			'symbol-spacing': DSC_ARROW_SYMBOL_SPACING,
 			'text-field': '←',
-			'text-size': 16,
+			'text-size': DSC_ARROW_TEXT_SIZE,
 			'text-keep-upright': false,
 			'text-rotation-alignment': 'map',
 			'text-pitch-alignment': 'map',
