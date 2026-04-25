@@ -65,6 +65,22 @@
 
 	let map: maplibregl.Map | undefined = $state();
 	let innerWidth = $state(0);
+	let expanded = $state(false);
+	let mapWrapper: HTMLDivElement | undefined = $state();
+
+	function toggleMapExpand() {
+		expanded = !expanded;
+		mapWrapper?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+	}
+
+	$effect(() => {
+		expanded;
+		if (!map) {
+			return;
+		}
+		const id = setTimeout(() => map?.resize(), 320);
+		return () => clearTimeout(id);
+	});
 
 	$effect(() => {
 		if (!map) return;
@@ -432,7 +448,12 @@
 
 <svelte:window bind:innerWidth />
 
-<div class="relative h-[60vh] min-h-80 overflow-hidden rounded-lg shadow">
+<div
+	bind:this={mapWrapper}
+	class="relative {expanded
+		? 'h-[90vh] min-h-[600px]'
+		: 'h-[60vh] min-h-80'} overflow-hidden rounded-lg shadow transition-[height] duration-300"
+>
 	{#if pendingLayers.length > 0}
 		<div
 			class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/40 backdrop-blur-[1px]"
@@ -633,6 +654,8 @@
 		bind:filterByYear={params.filterByYear}
 		groups={layerToggleGroups}
 		{yearFilterSlot}
+		mapExpanded={expanded}
+		onToggleMapExpand={toggleMapExpand}
 	/>
 </div>
 
