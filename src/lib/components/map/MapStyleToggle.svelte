@@ -24,6 +24,7 @@
 			label: 'OSM Bright',
 			description: 'Style coloré alternatif avec bâtiments 3D',
 		},
+		{ id: 'osm-eu', label: 'OSM-eu', description: 'Fond neutre OSM Europe' },
 		{ id: 'hybrid', label: 'Satellite hybride', description: 'Photos aériennes IGN + rues' },
 		{ id: 'satellite', label: 'Satellite', description: 'Photos aériennes IGN seules' },
 		{ id: 'cyclosm', label: 'CyclOSM', description: 'Style OpenStreetMap alternatif vélo' },

@@ -74,25 +74,41 @@
 	});
 
 	const colorExpression = $derived.by(() => {
-		const expression: any[] = ['match', ['get', 'status']];
+		const cases: any[] = [];
 		projectVLSubLayers.forEach((layer) => {
 			layer.statuses.forEach((status) => {
-				expression.push(status, layer.customStyle.color);
+				cases.push(status, layer.customStyle.color);
 			});
 		});
-		expression.push('#000000');
-		return expression as maplibregl.DataDrivenPropertyValueSpecification<string>;
+		if (cases.length === 0) {
+			return '#000000' as maplibregl.DataDrivenPropertyValueSpecification<string>;
+		}
+		return [
+			'match',
+			['get', 'status'],
+			...cases,
+			'#000000',
+		] as maplibregl.DataDrivenPropertyValueSpecification<string>;
 	});
 
 	const dashArrayExpression = $derived.by(() => {
-		const expression: any[] = ['match', ['get', 'status']];
+		const cases: any[] = [];
 		projectVLSubLayers.forEach((layer) => {
 			layer.statuses.forEach((status) => {
-				expression.push(status, ['literal', layer.customStyle.dashArray]);
+				cases.push(status, ['literal', layer.customStyle.dashArray]);
 			});
 		});
-		expression.push(['literal', [1, 0]]);
-		return expression as maplibregl.DataDrivenPropertyValueSpecification<number[]>;
+
+		if (cases.length === 0) {
+			return [1, 0] as maplibregl.DataDrivenPropertyValueSpecification<number[]>;
+		}
+
+		return [
+			'match',
+			['get', 'status'],
+			...cases,
+			['literal', [1, 0]],
+		] as maplibregl.DataDrivenPropertyValueSpecification<number[]>;
 	});
 
 	const groupedLineData = $derived.by(() => {

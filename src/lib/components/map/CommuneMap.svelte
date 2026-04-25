@@ -70,7 +70,9 @@
 
 	function toggleMapExpand() {
 		expanded = !expanded;
-		mapWrapper?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		setTimeout(() => {
+			mapWrapper?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+		}, 200);
 	}
 
 	$effect(() => {
@@ -82,17 +84,20 @@
 		return () => clearTimeout(id);
 	});
 
+	let mapInitialized = false;
 	$effect(() => {
 		if (!map) return;
-		const restoredFromUrl = untrack(() => {
-			if (params.zoom > 0 && params.lat !== 0 && params.lng !== 0) {
-				map!.jumpTo({ center: [params.lng, params.lat], zoom: params.zoom });
-				return true;
-			}
-			return false;
-		});
-
-		if (restoredFromUrl) return;
+		if (!mapInitialized) {
+			mapInitialized = true;
+			const restoredFromUrl = untrack(() => {
+				if (params.zoom > 0 && params.lat !== 0 && params.lng !== 0) {
+					map!.jumpTo({ center: [params.lng, params.lat], zoom: params.zoom });
+					return true;
+				}
+				return false;
+			});
+			if (restoredFromUrl) return;
+		}
 		const [sw, ne] = bounds;
 		map.fitBounds(
 			[
@@ -546,7 +551,7 @@
 		/>
 
 		<GeoJSONSource id="commune-boundary" data={boundary}>
-			<FillLayer id="commune-fill" paint={{ 'fill-color': '#1e3a5f', 'fill-opacity': 0.08 }} />
+			<FillLayer id="commune-fill" paint={{ 'fill-color': '#1e3a5f', 'fill-opacity': 0.05 }} />
 			<LineLayer
 				id="commune-outline"
 				paint={{ 'line-color': '#1e3a5f', 'line-width': 3, 'line-opacity': 0.9 }}

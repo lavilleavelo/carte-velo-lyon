@@ -1,7 +1,7 @@
 <script lang="ts">
 	import { GeoJSONSource, CircleLayer, SymbolLayer, ImageLoader } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { processParkingData } from '$lib/utils/parkingUtils';
+	import { parkingQueryOptions } from '$lib/queries/parkingQueries';
 	import parkingCoveredIcon from '$lib/assets/icons/arceau_couvert.png?url';
 	import parkingVelostationIcon from '$lib/assets/icons/parking-velostation.png?url';
 	import parkingBoxIcon from '$lib/assets/icons/box_securisee_velo.png?url';
@@ -23,25 +23,15 @@
 		yearRange?: [number, number];
 	} = $props();
 
-	const parkingQuery = createQuery(() => ({
-		queryKey: ['parking'],
-		queryFn: async () => {
-			const response = await fetch('/api/grandlyon/parking');
-			if (!response.ok) {
-				throw new Error('Failed to fetch parking data');
-			}
-			const data = await response.json();
-			return processParkingData(data.features);
-		},
-		staleTime: Infinity,
-		enabled:
+	const parkingQuery = createQuery(() =>
+		parkingQueryOptions(
 			isLayerVisible('parking-arceaux') ||
-			isLayerVisible('parking-couverts') ||
-			isLayerVisible('parking-box') ||
-			isLayerVisible('parking-velostation') ||
-			isLayerVisible('parking-lpa'),
-		meta: { loadingLabel: 'Stationnements vélo' },
-	}));
+				isLayerVisible('parking-couverts') ||
+				isLayerVisible('parking-box') ||
+				isLayerVisible('parking-velostation') ||
+				isLayerVisible('parking-lpa'),
+		),
+	);
 
 	const parkingData = $derived.by(() => {
 		let base: FeatureCollection = parkingQuery.data || {

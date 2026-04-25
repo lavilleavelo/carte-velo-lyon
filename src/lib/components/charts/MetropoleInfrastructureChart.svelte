@@ -5,6 +5,7 @@
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import { createQuery } from '@tanstack/svelte-query';
+	import { parkingQueryOptions } from '$lib/queries/parkingQueries';
 	import {
 		typeColors,
 		parkingTypeColors,
@@ -37,16 +38,7 @@
 		refetchOnWindowFocus: false,
 	}));
 
-	const parkingQuery = createQuery(() => ({
-		queryKey: ['parking'],
-		queryFn: async () => {
-			const response = await fetch('/api/grandlyon/parking');
-			if (!response.ok) throw new Error('Failed to fetch parking data');
-			return response.json();
-		},
-		staleTime: Infinity,
-		refetchOnWindowFocus: false,
-	}));
+	const parkingQuery = createQuery(() => parkingQueryOptions());
 
 	const voirieFeatures = $derived(voirieQuery.data?.features ?? []);
 	const parkingFeatures = $derived(parkingQuery.data?.features ?? []);

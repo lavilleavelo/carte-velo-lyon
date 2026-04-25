@@ -9,6 +9,7 @@ export const MAP_STYLE_IDS = [
 	'neutrino',
 	'positron',
 	'osm-bright',
+	'osm-eu',
 	'hybrid',
 	'satellite',
 	'cyclosm',
@@ -20,6 +21,36 @@ const cyclosmAttribution =
 	'<a href="https://cyclosm.org" target="_blank">CyclOSM</a> (<a href="https://www.cyclosm.org/legend.html" target="_blank">Legende</a>)';
 const osmAttribution =
 	'<a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>';
+
+const osmEuStyle = {
+	version: 8,
+	id: 'osm-eu',
+	name: 'OSM-eu',
+	sources: {
+		'raster-tiles': {
+			type: 'raster',
+			tiles: ['https://tile.openstreetmap.bzh/eu/{z}/{x}/{y}.png'],
+			tileSize: 256,
+			attribution: [
+				'<a href="https://tile.openstreetmap.bzh" target="_blank">OpenStreetMap.bzh</a>',
+				osmAttribution,
+			].join(' | '),
+		},
+	},
+	layers: [
+		{
+			id: 'simple-tiles',
+			type: 'raster',
+			source: 'raster-tiles',
+			minzoom: 0,
+			maxzoom: 22,
+		},
+	],
+	bearing: 0,
+	pitch: 0,
+	center: [0, 0],
+	zoom: 1,
+};
 
 const cyclosmStyle = {
 	version: 8,
@@ -89,6 +120,7 @@ export const MAP_STYLES: Record<MapStyle, any> = {
 	satellite: satelliteStyle,
 	cyclosm: cyclosmStyle,
 	neutrino: neutrinoStyle,
+	'osm-eu': osmEuStyle,
 };
 
 export function isMapStyle(value: string | null | undefined): value is MapStyle {

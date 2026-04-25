@@ -8,6 +8,7 @@
 	import { MediaQuery } from 'svelte/reactivity';
 	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { voirieQueryOptions } from '$lib/queries/cyclewayQueries';
+	import { parkingQueryOptions } from '$lib/queries/parkingQueries';
 	import type { FeatureCollection } from 'geojson';
 	import {
 		typeColors,
@@ -35,16 +36,7 @@
 
 	const voirieQuery = createQuery(() => voirieQueryOptions());
 
-	const parkingQuery = createQuery(() => ({
-		queryKey: ['parking'],
-		queryFn: async () => {
-			const response = await fetch('/api/grandlyon/parking');
-			if (!response.ok) throw new Error('Failed to fetch parking data');
-			return response.json();
-		},
-		staleTime: Infinity,
-		refetchOnWindowFocus: false,
-	}));
+	const parkingQuery = createQuery(() => parkingQueryOptions());
 
 	const voirieInside = $derived.by(() => {
 		if (!voirieQuery.data) return { type: 'FeatureCollection' as const, features: [] };
