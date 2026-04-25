@@ -88,7 +88,7 @@ const osmEuStyle = {
 			type: 'symbol',
 			source: 'openmaptiles',
 			'source-layer': 'transportation',
-			minzoom: 16,
+			minzoom: 14,
 			filter: [
 				'all',
 				['==', ['get', 'oneway'], 1],
@@ -111,7 +111,7 @@ const osmEuStyle = {
 			type: 'symbol',
 			source: 'openmaptiles',
 			'source-layer': 'transportation',
-			minzoom: 16,
+			minzoom: 14,
 			filter: [
 				'all',
 				['==', ['get', 'oneway'], -1],

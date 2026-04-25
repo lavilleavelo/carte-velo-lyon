@@ -325,6 +325,40 @@
 		return totals;
 	});
 
+	const outsideMask = $derived.by<FeatureCollection>(() => {
+		const worldRing: [number, number][] = [
+			[-180, -85],
+			[180, -85],
+			[180, 85],
+			[-180, 85],
+			[-180, -85],
+		];
+		const holes: [number, number][][] = [];
+		for (const feature of boundary.features) {
+			const geom = feature.geometry;
+			if (geom.type === 'Polygon') {
+				holes.push(geom.coordinates[0] as [number, number][]);
+			} else if (geom.type === 'MultiPolygon') {
+				for (const polygon of geom.coordinates) {
+					holes.push(polygon[0] as [number, number][]);
+				}
+			}
+		}
+		return {
+			type: 'FeatureCollection',
+			features: [
+				{
+					type: 'Feature',
+					properties: {},
+					geometry: {
+						type: 'Polygon',
+						coordinates: [worldRing, ...holes],
+					},
+				},
+			],
+		};
+	});
+
 	const layerToFeatureType = createLayerToFeatureTypeMap();
 	const allConfigs = getAllLayerConfigs();
 
@@ -550,11 +584,23 @@
 			position="top-right"
 		/>
 
+		<GeoJSONSource id="commune-outside-mask" data={outsideMask}>
+			<FillLayer
+				id="commune-outside-mask-fill"
+				paint={{ 'fill-color': '#ffffff', 'fill-opacity': 0.5 }}
+			/>
+		</GeoJSONSource>
+
 		<GeoJSONSource id="commune-boundary" data={boundary}>
-			<FillLayer id="commune-fill" paint={{ 'fill-color': '#1e3a5f', 'fill-opacity': 0.05 }} />
+			<FillLayer id="commune-fill" paint={{ 'fill-color': '#1e3a5f', 'fill-opacity': 0.02 }} />
 			<LineLayer
 				id="commune-outline"
-				paint={{ 'line-color': '#1e3a5f', 'line-width': 3, 'line-opacity': 0.9 }}
+				paint={{
+					'line-color': '#3a3a3a',
+					'line-width': 2,
+					'line-opacity': 0.9,
+					'line-dasharray': [4, 2, 1, 2],
+				}}
 			/>
 		</GeoJSONSource>
 

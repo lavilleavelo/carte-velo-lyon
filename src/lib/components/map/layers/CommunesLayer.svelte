@@ -43,9 +43,10 @@
 			visibility: isLayerVisible('communes') ? 'visible' : 'none',
 		}}
 		paint={{
-			'line-color': '#6b7280',
+			'line-color': '#3a3a3a',
 			'line-width': 2,
-			'line-opacity': 0.5,
+			'line-opacity': 0.9,
+			'line-dasharray': [4, 2, 1, 2],
 		}}
 	/>
 	<LineLayer
