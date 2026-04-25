@@ -149,14 +149,14 @@
 		style="left: {adjustedPosition.x}px; top: {adjustedPosition.y}px;"
 	>
 		{#if panoramaxQuery.isLoading}
-			<div class="flex h-24 items-center justify-center text-gray-500">
+			<div class="flex aspect-video w-full items-center justify-center text-gray-500">
 				<div class="text-center">
 					<Loader2 class="mx-auto mb-2 h-6 w-6 animate-spin" />
 					<div class="text-sm">Chargement de la photo...</div>
 				</div>
 			</div>
 		{:else if panoramaxQuery.isError || !panoramaxQuery.data}
-			<div class="flex h-24 items-center justify-center text-sm text-gray-500">
+			<div class="flex aspect-video w-full items-center justify-center text-sm text-gray-500">
 				<div class="text-center">
 					<Camera class="mx-auto mb-2 h-6 w-6" />
 					<div>Aucune photo disponible</div>
@@ -165,12 +165,12 @@
 		{:else if panoramaxQuery.data}
 			<button
 				onclick={openPanoramaxViewer}
-				class="w-full cursor-pointer overflow-hidden rounded-t-lg focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-inset"
+				class="block aspect-video w-full cursor-pointer overflow-hidden rounded-t-lg focus:ring-2 focus:ring-blue-500 focus:outline-none focus:ring-inset"
 			>
 				<img
 					src={panoramaxQuery.data.linkSelf}
 					alt="Panoramax street view"
-					class="w-full transition-transform hover:scale-105"
+					class="h-full w-full object-cover transition-transform hover:scale-105"
 				/>
 			</button>
 		{/if}
