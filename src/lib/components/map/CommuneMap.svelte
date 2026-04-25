@@ -86,7 +86,11 @@
 
 	let mapInitialized = false;
 	$effect(() => {
-		if (!map) return;
+		const [sw, ne] = bounds;
+		if (!map) {
+			return;
+		}
+
 		if (!mapInitialized) {
 			mapInitialized = true;
 			const restoredFromUrl = untrack(() => {
@@ -98,7 +102,7 @@
 			});
 			if (restoredFromUrl) return;
 		}
-		const [sw, ne] = bounds;
+
 		map.fitBounds(
 			[
 				[sw[0], sw[1]],
