@@ -4,6 +4,7 @@ import type { EntryGenerator, PageServerLoad } from './$types';
 import communesIndex from '$lib/data/communes/_index.json';
 import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
 import communeMetadataJson from '$lib/data/communeMetadata.json';
+import { absoluteUrl } from '$lib/config/site';
 
 export interface Commune {
 	slug: string;
@@ -63,6 +64,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		seo: {
 			title: `${commune.name} – Carte vélo Métropole de Lyon`,
 			description: `Aménagements cyclables, Voies Lyonnaises, stationnements et services vélo à ${commune.name}. Carte interactive des infrastructures vélo.`,
+			image: absoluteUrl(`/og/communes/${commune.slug}.jpg`),
 		},
 	};
 };
