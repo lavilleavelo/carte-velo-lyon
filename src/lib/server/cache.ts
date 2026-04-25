@@ -3,10 +3,17 @@ import { join } from 'node:path';
 
 const store = new Map<string, unknown>();
 const fetchers = new Map<string, () => Promise<unknown>>();
-const refreshing = new Set<string>();
+const lastFetched = new Map<string, number>();
+const inflight = new Map<string, Promise<unknown>>();
 
 const CACHE_DIR = process.env.CACHE_DIR ?? '.cache';
+const TTL_MS = 5 * 60 * 1000;
 let cacheDirReady: Promise<void> | null = null;
+
+function isStale(key: string): boolean {
+	const ts = lastFetched.get(key);
+	return ts === undefined || Date.now() - ts > TTL_MS;
+}
 
 function ensureCacheDir(): Promise<void> {
 	if (!cacheDirReady) {
@@ -43,20 +50,42 @@ async function loadFromDisk(key: string): Promise<unknown | undefined> {
 	}
 }
 
-async function refreshEntry(key: string): Promise<void> {
-	if (refreshing.has(key)) return;
-	const fetcher = fetchers.get(key);
-	if (!fetcher) return;
-	refreshing.add(key);
-	try {
-		const data = await fetcher();
-		store.set(key, data);
-		await persistEntry(key, data);
-	} catch (error) {
-		console.error(`[cache] background refresh failed for "${key}":`, error);
-	} finally {
-		refreshing.delete(key);
+function fetchAndStore(key: string): Promise<unknown> {
+	const existing = inflight.get(key);
+	if (existing) {
+		return existing;
 	}
+
+	const fetcher = fetchers.get(key);
+
+	if (!fetcher) {
+		return Promise.reject(new Error(`[cache] no fetcher registered for "${key}"`));
+	}
+
+	const promise = (async () => {
+		try {
+			const data = await fetcher();
+			store.set(key, data);
+			lastFetched.set(key, Date.now());
+			await persistEntry(key, data);
+			return data;
+		} finally {
+			inflight.delete(key);
+		}
+	})();
+
+	inflight.set(key, promise);
+	return promise;
+}
+
+function refreshInBackground(key: string): void {
+	if (inflight.has(key)) {
+		return;
+	}
+
+	fetchAndStore(key).catch((error) => {
+		console.error(`[cache] background refresh failed for "${key}":`, error);
+	});
 }
 
 function registerEntry(key: string, fetcher: () => Promise<unknown>): void {
@@ -66,23 +95,20 @@ function registerEntry(key: string, fetcher: () => Promise<unknown>): void {
 async function getCached<T>(key: string): Promise<T> {
 	const cached = store.get(key);
 	if (cached !== undefined) {
+		if (isStale(key)) {
+			refreshInBackground(key);
+		}
+
 		return cached as T;
 	}
 	const fromDisk = await loadFromDisk(key);
 	if (fromDisk !== undefined) {
 		store.set(key, fromDisk);
-		void refreshEntry(key);
+		refreshInBackground(key);
 		return fromDisk as T;
 	}
-	const fetcher = fetchers.get(key);
-	if (!fetcher) {
-		throw new Error(`[cache] no fetcher registered for "${key}"`);
-	}
 	try {
-		const data = await fetcher();
-		store.set(key, data);
-		await persistEntry(key, data);
-		return data as T;
+		return (await fetchAndStore(key)) as T;
 	} catch (error) {
 		const fallback = await loadFromDisk(key);
 		if (fallback !== undefined) {
@@ -103,7 +129,11 @@ function scheduleNextRefresh(): void {
 	setTimeout(async () => {
 		const keys = [...store.keys()];
 		for (const key of keys) {
-			await refreshEntry(key);
+			if (!isStale(key)) {
+				continue;
+			}
+
+			refreshInBackground(key);
 			await new Promise((r) => setTimeout(r, 1000 + Math.random() * 4000));
 		}
 		scheduleNextRefresh();
