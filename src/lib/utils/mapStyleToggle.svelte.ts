@@ -1,6 +1,8 @@
 import hybridStyle from '$lib/components/map/hybrid-style.json';
 import cyclopolisStyle from '$lib/components/map/cyclopolis-style.json';
 import osmBrightStyle from '$lib/components/map/osm-bright-style.json';
+import neutrinoStyle from '$lib/components/map/neutrino-style.json';
+import positronStyle from '$lib/components/map/positron-style.json';
 
 export const MAP_STYLE_IDS = [
 	'cyclopolis',
@@ -80,13 +82,13 @@ const satelliteStyle = {
 };
 
 export const MAP_STYLES: Record<MapStyle, any> = {
-	positron: 'https://tiles.openfreemap.org/styles/positron',
+	positron: positronStyle,
 	'osm-bright': osmBrightStyle,
 	cyclopolis: cyclopolisStyle,
 	hybrid: hybridStyle,
 	satellite: satelliteStyle,
 	cyclosm: cyclosmStyle,
-	neutrino: 'https://tiles.versatiles.org/assets/styles/neutrino/style.json',
+	neutrino: neutrinoStyle,
 };
 
 export function isMapStyle(value: string | null | undefined): value is MapStyle {

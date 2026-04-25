@@ -84,6 +84,15 @@
 
 	$effect(() => {
 		if (!map) return;
+		const restoredFromUrl = untrack(() => {
+			if (params.zoom > 0 && params.lat !== 0 && params.lng !== 0) {
+				map!.jumpTo({ center: [params.lng, params.lat], zoom: params.zoom });
+				return true;
+			}
+			return false;
+		});
+
+		if (restoredFromUrl) return;
 		const [sw, ne] = bounds;
 		map.fitBounds(
 			[
@@ -94,6 +103,26 @@
 		);
 	});
 
+	$effect(() => {
+		if (!map) {
+			return;
+		}
+
+		const m = map;
+		const onMoveEnd = () => {
+			const c = m.getCenter();
+			params.lng = Number(c.lng.toFixed(5));
+			params.lat = Number(c.lat.toFixed(5));
+			params.zoom = Number(m.getZoom().toFixed(2));
+		};
+
+		m.on('moveend', onMoveEnd);
+
+		return () => {
+			m.off('moveend', onMoveEnd);
+		};
+	});
+
 	const paramsSchema = type({
 		layers: type('string[]').default(() => ['osm-cycleways']),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),
@@ -102,6 +131,9 @@
 		cyclewayTypes: type('string[]').default(() => []),
 		speedLimits: type('string[]').default(() => []),
 		filterByYear: type('boolean').default(() => false),
+		zoom: type('number').default(() => 0),
+		lat: type('number').default(() => 0),
+		lng: type('number').default(() => 0),
 	});
 
 	const params = useSearchParams(paramsSchema, { pushHistory: false, noScroll: true });
