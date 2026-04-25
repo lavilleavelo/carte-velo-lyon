@@ -1,7 +1,8 @@
 {
-	"name": "Carte velo Lyon",
-	"short_name": "Vélo Lyon",
-	"description": "Carte des amenagements cyclables dans la Metropole de Lyon",
+	"name": "Carte vélo – Métropole de Lyon",
+	"short_name": "Carte vélo Lyon",
+	"description": "Carte interactive des aménagements cyclables, Voies Lyonnaises, stationnements et services vélo dans la Métropole de Lyon.",
+	"lang": "fr-FR",
 	"start_url": "/",
 	"scope": "/",
 	"display": "standalone",

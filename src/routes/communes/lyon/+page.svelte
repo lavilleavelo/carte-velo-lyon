@@ -10,10 +10,6 @@
 	]);
 </script>
 
-<svelte:head>
-	<title>Lyon (ville) – Carte des aménagements cyclables</title>
-</svelte:head>
-
 <div class="space-y-6 py-6">
 	<header class="flex flex-col gap-3">
 		<a

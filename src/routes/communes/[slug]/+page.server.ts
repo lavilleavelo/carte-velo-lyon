@@ -60,5 +60,9 @@ export const load: PageServerLoad = async ({ params }) => {
 		commune: { ...commune, codePostal: metadata?.codePostal ?? null },
 		boundary,
 		metadata,
+		seo: {
+			title: `${commune.name} – Carte vélo Métropole de Lyon`,
+			description: `Aménagements cyclables, Voies Lyonnaises, stationnements et services vélo à ${commune.name}. Carte interactive des infrastructures vélo.`,
+		},
 	};
 };

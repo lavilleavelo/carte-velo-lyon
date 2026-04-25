@@ -1,13 +1,20 @@
 <script lang="ts">
 	import '../app.css';
-	import favicon from '$lib/assets/favicon.ico';
 	import { onNavigate } from '$app/navigation';
 	import { navigating, page } from '$app/state';
 	import { QueryClient, QueryClientProvider } from '@tanstack/svelte-query';
+	import { UmamiAnalytics } from '@lukulent/svelte-umami';
 	import { onMount } from 'svelte';
 	import Navbar from '$lib/components/Navbar.svelte';
 	import Footer from '$lib/components/Footer.svelte';
+	import { SITE } from '$lib/config/site';
 	let { children }: { children: any } = $props();
+
+	const seoTitle = $derived(page.data.seo?.title ?? SITE.title);
+	const seoDescription = $derived(page.data.seo?.description ?? SITE.description);
+	const seoRobots = $derived(page.data.seo?.robots ?? 'index, follow');
+	const canonical = $derived(`${SITE.url}${page.url.pathname}`);
+	const ogImage = $derived(page.data.seo?.image ?? `${SITE.url}${SITE.ogImagePath}`);
 
 	const showNavbar = $derived(page.url.pathname !== '/');
 
@@ -35,14 +42,69 @@
 </script>
 
 <svelte:head>
-	<link rel="icon" href={favicon} />
-	<link rel="manifest" href="/manifest.webmanifest" />
-	<meta name="theme-color" content="#0f172a" />
+	<title>{seoTitle}</title>
+	<meta name="description" content={seoDescription} />
+	<link rel="canonical" href={canonical} />
+	<meta name="robots" content={seoRobots} />
+
+	<meta name="author" content={SITE.author} />
+	<meta name="geo.region" content={SITE.geoRegion} />
+	<meta name="geo.placename" content={SITE.geoPlacename} />
+
+	<meta property="og:type" content="website" />
+	<meta property="og:url" content={canonical} />
+	<meta property="og:locale" content={SITE.locale} />
+	<meta property="og:site_name" content={SITE.siteName} />
+	<meta property="og:title" content={seoTitle} />
+	<meta property="og:description" content={seoDescription} />
+	<meta property="og:image" content={ogImage} />
+	<meta property="og:image:width" content={String(SITE.ogImageWidth)} />
+	<meta property="og:image:height" content={String(SITE.ogImageHeight)} />
+	<meta property="og:image:alt" content={SITE.ogImageAlt} />
+
+	<meta name="twitter:card" content="summary_large_image" />
+	<meta name="twitter:title" content={seoTitle} />
+	<meta name="twitter:description" content={seoDescription} />
+	<meta name="twitter:image" content={ogImage} />
+
+	{@html `<script type="application/ld+json">
+		{
+			"@context": "https://schema.org",
+			"@type": "WebSite",
+			"name": "${SITE.siteName}",
+			"alternateName": "${SITE.name}",
+			"url": "${SITE.url}",
+			"description": "${SITE.description}",
+			"publisher": {
+				"@type": "Organization",
+				"name": "${SITE.author}",
+				"url": "${SITE.socials.website}",
+				"logo": {
+					"@type": "ImageObject",
+					"url": "${SITE.url}${SITE.ogImagePath}"
+				},
+				"sameAs": [
+					"${SITE.socials.mastodon}",
+					"${SITE.socials.bluesky}",
+					"${SITE.socials.linkedin}",
+					"${SITE.socials.instagram}",
+					"${SITE.socials.facebook}"
+				]
+			},
+			"inLanguage": "fr-FR"
+		}
+	</script>`}
+
 	<link rel="preconnect" href="https://tiles.openfreemap.org" crossorigin="anonymous" />
 	<link rel="preconnect" href="https://openmaptiles.geo.data.gouv.fr" crossorigin="anonymous" />
 	<link rel="preconnect" href="https://data.grandlyon.com" crossorigin="anonymous" />
-	<title>Carte des aménagements cyclables dans la Métropole de Lyon</title>
 </svelte:head>
+
+<UmamiAnalytics
+	websiteID={SITE.umami.websiteID}
+	srcURL={SITE.umami.srcURL}
+	configuration={{ 'data-domains': SITE.umami.domain }}
+/>
 
 <QueryClientProvider client={queryClient}>
 	{#if navigating}

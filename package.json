@@ -40,6 +40,7 @@
 		"vite": "^7.1.10"
 	},
 	"dependencies": {
+		"@lukulent/svelte-umami": "^0.0.4",
 		"@std/csv": "npm:@jsr/std__csv@^1.0.6",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@tanstack/svelte-query": "^6.0.7",

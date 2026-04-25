@@ -3,9 +3,9 @@ import type { PageServerLoad } from './$types';
 export const load: PageServerLoad = async () => {
 	return {
 		seo: {
-			title: 'Mentions légales - Vélo-score Lyon Métropole',
+			title: 'Mentions légales – Carte vélo de la Métropole de Lyon',
 			description:
-				"Mentions légales du site Vélo-score Lyon Métropole. Informations sur l'hébergement, la protection des données et les conditions d'utilisation.",
+				"Mentions légales du site Carte vélo Lyon : hébergement, protection des données et conditions d'utilisation.",
 			robots: 'noindex, follow',
 		},
 	};

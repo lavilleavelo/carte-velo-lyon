@@ -8,6 +8,9 @@ importers:
 
   .:
     dependencies:
+      '@lukulent/svelte-umami':
+        specifier: ^0.0.4
+        version: 0.0.4(svelte@5.43.5)
       '@std/csv':
         specifier: npm:@jsr/std__csv@^1.0.6
         version: '@jsr/std__csv@1.0.6'
@@ -339,6 +342,11 @@ packages:
     resolution: {integrity: sha512-9f9O6uxng2pLB01sxNySHduJN3HTl5p0HDu4H26VR51vhZfiMzyOMe9Mhof3XAk4l813eTtl+/DYRvGyoRR+yw==}
     peerDependencies:
       svelte: ^5
+
+  '@lukulent/svelte-umami@0.0.4':
+    resolution: {integrity: sha512-LXmo0oa8lPg032gfqFQgRhEJgUDqgsOzyqPSXtJ2nKlUAYhsPbB0EXwgOjrj7+IfeiBEiq2c6vfv0VV5Jvv/PA==}
+    peerDependencies:
+      svelte: ^4.0.0 || ^5.0.0
 
   '@mapbox/geojson-rewind@0.5.2':
     resolution: {integrity: sha512-tJaT+RbYGJYStt7wI3cq4Nl4SXxG8W7JDG5DMJu97V25RnbNg3QtQtf+KD+VLjNpWKYsRvXDNmNrBgEETr1ifA==}
@@ -1603,6 +1611,11 @@ snapshots:
 
   '@lucide/svelte@0.544.0(svelte@5.43.5)':
     dependencies:
+      svelte: 5.43.5
+
+  '@lukulent/svelte-umami@0.0.4(svelte@5.43.5)':
+    dependencies:
+      esm-env: 1.2.2
       svelte: 5.43.5
 
   '@mapbox/geojson-rewind@0.5.2':

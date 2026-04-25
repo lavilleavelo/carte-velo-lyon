@@ -60,5 +60,10 @@ export const load: PageServerLoad = async () => {
 		boundary,
 		bbox,
 		arrondissementCount: features.length,
+		seo: {
+			title: 'Lyon (ville entière) – Carte vélo de la Métropole',
+			description:
+				"Vue d'ensemble des aménagements cyclables sur les 9 arrondissements de la ville de Lyon : pistes, Voies Lyonnaises, stationnements et services vélo.",
+		},
 	};
 };

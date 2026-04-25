@@ -36,10 +36,6 @@
 	}
 </script>
 
-<svelte:head>
-	<title>{commune.name} – Carte des aménagements cyclables</title>
-</svelte:head>
-
 <div class="space-y-6 py-4">
 	<header class="flex flex-col gap-1">
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-2">

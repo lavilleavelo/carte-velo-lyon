@@ -13,10 +13,6 @@
 	const communes = $derived(data.communes.filter((c) => !c.slug.startsWith('lyon-')));
 </script>
 
-<svelte:head>
-	<title>Communes – Carte des aménagements cyclables</title>
-</svelte:head>
-
 <div class="space-y-8 py-6">
 	<header class="flex flex-col gap-3">
 		<a href="/" class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-navy">

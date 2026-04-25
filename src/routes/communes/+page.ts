@@ -11,5 +11,12 @@ export const load: PageLoad = () => {
 		...c,
 		codePostal: metadataByInsee[c.insee]?.codePostal ?? null,
 	}));
-	return { communes };
+	return {
+		communes,
+		seo: {
+			title: 'Communes – Carte vélo de la Métropole de Lyon',
+			description:
+				'Parcourez les communes de la Métropole de Lyon et découvrez leurs aménagements cyclables, Voies Lyonnaises et infrastructures vélo.',
+		},
+	};
 };
