@@ -29,6 +29,16 @@
 
 	let currentIndex = $state(0);
 	let selectedFeature = $derived(features[currentIndex]);
+	const navPrimaryOverride = $derived.by(() => {
+		if (selectedFeature?.type === 'counter' && selectedFeature.properties?.cyclopolisUrl) {
+			return {
+				label: 'Cyclopolis',
+				shortLabel: 'Cyclopolis',
+				url: selectedFeature.properties.cyclopolisUrl as string,
+			};
+		}
+		return undefined;
+	});
 
 	function getComponent(type: string) {
 		if (type === 'velov') return VelovDetails;
@@ -164,6 +174,7 @@
 				lat={coordinates.lat}
 				lng={coordinates.lng}
 				defaultProviderId={defaultNavProvider}
+				primaryOverride={navPrimaryOverride}
 				{onOpenSettings}
 			/>
 		</div>

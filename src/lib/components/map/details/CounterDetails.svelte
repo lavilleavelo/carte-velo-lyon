@@ -1,6 +1,5 @@
 <script lang="ts">
 	import BarChart3 from '@lucide/svelte/icons/bar-chart-3';
-	import ExternalLink from '@lucide/svelte/icons/external-link';
 
 	let { properties } = $props();
 
@@ -179,18 +178,6 @@
 				{/each}
 			</div>
 		</div>
-	{/if}
-
-	{#if properties.cyclopolisUrl}
-		<a
-			href={properties.cyclopolisUrl}
-			target="_blank"
-			rel="noopener noreferrer"
-			class="flex items-center gap-1.5 rounded-lg border border-blue-200 bg-blue-50 px-3 py-2 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-100"
-		>
-			<ExternalLink size={14} />
-			Voir sur Cyclopolis
-		</a>
 	{/if}
 
 	<div class="flex items-center gap-2 text-[10px] text-gray-400">

@@ -198,7 +198,7 @@
 				class="flex w-full items-center gap-2 px-4 py-2 text-left text-sm text-gray-700 transition-colors hover:bg-blue-50 hover:text-blue-900"
 			>
 				<MapPin class="h-4 w-4" />
-				Ouvrir dans {defaultProvider.label}
+				{defaultProvider.id === 'geo' ? 'Ouvrir...' : `Ouvrir dans ${defaultProvider.label}`}
 			</button>
 
 			<button

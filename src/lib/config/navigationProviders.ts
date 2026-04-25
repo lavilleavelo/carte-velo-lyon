@@ -34,6 +34,13 @@ export const navigationProviders: NavigationProvider[] = [
 			`https://www.openstreetmap.org/query?lat=${lat}&lon=${lng}&mlat=${lat}&mlon=${lng}#map=19/${lat}/${lng}`,
 	},
 	{
+		id: 'cartes',
+		label: 'Cartes.app',
+		shortLabel: 'Cartes.app',
+		url: (lat, lng) =>
+			`https://cartes.app/?sports=oui-bicycle&terrain=non&clic=${lat}%7C${lng}#16.77/${lat}/${lng}`,
+	},
+	{
 		id: 'google',
 		label: 'Google Maps',
 		shortLabel: 'Maps',
