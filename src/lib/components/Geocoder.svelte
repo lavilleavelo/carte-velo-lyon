@@ -94,19 +94,19 @@
 	const isLoading = $derived(geocoderQuery.isLoading);
 	const isSearching = $derived(isLoading || inputValue !== debouncedQuery.current);
 
+	const allCommunes = [
+		{ slug: 'lyon', name: 'Lyon (ville entière)', insee: '69123' },
+		...communesIndex,
+	];
+
 	const communeMatches = $derived.by(() => {
 		const q = inputValue.trim();
 		if (q.length < 2) {
-			return [];
+			return allCommunes;
 		}
 
 		const nq = normalize(q);
-		const withLyonWhole = [
-			{ slug: 'lyon', name: 'Lyon (ville entière)', insee: '69123' },
-			...communesIndex,
-		];
-
-		return withLyonWhole.filter((c) => normalize(c.name).includes(nq)).slice(0, 5);
+		return allCommunes.filter((c) => normalize(c.name).includes(nq)).slice(0, 5);
 	});
 
 	function getResultTitle(props: GeocoderResult['properties']): string {
