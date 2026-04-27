@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
+	import { EMPTY_FEATURE_COLLECTION } from '$lib/utils/geoFilter';
 	import {
 		BANDE_DASHARRAY,
 		BUS_VELO_DASHARRAY,
@@ -35,11 +36,7 @@
 	const visibility = $derived(isLayerVisible('cycleways') ? 'visible' : 'none');
 </script>
 
-<GeoJSONSource
-	maxzoom={13}
-	data={voirieData ?? { type: 'FeatureCollection', features: [] }}
-	id="cycleways-source"
->
+<GeoJSONSource maxzoom={13} data={voirieData ?? EMPTY_FEATURE_COLLECTION} id="cycleways-source">
 	<LineLayer
 		id="cw-piste-bidir"
 		filter={filterPisteBidir}

@@ -49,7 +49,11 @@
 		getInteractableLayerIds,
 		createLayerToFeatureTypeMap,
 	} from '$lib/config/layers';
-	import { filterFeaturesByYear, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import {
+		EMPTY_FEATURE_COLLECTION,
+		filterFeaturesByYear,
+		filterFeaturesInsideBoundary,
+	} from '$lib/utils/geoFilter';
 	import { featureLineLengthMeters } from '$lib/utils/geoLength';
 	import {
 		toggleLegendId,
@@ -423,7 +427,7 @@
 	const speedLimitsStats = $derived(computeSpeedLimitsStats(speedLimitsInsideBoundary?.features));
 
 	const osmInsideBoundary = $derived.by(() => {
-		if (!osmCyclewaysQuery.data) return { type: 'FeatureCollection' as const, features: [] };
+		if (!osmCyclewaysQuery.data) return EMPTY_FEATURE_COLLECTION;
 		return filterFeaturesInsideBoundary(osmCyclewaysQuery.data, boundary);
 	});
 
@@ -499,6 +503,48 @@
 	let selectedLngLat: { lng: number; lat: number } | null = $state(null);
 	let showPanoramax = $state(false);
 	let hoveredPhotoLocation: { lng: number; lat: number } | null = $state(null);
+	let isMapMoving = false;
+	let pendingMouseMove: { point: any; lngLat: any } | null = null;
+	let mouseMoveRaf: number | null = null;
+
+	$effect(() => {
+		if (!map) {
+			return;
+		}
+
+		const m = map;
+
+		const onStart = () => {
+			isMapMoving = true;
+			if (hoverTimeout) {
+				clearTimeout(hoverTimeout);
+				hoverTimeout = null;
+			}
+			if (mouseMoveRaf !== null) {
+				cancelAnimationFrame(mouseMoveRaf);
+				mouseMoveRaf = null;
+				pendingMouseMove = null;
+			}
+			hoverPopupFeatures = null;
+			cursor = undefined;
+		};
+
+		const onEnd = () => {
+			isMapMoving = false;
+		};
+
+		m.on('movestart', onStart);
+		m.on('zoomstart', onStart);
+		m.on('moveend', onEnd);
+		m.on('zoomend', onEnd);
+
+		return () => {
+			m.off('movestart', onStart);
+			m.off('zoomstart', onStart);
+			m.off('moveend', onEnd);
+			m.off('zoomend', onEnd);
+		};
+	});
 
 	let contextMenuVisible = $state(false);
 	let contextMenuX = $state(0);
@@ -535,24 +581,23 @@
 			});
 	}
 
+	const interactableLayerIds = $derived(getInteractableLayerIds(isConfigLayerVisible));
+
 	function getInteractables(): string[] {
 		if (!map) return [];
-		return getInteractableLayerIds(isConfigLayerVisible).filter((id) => map!.getLayer(id));
+		const m = map;
+		return interactableLayerIds.filter((id) => m.getLayer(id));
 	}
 
-	function handleMapMouseMove(e: any) {
+	function processMouseMove(point: any, lngLat: any) {
 		if (!map) return;
-		if (hoverTimeout) {
-			clearTimeout(hoverTimeout);
-			hoverTimeout = null;
-		}
 		const interactableLayers = getInteractables();
 		if (interactableLayers.length === 0) {
 			hoverPopupFeatures = null;
 			cursor = undefined;
 			return;
 		}
-		const features = map.queryRenderedFeatures(e.point, { layers: interactableLayers });
+		const features = map.queryRenderedFeatures(point, { layers: interactableLayers });
 		if (features.length > 0) {
 			const zoom = map.getZoom();
 			const enriched = enrichFeatures(features).filter(
@@ -560,19 +605,44 @@
 			);
 			if (enriched.length > 0) {
 				cursor = 'pointer';
-				const targetLngLat = e.lngLat;
 				if (hoverPopupFeatures) {
-					hoverPopupFeatures = { features: enriched, lngLat: targetLngLat };
+					hoverPopupFeatures = { features: enriched, lngLat };
 				} else {
+					if (hoverTimeout) clearTimeout(hoverTimeout);
 					hoverTimeout = setTimeout(() => {
-						hoverPopupFeatures = { features: enriched, lngLat: targetLngLat };
+						hoverPopupFeatures = { features: enriched, lngLat };
 					}, 200);
 				}
 				return;
 			}
 		}
+
+		if (hoverTimeout) {
+			clearTimeout(hoverTimeout);
+			hoverTimeout = null;
+		}
+
 		hoverPopupFeatures = null;
 		cursor = undefined;
+	}
+
+	function handleMapMouseMove(e: any) {
+		if (!map || isMapMoving) {
+			return;
+		}
+
+		pendingMouseMove = { point: e.point, lngLat: e.lngLat };
+
+		if (mouseMoveRaf !== null) {
+			return;
+		}
+
+		mouseMoveRaf = requestAnimationFrame(() => {
+			mouseMoveRaf = null;
+			const pending = pendingMouseMove;
+			pendingMouseMove = null;
+			if (pending) processMouseMove(pending.point, pending.lngLat);
+		});
 	}
 
 	function handleMapMouseLeave() {
@@ -580,14 +650,10 @@
 			clearTimeout(hoverTimeout);
 			hoverTimeout = null;
 		}
-		hoverPopupFeatures = null;
-		cursor = undefined;
-	}
-
-	function handleMapMoveStart() {
-		if (hoverTimeout) {
-			clearTimeout(hoverTimeout);
-			hoverTimeout = null;
+		if (mouseMoveRaf !== null) {
+			cancelAnimationFrame(mouseMoveRaf);
+			mouseMoveRaf = null;
+			pendingMouseMove = null;
 		}
 		hoverPopupFeatures = null;
 		cursor = undefined;
@@ -702,8 +768,6 @@
 				oncontextmenu={handleMapContextMenu}
 				onmousemove={handleMapMouseMove}
 				onmouseleave={handleMapMouseLeave}
-				onmovestart={handleMapMoveStart}
-				onzoomstart={handleMapMoveStart}
 			>
 				<AttributionControl compact={true} position="top-left" />
 				<NavigationControl position="top-right" showCompass={false} />

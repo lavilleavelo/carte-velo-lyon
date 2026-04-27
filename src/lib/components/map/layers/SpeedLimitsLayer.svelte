@@ -2,7 +2,7 @@
 	import { GeoJSONSource, LineLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { FeatureCollection } from 'geojson';
-	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import { EMPTY_FEATURE_COLLECTION, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { speedLimitsQueryOptions } from '$lib/queries/cyclewayQueries';
 	import { SPEED_BUCKET_COLORS, type SpeedBucket } from '$lib/utils/speedLimits';
 
@@ -25,7 +25,7 @@
 
 	const sourceData = $derived.by<FeatureCollection>(() => {
 		const data = query.data;
-		if (!data) return { type: 'FeatureCollection', features: [] };
+		if (!data) return EMPTY_FEATURE_COLLECTION;
 		if (!boundary) return data;
 		return filterFeaturesInsideBoundary(data, boundary);
 	});

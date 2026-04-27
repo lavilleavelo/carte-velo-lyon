@@ -2,7 +2,7 @@
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { FeatureCollection } from 'geojson';
-	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import { EMPTY_FEATURE_COLLECTION, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
 	import { PAVED_SURFACES } from '$lib/utils/osmCycleway';
 	import { osmCyclewaysQueryOptions } from '$lib/queries/cyclewayQueries';
@@ -117,7 +117,7 @@
 
 <GeoJSONSource
 	maxzoom={13}
-	data={displayData ?? { type: 'FeatureCollection', features: [] }}
+	data={displayData ?? EMPTY_FEATURE_COLLECTION}
 	id="osm-cycleways-source"
 >
 	<LineLayer

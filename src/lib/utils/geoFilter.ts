@@ -1,5 +1,10 @@
 import type { Feature, FeatureCollection, Geometry, Position } from 'geojson';
 
+export const EMPTY_FEATURE_COLLECTION: FeatureCollection = Object.freeze({
+	type: 'FeatureCollection',
+	features: [],
+}) as FeatureCollection;
+
 function pointInRing(x: number, y: number, ring: Position[]): boolean {
 	let inside = false;
 
@@ -80,12 +85,29 @@ function bboxesOverlap(
 	return !(a[2] < b[0] || a[0] > b[2] || a[3] < b[1] || a[1] > b[3]);
 }
 
+type BoundaryCache = {
+	geoms: Geometry[];
+	bboxes: [number, number, number, number][];
+};
+
+const boundaryCache = new WeakMap<FeatureCollection, BoundaryCache>();
+
+function getBoundaryCache(boundary: FeatureCollection): BoundaryCache {
+	let cached = boundaryCache.get(boundary);
+	if (!cached) {
+		const geoms = boundary.features.map((f) => f.geometry);
+		const bboxes = geoms.map(bboxOfGeom);
+		cached = { geoms, bboxes };
+		boundaryCache.set(boundary, cached);
+	}
+	return cached;
+}
+
 export function filterFeaturesInsideBoundary(
 	data: FeatureCollection,
 	boundary: FeatureCollection,
 ): FeatureCollection {
-	const boundaryGeoms = boundary.features.map((f) => f.geometry);
-	const boundaryBboxes = boundaryGeoms.map(bboxOfGeom);
+	const { geoms: boundaryGeoms, bboxes: boundaryBboxes } = getBoundaryCache(boundary);
 
 	const kept = data.features.filter((feature) => {
 		const fGeom = feature.geometry as Geometry | null;

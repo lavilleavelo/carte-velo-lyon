@@ -190,17 +190,25 @@
 			});
 		}
 	});
+
+	const filteredByLine = $derived.by(() => {
+		const data = overpassQuery.data;
+		if (!data) return undefined;
+		const out: Record<number, GeoJSON.FeatureCollection> = {};
+		for (const [num, fc] of Object.entries(data.grouped)) {
+			out[Number(num)] = boundary ? filterFeaturesInsideBoundary(fc, boundary) : fc;
+		}
+		return out;
+	});
 </script>
 
-{#if overpassQuery.data}
+{#if overpassQuery.data && filteredByLine}
 	{#each Array.from({ length: 12 }, (_, index) => index + 1) as lineNumber}
 		{@const layerId = `osm-vl-${lineNumber}`}
 		{@const lineIndex = lineNumber - 1}
 		{@const vlVisible = isLayerVisible(`vl-${lineNumber}`)}
-		{#if overpassQuery.data.grouped[lineNumber]}
-			{@const lineData = boundary
-				? filterFeaturesInsideBoundary(overpassQuery.data.grouped[lineNumber], boundary)
-				: overpassQuery.data.grouped[lineNumber]}
+		{#if filteredByLine[lineNumber]}
+			{@const lineData = filteredByLine[lineNumber]}
 			<GeoJSONSource id={`osm-vl-${lineNumber}-source`} data={lineData}>
 				<LineLayer
 					id={`osm-vl-${lineNumber}-line-contour`}
@@ -266,7 +274,7 @@
 	{#each Array.from({ length: 12 }, (_, index) => index + 1) as lineNumber}
 		{@const layerId = `osm-vl-${lineNumber}`}
 		{@const shieldVisibility = isLayerVisible(layerId) ? 'visible' : 'none'}
-		{#if overpassQuery.data.grouped[lineNumber]}
+		{#if filteredByLine[lineNumber]}
 			<SymbolLayer
 				id={`osm-vl-${lineNumber}-labels-low`}
 				source={`osm-vl-${lineNumber}-source`}
