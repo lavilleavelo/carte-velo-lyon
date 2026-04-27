@@ -2,6 +2,8 @@
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import Map from '@lucide/svelte/icons/map';
 	import ChartLine from '@lucide/svelte/icons/chart-line';
+	import Gauge from '@lucide/svelte/icons/gauge';
+	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import MetropoleInfrastructureChart from '$lib/components/charts/MetropoleInfrastructureChart.svelte';
 	import CommuneSelectorMap from '$lib/components/map/CommuneSelectorMap.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
@@ -43,6 +45,28 @@
 			<MetropoleInfrastructureChart />
 		</Tabs.Content>
 	</Tabs.Root>
+
+	<a
+		href="/ville-30"
+		class="group flex items-center gap-3 rounded-lg border border-brand-teal/40 bg-brand-teal/10 px-4 py-3 transition-colors hover:bg-brand-teal/20"
+	>
+		<span
+			class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-brand-teal/30 text-brand-navy"
+			aria-hidden="true"
+		>
+			<Gauge class="h-5 w-5" />
+		</span>
+		<span class="flex flex-col gap-0.5">
+			<span class="text-sm font-semibold text-brand-navy">Ville 30 dans la Métropole</span>
+			<span class="text-xs text-gray-600">
+				Voir la carte des communes ayant adopté la limitation à 30 km/h par défaut.
+			</span>
+		</span>
+		<ChevronRight
+			class="ml-auto h-5 w-5 shrink-0 text-brand-navy transition-transform group-hover:translate-x-0.5"
+			aria-hidden="true"
+		/>
+	</a>
 
 	<section class="space-y-4">
 		<h2 class="text-xl font-semibold text-brand-navy">Lyon, vue d'ensemble</h2>

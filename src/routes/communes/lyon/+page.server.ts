@@ -2,6 +2,12 @@ import { error } from '@sveltejs/kit';
 import type { Feature, FeatureCollection, Geometry, Position } from 'geojson';
 import type { PageServerLoad } from './$types';
 import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
+import communeMetadataJson from '$lib/data/communeMetadata.json';
+import { getVille30StatsForCommune } from '$lib/server/ville30Stats';
+
+const lyonMetadata = (communeMetadataJson as Record<string, { ville30?: { adoptedAt?: string } }>)[
+	'69123'
+];
 
 const LYON_ARRONDISSEMENT_INSEE = new Set([
 	'69381',
@@ -55,11 +61,14 @@ export const load: PageServerLoad = async () => {
 	};
 
 	const bbox = bboxOfFeatures(features);
+	const ville30Stats = await getVille30StatsForCommune('69123');
 
 	return {
 		boundary,
 		bbox,
 		arrondissementCount: features.length,
+		ville30: lyonMetadata?.ville30 ?? null,
+		ville30Stats,
 		seo: {
 			title: 'Lyon (ville entière) – Carte vélo de la Métropole',
 			description:

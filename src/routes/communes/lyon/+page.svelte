@@ -1,6 +1,7 @@
 <script lang="ts">
 	import CommuneMap from '$lib/components/map/CommuneMap.svelte';
 	import InfrastructureEvolutionChart from '$lib/components/charts/InfrastructureEvolutionChart.svelte';
+	import Ville30Indicator from '$lib/components/Ville30Indicator.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -35,6 +36,12 @@
 			<span class="font-semibold text-gray-700">{data.arrondissementCount}</span>
 		</span>
 	</div>
+
+	<Ville30Indicator
+		communeName="Lyon"
+		ville30={data.ville30}
+		stats={data.ville30Stats}
+	/>
 
 	<InfrastructureEvolutionChart communeName="Lyon" boundary={data.boundary} />
 </div>

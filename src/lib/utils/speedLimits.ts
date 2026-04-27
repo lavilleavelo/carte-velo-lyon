@@ -48,3 +48,69 @@ export function computeSpeedLimitsStats(features: Feature[] | undefined): SpeedL
 	}
 	return stats;
 }
+
+export interface Ville30Stats {
+	bySpeedLimit: Record<string, { km: number; streets: number }>;
+	totalStreets: number;
+	totalKm: number;
+	under30Km: number;
+	under30KmPercentage: number;
+	eligibleKm: number;
+	eligibleUnder30Km: number;
+	eligibleUnder30KmPercentage: number;
+}
+
+export function computeVille30Stats(features: Feature[] | undefined): Ville30Stats | null {
+	if (!features || features.length === 0) {
+		return null;
+	}
+
+	const bySpeedLimit: Record<string, { km: number; streets: number }> = {};
+	let totalStreets = 0;
+	let totalKm = 0;
+	let under30Km = 0;
+	let eligibleKm = 0;
+	let eligibleUnder30Km = 0;
+
+	for (const feature of features) {
+		const props = (feature.properties ?? {}) as Record<string, unknown>;
+		const rawSpeed = props.limitationvitesse;
+		const speedKey =
+			rawSpeed === undefined || rawSpeed === null || rawSpeed === '' ? 'unknown' : String(rawSpeed);
+		const lengthKm = (Number(props.longueurcalculee) || 0) / 1000;
+
+		if (!bySpeedLimit[speedKey]) {
+			bySpeedLimit[speedKey] = { km: 0, streets: 0 };
+		}
+		bySpeedLimit[speedKey].km += lengthKm;
+		bySpeedLimit[speedKey].streets += 1;
+
+		totalStreets += 1;
+		totalKm += lengthKm;
+
+		const numericSpeed = parseInt(speedKey, 10);
+		if (!Number.isNaN(numericSpeed) && numericSpeed <= 30) {
+			under30Km += lengthKm;
+		}
+
+		const isEligible =
+			!Number.isNaN(numericSpeed) && numericSpeed > 5 && numericSpeed < 70;
+		if (isEligible) {
+			eligibleKm += lengthKm;
+			if (numericSpeed <= 30) {
+				eligibleUnder30Km += lengthKm;
+			}
+		}
+	}
+
+	return {
+		bySpeedLimit,
+		totalStreets,
+		totalKm,
+		under30Km,
+		under30KmPercentage: totalKm > 0 ? (under30Km / totalKm) * 100 : 0,
+		eligibleKm,
+		eligibleUnder30Km,
+		eligibleUnder30KmPercentage: eligibleKm > 0 ? (eligibleUnder30Km / eligibleKm) * 100 : 0,
+	};
+}

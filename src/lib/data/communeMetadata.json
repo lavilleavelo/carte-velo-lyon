@@ -6,7 +6,10 @@
     "population2022": 3013,
     "population2021": 2991,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Albigny-sur-Sa%C3%B4ne",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69029": {
     "insee": "69029",
@@ -49,7 +52,10 @@
     "population2022": 6124,
     "population2021": 5936,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Champagne-au-Mont-d%27Or",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69044": {
     "insee": "69044",
@@ -58,7 +64,10 @@
     "population2022": 5272,
     "population2021": 5311,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Charbonni%C3%A8res-les-Bains",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69046": {
     "insee": "69046",
@@ -85,7 +94,11 @@
     "population2022": 2541,
     "population2021": 2452,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Couzon-au-Mont-d%27Or",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2021-10-01",
+      "source": "https://www.lyoncapitale.fr/actualite/une-5e-commune-de-la-metropole-de-lyon-passe-a-30-km-h-23-autres-interessees"
+    }
   },
   "69069": {
     "insee": "69069",
@@ -94,7 +107,11 @@
     "population2022": 12170,
     "population2021": 11903,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Craponne",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-12-02",
+      "source": "https://www.lyoncapitale.fr/actualite/une-15e-ville-de-la-metropole-de-lyon-est-passee-a-30-km-h"
+    }
   },
   "69071": {
     "insee": "69071",
@@ -112,7 +129,10 @@
     "population2022": 8980,
     "population2021": 8828,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Dardilly",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69081": {
     "insee": "69081",
@@ -121,7 +141,10 @@
     "population2022": 18019,
     "population2021": 18361,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/%C3%89cully",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69085": {
     "insee": "69085",
@@ -139,7 +162,11 @@
     "population2022": 3070,
     "population2021": 3043,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Fontaines-Saint-Martin",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2021-06-01",
+      "source": "https://www.lyoncapitale.fr/actualite/une-5e-commune-de-la-metropole-de-lyon-passe-a-30-km-h-23-autres-interessees"
+    }
   },
   "69088": {
     "insee": "69088",
@@ -173,7 +200,10 @@
     "population2022": 20943,
     "population2021": 20654,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Givors",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69096": {
     "insee": "69096",
@@ -200,7 +230,10 @@
     "population2022": 3933,
     "population2021": 3838,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Limonest",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69117": {
     "insee": "69117",
@@ -225,7 +258,11 @@
         "date": "2025-09-19",
         "author": "La Ville à Vélo"
       }
-    ]
+    ],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   },
   "69127": {
     "insee": "69127",
@@ -243,7 +280,10 @@
     "population2022": 6554,
     "population2021": 6595,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/La_Mulati%C3%A8re",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69143": {
     "insee": "69143",
@@ -252,7 +292,10 @@
     "population2022": 7807,
     "population2021": 7721,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Neuville-sur-Sa%C3%B4ne",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69149": {
     "insee": "69149",
@@ -261,7 +304,13 @@
     "population2022": 37928,
     "population2021": 37628,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Oullins-Pierre-B%C3%A9nite",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2019-07-01",
+      "partial": true,
+      "partialNote": "Seule l'ancienne commune d'Oullins est en Ville 30 (depuis juillet 2019). L'ancienne commune de Pierre-Bénite, fusionnée avec Oullins en janvier 2024, n'a pas adopté ce statut.",
+      "source": "https://www.lyoncapitale.fr/actualite/une-5e-commune-de-la-metropole-de-lyon-passe-a-30-km-h-23-autres-interessees"
+    }
   },
   "69153": {
     "insee": "69153",
@@ -270,7 +319,11 @@
     "population2022": 1394,
     "population2021": 1403,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Poleymieux-au-Mont-d%27Or",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2021-03-24",
+      "source": "https://www.lyoncapitale.fr/actualite/une-5e-commune-de-la-metropole-de-lyon-passe-a-30-km-h-23-autres-interessees"
+    }
   },
   "69163": {
     "insee": "69163",
@@ -279,7 +332,10 @@
     "population2022": 3620,
     "population2021": 3549,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Quincieux",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69168": {
     "insee": "69168",
@@ -297,7 +353,10 @@
     "population2022": 6113,
     "population2021": 5900,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Cyr-au-Mont-d%27Or",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69194": {
     "insee": "69194",
@@ -315,7 +374,10 @@
     "population2022": 19549,
     "population2021": 19360,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Fons",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69202": {
     "insee": "69202",
@@ -333,7 +395,10 @@
     "population2022": 21329,
     "population2021": 20929,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Genis-Laval",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69205": {
     "insee": "69205",
@@ -342,7 +407,10 @@
     "population2022": 5370,
     "population2021": 5300,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Genis-les-Olli%C3%A8res",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69207": {
     "insee": "69207",
@@ -351,7 +419,10 @@
     "population2022": 3037,
     "population2021": 2978,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Germain-au-Mont-d%27Or",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69233": {
     "insee": "69233",
@@ -360,7 +431,11 @@
     "population2022": 1241,
     "population2021": 1238,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Saint-Romain-au-Mont-d%27Or",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2021-11-01",
+      "source": "https://www.lyoncapitale.fr/actualite/une-5e-commune-de-la-metropole-de-lyon-passe-a-30-km-h-23-autres-interessees"
+    }
   },
   "69244": {
     "insee": "69244",
@@ -428,7 +503,11 @@
     "population2022": 150994,
     "population2021": 156928,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Villeurbanne",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2023-09-30",
+      "source": "https://ville30.org/2023/09/22/la-vitesse-passera-a-30-km-h-a-villeurbanne-le-30-septembre/"
+    }
   },
   "69271": {
     "insee": "69271",
@@ -473,7 +552,10 @@
     "population2022": 5632,
     "population2021": 5520,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Genay",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69279": {
     "insee": "69279",
@@ -509,7 +591,10 @@
     "population2022": 3270,
     "population2021": 3249,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Montanay",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69286": {
     "insee": "69286",
@@ -572,7 +657,10 @@
         "date": "2025-09-24",
         "author": "La Ville à Vélo"
       }
-    ]
+    ],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69296": {
     "insee": "69296",
@@ -581,7 +669,10 @@
     "population2022": 3135,
     "population2021": 3082,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/Solaize",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "source": "https://api.mobilites.grandlyon.com/fileadmin/user_upload/media/IMAGES/Contenus_page/Ville_30_Metropole_de_Lyon.webp"
+    }
   },
   "69381": {
     "insee": "69381",
@@ -590,7 +681,11 @@
     "population2022": 29016,
     "population2021": null,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/1er_arrondissement_de_Lyon",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   },
   "69382": {
     "insee": "69382",
@@ -599,7 +694,11 @@
     "population2022": 30485,
     "population2021": null,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/2e_arrondissement_de_Lyon",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   },
   "69383": {
     "insee": "69383",
@@ -608,7 +707,11 @@
     "population2022": 101302,
     "population2021": null,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/3e_arrondissement_de_Lyon",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   },
   "69384": {
     "insee": "69384",
@@ -617,7 +720,11 @@
     "population2022": 35603,
     "population2021": null,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/4e_arrondissement_de_Lyon",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   },
   "69385": {
     "insee": "69385",
@@ -626,7 +733,11 @@
     "population2022": 48711,
     "population2021": null,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/5e_arrondissement_de_Lyon",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   },
   "69386": {
     "insee": "69386",
@@ -635,7 +746,11 @@
     "population2022": 52007,
     "population2021": null,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/6e_arrondissement_de_Lyon",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   },
   "69387": {
     "insee": "69387",
@@ -644,7 +759,11 @@
     "population2022": 85897,
     "population2021": null,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/7e_arrondissement_de_Lyon",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   },
   "69388": {
     "insee": "69388",
@@ -653,7 +772,11 @@
     "population2022": 86326,
     "population2021": null,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/8e_arrondissement_de_Lyon",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   },
   "69389": {
     "insee": "69389",
@@ -662,6 +785,10 @@
     "population2022": 52903,
     "population2021": null,
     "wikipediaUrl": "https://fr.wikipedia.org/wiki/9e_arrondissement_de_Lyon",
-    "articles": []
+    "articles": [],
+    "ville30": {
+      "adoptedAt": "2022-03-30",
+      "source": "https://rue-avenir.ch/themes/villes-a-30/france/lyon/"
+    }
   }
 }
