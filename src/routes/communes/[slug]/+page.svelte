@@ -3,6 +3,7 @@
 	import CommuneMap from '$lib/components/map/CommuneMap.svelte';
 	import InfrastructureEvolutionChart from '$lib/components/charts/InfrastructureEvolutionChart.svelte';
 	import Ville30Indicator from '$lib/components/Ville30Indicator.svelte';
+	import LavilleaveloCta from '$lib/components/LavilleaveloCta.svelte';
 	import { getVeloscoreUrl } from '$lib/utils';
 	import type { PageData } from './$types';
 
@@ -154,4 +155,6 @@
 	/>
 
 	<InfrastructureEvolutionChart communeName={commune.name} boundary={data.boundary} />
+
+	<LavilleaveloCta />
 </div>

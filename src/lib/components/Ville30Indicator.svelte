@@ -100,7 +100,7 @@
 						{numFormatter.format(stats.eligibleUnder30KmPercentage)}%
 					</div>
 					<div class="mt-1 text-sm text-gray-700">
-						des rues ordinaires sont limitées à 30 km/h ou moins
+						des rues sont limitées à 30 km/h ou moins
 					</div>
 					<div class="mt-0.5 text-xs text-gray-500">
 						{numFormatter.format(stats.eligibleUnder30Km)}&nbsp;km sur {numFormatter.format(

@@ -6,6 +6,7 @@
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import MetropoleInfrastructureChart from '$lib/components/charts/MetropoleInfrastructureChart.svelte';
 	import CommuneSelectorMap from '$lib/components/map/CommuneSelectorMap.svelte';
+	import LavilleaveloCta from '$lib/components/LavilleaveloCta.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import type { PageData } from './$types';
 
@@ -133,4 +134,6 @@
 			{/each}
 		</ul>
 	</section>
+
+	<LavilleaveloCta />
 </div>

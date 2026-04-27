@@ -2,6 +2,7 @@
 	import CommuneMap from '$lib/components/map/CommuneMap.svelte';
 	import InfrastructureEvolutionChart from '$lib/components/charts/InfrastructureEvolutionChart.svelte';
 	import Ville30Indicator from '$lib/components/Ville30Indicator.svelte';
+	import LavilleaveloCta from '$lib/components/LavilleaveloCta.svelte';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -44,4 +45,6 @@
 	/>
 
 	<InfrastructureEvolutionChart communeName="Lyon" boundary={data.boundary} />
+
+	<LavilleaveloCta />
 </div>
