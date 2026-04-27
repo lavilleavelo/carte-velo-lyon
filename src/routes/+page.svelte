@@ -77,6 +77,7 @@
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
 	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
+	import OverpassOnewayArrowsLayer from '$lib/components/map/layers/OverpassOnewayArrowsLayer.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
 	import SpeedLimitsLayer from '$lib/components/map/layers/SpeedLimitsLayer.svelte';
 	import { SPEED_BUCKETS, type SpeedBucket } from '$lib/utils/speedLimits';
@@ -1040,6 +1041,8 @@
 			<CountersLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<OverpassVLLayer {isLayerVisible} {map} />
+
+			<OverpassOnewayArrowsLayer />
 
 			<OsmCyclewayLayer {isLayerVisible} />
 
