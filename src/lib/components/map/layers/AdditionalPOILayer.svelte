@@ -1,9 +1,22 @@
 <script lang="ts">
 	import { GeoJSONSource, SymbolLayer, CircleLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
-	import type { GeoJSON } from 'geojson';
+	import type { GeoJSON, FeatureCollection } from 'geojson';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave, map } = $props();
+	let {
+		isLayerVisible,
+		handleMouseEnter,
+		handleMouseLeave,
+		map,
+		boundary,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		handleMouseEnter?: () => void;
+		handleMouseLeave?: () => void;
+		map?: import('maplibre-gl').Map;
+		boundary?: FeatureCollection;
+	} = $props();
 
 	type POIType =
 		| 'veloecole'
@@ -100,6 +113,11 @@
 	}));
 
 	const features = $derived(poisQuery.data || []);
+
+	const visibleData = $derived.by<FeatureCollection>(() => {
+		const fc: FeatureCollection = { type: 'FeatureCollection', features: features as any };
+		return boundary ? filterFeaturesInsideBoundary(fc, boundary) : fc;
+	});
 
 	const LOCAL_COLOR = '#1e5a8a';
 
@@ -232,13 +250,7 @@
 	});
 </script>
 
-<GeoJSONSource
-	id="additional-pois-source"
-	data={{
-		type: 'FeatureCollection',
-		features: features,
-	}}
->
+<GeoJSONSource id="additional-pois-source" data={visibleData}>
 	{#each poiTypes as pt}
 		<SymbolLayer
 			id={`poi-${pt.type}-layer`}

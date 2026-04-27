@@ -1,9 +1,22 @@
 <script lang="ts">
 	import { GeoJSONSource, SymbolLayer, CircleLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
-	import type { GeoJSON } from 'geojson';
+	import type { GeoJSON, FeatureCollection } from 'geojson';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave, map } = $props();
+	let {
+		isLayerVisible,
+		handleMouseEnter,
+		handleMouseLeave,
+		map,
+		boundary,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		handleMouseEnter?: () => void;
+		handleMouseLeave?: () => void;
+		map?: import('maplibre-gl').Map;
+		boundary?: FeatureCollection;
+	} = $props();
 
 	function overpassToGeoJSON(data: any): GeoJSON.Feature[] {
 		return (data.elements || [])
@@ -51,6 +64,11 @@
 
 	const features = $derived(toiletsQuery.data || []);
 
+	const visibleData = $derived.by<FeatureCollection>(() => {
+		const fc: FeatureCollection = { type: 'FeatureCollection', features: features as any };
+		return boundary ? filterFeaturesInsideBoundary(fc, boundary) : fc;
+	});
+
 	function createToiletIcon(bgColor: string): HTMLCanvasElement {
 		const size = 40;
 		const canvas = document.createElement('canvas');
@@ -91,13 +109,7 @@
 	});
 </script>
 
-<GeoJSONSource
-	id="toilets-source"
-	data={{
-		type: 'FeatureCollection',
-		features: features,
-	}}
->
+<GeoJSONSource id="toilets-source" data={visibleData}>
 	<SymbolLayer
 		id="toilets-layer"
 		layout={{

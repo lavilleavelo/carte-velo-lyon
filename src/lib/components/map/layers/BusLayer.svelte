@@ -2,8 +2,22 @@
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { processBusData, loadTransportShieldIcons } from '$lib/utils/mapUtils';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import type { FeatureCollection } from 'geojson';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave, map } = $props();
+	let {
+		isLayerVisible,
+		handleMouseEnter,
+		handleMouseLeave,
+		map,
+		boundary,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		handleMouseEnter?: () => void;
+		handleMouseLeave?: () => void;
+		map?: import('maplibre-gl').Map;
+		boundary?: FeatureCollection;
+	} = $props();
 
 	const busQuery = createQuery(() => ({
 		queryKey: ['bus'],
@@ -29,13 +43,15 @@
 			loadTransportShieldIcons(map, tbFeatures, 'bus-tb');
 		}
 	});
+
+	const visibleData = $derived.by<FeatureCollection>(() => {
+		const raw = busQuery.data;
+		if (!raw) return { type: 'FeatureCollection', features: [] };
+		return boundary ? filterFeaturesInsideBoundary(raw, boundary) : raw;
+	});
 </script>
 
-<GeoJSONSource
-	maxzoom={13}
-	id="bus-data"
-	data={busQuery.data || { type: 'FeatureCollection', features: [] }}
->
+<GeoJSONSource maxzoom={13} id="bus-data" data={visibleData}>
 	<!-- Other bus lines (Bottom) -->
 	<LineLayer
 		id="bus-layer-other-contour"

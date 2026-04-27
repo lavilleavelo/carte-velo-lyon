@@ -4,6 +4,7 @@
 		AttributionControl,
 		NavigationControl,
 		FullScreenControl,
+		CustomControl,
 		GeoJSONSource,
 		LineLayer,
 		FillLayer,
@@ -22,13 +23,26 @@
 	import CyclewayLegendControl from '$lib/components/map/CyclewayLegendControl.svelte';
 	import SpeedLimitsControl from '$lib/components/map/SpeedLimitsControl.svelte';
 	import CommuneMapLayers from '$lib/components/map/CommuneMapLayers.svelte';
-	import CommuneLayerToggles from '$lib/components/map/CommuneLayerToggles.svelte';
+	import CommuneLayerControls from '$lib/components/map/CommuneLayerControls.svelte';
 	import YearRangeFilter from '$lib/components/map/YearRangeFilter.svelte';
+	import {
+		availableLayers,
+		expandLayers,
+		compactLayers,
+		layerGroups,
+		loadVisibleOptionalCategories,
+		saveVisibleOptionalCategories,
+	} from '$lib/config/mapLayerCatalog';
+	import CommuneLayerPills from '$lib/components/map/CommuneLayerPills.svelte';
 	import FeatureInfo from '$lib/components/map/FeatureInfo.svelte';
 	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
+	import PanelRightOpen from '@lucide/svelte/icons/panel-right-open';
+	import PanelRightClose from '@lucide/svelte/icons/panel-right-close';
+	import Maximize2 from '@lucide/svelte/icons/maximize-2';
+	import Minimize2 from '@lucide/svelte/icons/minimize-2';
 	import { loadDefaultProvider } from '$lib/config/navigationProviders';
 	import {
 		getAllLayerConfigs,
@@ -58,15 +72,19 @@
 	let {
 		boundary,
 		bounds,
+		communeName,
 	}: {
 		boundary: FeatureCollection;
 		bounds: [[number, number], [number, number]];
+		communeName?: string;
 	} = $props();
 
 	let map: maplibregl.Map | undefined = $state();
 	let innerWidth = $state(0);
 	let expanded = $state(false);
 	let mapWrapper: HTMLDivElement | undefined = $state();
+
+	const isDesktop = $derived(innerWidth === 0 || innerWidth >= 1024);
 
 	function toggleMapExpand() {
 		expanded = !expanded;
@@ -77,6 +95,7 @@
 
 	$effect(() => {
 		expanded;
+		sidebarCollapsed;
 		if (!map) {
 			return;
 		}
@@ -138,8 +157,14 @@
 		yearFrom: type('number').default(() => MIN_YEAR),
 		yearTo: type('number').default(() => MAX_YEAR),
 		cyclewayTypes: type('string[]').default(() => []),
+		cyclewayReseau: type('string[]').default(() => []),
+		cyclewayType: type('string[]').default(() => []),
+		cyclewayLocalisation: type('string[]').default(() => []),
+		targetNetworkHorizons: type('string[]').default(() => ['2030', '2035', '2040']),
+		projectVLStatuses: type('string[]').default(() => ['wip', 'planned', 'postponed']),
 		speedLimits: type('string[]').default(() => []),
 		filterByYear: type('boolean').default(() => false),
+		sidebar: type.enumerated('open', 'closed').default(() => 'closed'),
 		zoom: type('number').default(() => 0),
 		lat: type('number').default(() => 0),
 		lng: type('number').default(() => 0),
@@ -147,56 +172,101 @@
 
 	const params = useSearchParams(paramsSchema, { pushHistory: false, noScroll: true });
 
+	const sidebarHidden = $derived(params.sidebar === 'closed');
+	const sidebarCollapsed = $derived(sidebarHidden && isDesktop);
+
+	function toggleSidebar() {
+		params.sidebar = sidebarHidden ? 'open' : 'closed';
+	}
+
+	let visibleOptional = $state<Set<string>>(new Set());
+	$effect(() => {
+		visibleOptional = loadVisibleOptionalCategories();
+	});
+	function toggleOptionalCategory(category: string) {
+		const next = new Set(visibleOptional);
+		if (next.has(category)) next.delete(category);
+		else next.add(category);
+		visibleOptional = next;
+		saveVisibleOptionalCategories(next);
+	}
+
 	const yearRange = $derived<[number, number]>([params.yearFrom, params.yearTo]);
 	const effectiveYearRange = $derived<[number, number] | undefined>(
 		params.filterByYear ? yearRange : undefined,
 	);
 
-	const YEAR_INCOMPATIBLE_IDS = new Set([
-		'osm-cycleways',
-		'velov',
-		'pumps',
-		'fountains',
-		'speed-limits',
+	const YEAR_COMPATIBLE_FINE_IDS = new Set<string>([
+		'cycleways',
+		...layerGroups.vl,
+		...layerGroups.parking,
 	]);
 
-	function isLayerActive(id: string): boolean {
-		if (!params.layers.includes(id)) return false;
-		if (params.filterByYear && YEAR_INCOMPATIBLE_IDS.has(id)) return false;
+	const visibleSet = $derived(new Set(expandLayers(params.layers)));
+
+	function isFineActive(id: string): boolean {
+		if (!visibleSet.has(id)) return false;
+		if (params.filterByYear && !YEAR_COMPATIBLE_FINE_IDS.has(id)) return false;
 		return true;
 	}
 
-	const effectiveLayers = $derived(params.layers.filter(isLayerActive));
+	function isCategoryActive(category: string): boolean {
+		for (const layer of availableLayers) {
+			if (layer.category === category && isFineActive(layer.id)) return true;
+		}
+		return false;
+	}
 
-	const layerToggleGroups = [
-		{
-			label: 'Aménagements cyclables',
-			toggles: [
-				{ id: 'cycleways', label: 'Grand Lyon' },
-				{ id: 'osm-cycleways', label: 'OpenStreetMap', disableWhenYearFiltered: true },
-				{ id: 'vl', label: 'Voies Lyonnaises' },
-			],
-		},
-		{
-			label: 'Voirie',
-			toggles: [
-				{
-					id: 'speed-limits',
-					label: 'Limitations de vitesse',
-					disableWhenYearFiltered: true,
-				},
-			],
-		},
-		{
-			label: 'Autres',
-			toggles: [
-				{ id: 'velov', label: 'Vélo’v', disableWhenYearFiltered: true },
-				{ id: 'parking', label: 'Stationnement' },
-				{ id: 'pumps', label: 'Pompes', disableWhenYearFiltered: true },
-				{ id: 'fountains', label: 'Fontaines', disableWhenYearFiltered: true },
-			],
-		},
-	];
+	function isLayerActive(id: string): boolean {
+		if (id === 'vl') return isCategoryActive('Voies Lyonnaises');
+		if (id === 'osm-vl') return isCategoryActive('Voies Lyonnaises (OSM)');
+		if (id === 'parking') return isCategoryActive('Stationnements');
+		if (id === 'speed-limits') return isCategoryActive('Limitations de vitesse');
+		if (id === 'fountains') return isFineActive('water-fountains');
+		return isFineActive(id);
+	}
+
+	const effectiveVisibleSet = $derived(new Set([...visibleSet].filter((id) => isFineActive(id))));
+
+	function setLayers(fine: string[]) {
+		params.layers = compactLayers(fine);
+	}
+
+	function toggleLayer(id: string) {
+		const next = new Set(visibleSet);
+		if (next.has(id)) next.delete(id);
+		else next.add(id);
+		setLayers([...next]);
+	}
+
+	function toggleCategory(category: string) {
+		const layerIds = availableLayers.filter((l) => l.category === category).map((l) => l.id);
+		const allOn = layerIds.every((id) => visibleSet.has(id));
+		const next = new Set(visibleSet);
+		if (allOn) layerIds.forEach((id) => next.delete(id));
+		else layerIds.forEach((id) => next.add(id));
+		setLayers([...next]);
+	}
+
+	let layersBeforeYearFilter: string[] | null = $state(null);
+
+	function setFilterByYear(on: boolean) {
+		if (on === params.filterByYear) return;
+		if (on) {
+			layersBeforeYearFilter = [...params.layers];
+			const next = new Set(visibleSet);
+			next.add('cycleways');
+			for (const id of layerGroups.parking) next.add(id);
+			setLayers([...next]);
+			params.filterByYear = true;
+		} else {
+			params.filterByYear = false;
+			if (layersBeforeYearFilter) {
+				params.layers = layersBeforeYearFilter;
+				layersBeforeYearFilter = null;
+			}
+		}
+	}
 
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
 		params.mapStyle = style;
@@ -261,20 +331,69 @@
 	const voirieInside = $derived.by(() => {
 		const filtered = voirieBoundaryYearFiltered;
 		if (!filtered) return undefined;
-		const activeTypes = params.cyclewayTypes ?? [];
-		if (activeTypes.length === 0) return filtered;
-		const allowed = new Set(activeTypes);
+		const activeLegendTypes = params.cyclewayTypes ?? [];
+		const reseauFilters = params.cyclewayReseau ?? [];
+		const typeFilters = params.cyclewayType ?? [];
+		const localisationFilters = params.cyclewayLocalisation ?? [];
+		const hasLegend = activeLegendTypes.length > 0;
+		const hasSubFilters =
+			reseauFilters.length > 0 || typeFilters.length > 0 || localisationFilters.length > 0;
+		if (!hasLegend && !hasSubFilters) return filtered;
+		const allowedLegend = new Set(activeLegendTypes);
 		return {
 			...filtered,
 			features: filtered.features.filter((f: any) => {
-				const id = voirieFeatureToLegendId(f.properties);
-				return id ? allowed.has(id) : false;
+				const props = f.properties ?? {};
+				if (hasLegend) {
+					const id = voirieFeatureToLegendId(props);
+					if (!id || !allowedLegend.has(id)) return false;
+				}
+				if (reseauFilters.length > 0 && !reseauFilters.includes(props.reseau)) return false;
+				if (typeFilters.length > 0 && !typeFilters.includes(props.typeamenagement)) return false;
+				if (localisationFilters.length > 0 && !localisationFilters.includes(props.localisation)) {
+					return false;
+				}
+				return true;
 			}),
 		};
 	});
 
 	function toggleCyclewayType(id: string) {
 		params.cyclewayTypes = toggleLegendId(params.cyclewayTypes ?? [], id);
+	}
+
+	function toggleCyclewayReseau(value: string) {
+		const current = [...(params.cyclewayReseau ?? [])];
+		const i = current.indexOf(value);
+		if (i >= 0) current.splice(i, 1);
+		else current.push(value);
+		params.cyclewayReseau = current;
+	}
+
+	function toggleCyclewayTypeFilter(value: string) {
+		const current = [...(params.cyclewayType ?? [])];
+		const i = current.indexOf(value);
+		if (i >= 0) current.splice(i, 1);
+		else current.push(value);
+		params.cyclewayType = current;
+	}
+
+	function toggleCyclewayLocalisation(value: string) {
+		const current = [...(params.cyclewayLocalisation ?? [])];
+		const i = current.indexOf(value);
+		if (i >= 0) current.splice(i, 1);
+		else current.push(value);
+		params.cyclewayLocalisation = current;
+	}
+
+	function isCyclewayReseauSelected(value: string): boolean {
+		return (params.cyclewayReseau ?? []).includes(value);
+	}
+	function isCyclewayTypeSelected(value: string): boolean {
+		return (params.cyclewayType ?? []).includes(value);
+	}
+	function isCyclewayLocalisationSelected(value: string): boolean {
+		return (params.cyclewayLocalisation ?? []).includes(value);
 	}
 
 	let hoveredLegendId: LegendId | null = $state(null);
@@ -367,15 +486,9 @@
 	const allConfigs = getAllLayerConfigs();
 
 	function isConfigLayerVisible(configId: string): boolean {
-		if (configId === 'cycleways') return isLayerActive('cycleways');
-		if (configId === 'osm-cycleways') return isLayerActive('osm-cycleways');
-		if (configId === 'speed-limits') return isLayerActive('speed-limits');
-		if (configId.startsWith('vl-') || configId === 'project-vl') return isLayerActive('vl');
-		if (configId === 'velov') return isLayerActive('velov');
-		if (configId.startsWith('parking-')) return isLayerActive('parking');
-		if (configId === 'pumps') return isLayerActive('pumps');
-		if (configId === 'water-fountains') return isLayerActive('fountains');
-		return false;
+		if (configId === 'speed-limits') return isCategoryActive('Limitations de vitesse');
+		if (configId === 'project-vl') return isCategoryActive('Voies Lyonnaises');
+		return isFineActive(configId);
 	}
 
 	let cursor: string | undefined = $state();
@@ -523,178 +636,293 @@
 
 <svelte:window bind:innerWidth />
 
-<div
-	bind:this={mapWrapper}
-	class="relative {expanded
-		? 'h-[90vh] min-h-[600px]'
-		: 'h-[60vh] min-h-80'} overflow-hidden rounded-lg shadow transition-[height] duration-300"
->
-	{#if pendingLayers.length > 0}
+<div class="lg:flex lg:items-stretch lg:gap-4 lg:px-4 xl:px-6">
+	<div class="flex flex-col gap-3 lg:min-w-0 lg:flex-1">
 		<div
-			class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/40 backdrop-blur-[1px]"
-			role="status"
-			aria-live="polite"
+			bind:this={mapWrapper}
+			class="relative {expanded
+				? 'h-[90vh] min-h-[600px]'
+				: 'h-[68vh] min-h-[22rem]'} overflow-hidden rounded-lg shadow transition-[height] duration-300"
 		>
-			<div
-				class="pointer-events-auto flex items-center gap-3 rounded-full bg-white px-4 py-2 shadow-md"
-			>
-				<span
-					class="block h-4 w-4 animate-spin rounded-full border-2 border-brand-navy border-t-transparent"
-					aria-hidden="true"
-				></span>
-				<span class="text-sm font-medium text-brand-navy">Chargement…</span>
-			</div>
-		</div>
-	{/if}
-
-	{#if selectedFeatures.length > 0 && innerWidth >= 768}
-		<div class="absolute top-3 left-3 z-20 max-w-sm">
-			<FeatureInfo
-				features={selectedFeatures}
-				coordinates={selectedLngLat}
-				onOpenPanoramax={() => (showPanoramax = true)}
-				onPhotoHover={(loc: { lng: number; lat: number } | null) => (hoveredPhotoLocation = loc)}
-				onClose={() => {
-					selectedFeatures = [];
-					selectedLngLat = null;
-					hoveredPhotoLocation = null;
-				}}
-			/>
-		</div>
-	{/if}
-
-	<MapLibre
-		bind:map
-		class="h-full w-full"
-		style={mapStyleState.getMapStyleUrl()}
-		{bounds}
-		fitBoundsOptions={{ padding: 24 }}
-		attributionControl={false}
-		maxZoom={18}
-		{cursor}
-		onclick={handleMapClick}
-		oncontextmenu={handleMapContextMenu}
-		onmousemove={handleMapMouseMove}
-		onmouseleave={handleMapMouseLeave}
-		onmovestart={handleMapMoveStart}
-		onzoomstart={handleMapMoveStart}
-	>
-		<AttributionControl compact={true} position="top-left" />
-		<NavigationControl position="top-right" showCompass={false} />
-		<FullScreenControl position="top-right" />
-		<MapStyleToggle
-			currentStyle={mapStyleState.mapStyle}
-			onSelect={mapStyleState.setMapStyle}
-			position="top-right"
-		/>
-
-		<GeoJSONSource id="commune-outside-mask" data={outsideMask}>
-			<FillLayer
-				id="commune-outside-mask-fill"
-				paint={{ 'fill-color': '#ffffff', 'fill-opacity': 0.5 }}
-			/>
-		</GeoJSONSource>
-
-		<GeoJSONSource id="commune-boundary" data={boundary}>
-			<FillLayer id="commune-fill" paint={{ 'fill-color': '#1e3a5f', 'fill-opacity': 0.02 }} />
-			<LineLayer
-				id="commune-outline"
-				paint={{
-					'line-color': '#3a3a3a',
-					'line-width': 2,
-					'line-opacity': 0.9,
-					'line-dasharray': [4, 2, 1, 2],
-				}}
-			/>
-		</GeoJSONSource>
-
-		{#if selectedLngLat}
-			<Marker lnglat={selectedLngLat} />
-		{/if}
-
-		{#if hoveredPhotoLocation}
-			<Marker lnglat={hoveredPhotoLocation} />
-		{/if}
-
-		{#if contextMenuPhotoLocation}
-			<GeocoderMarker pulse={false} lnglat={contextMenuPhotoLocation} />
-		{/if}
-
-		{#if hoverPopupFeatures && hoverPopupFeatures.features.length > 0}
-			<Popup lnglat={hoverPopupFeatures.lngLat} closeButton={false} closeOnClick={false}>
-				<div class="flex max-h-64 animate-[fade-in_0.2s_ease-out] flex-col gap-2 overflow-y-auto">
-					{#each hoverPopupFeatures.features as feature, i}
-						{#if i > 0}
-							<hr class="border-gray-200" />
-						{/if}
-						<div class="flex flex-col gap-1">
-							{#if feature.config?.formatPopup}
-								{@html feature.config.formatPopup(feature.properties, {
-									isLayerVisible: isConfigLayerVisible,
-								})}
-							{:else}
-								<span class="text-sm font-bold">
-									{feature.properties.name ||
-										feature.properties.nom ||
-										feature.properties.label ||
-										'Inconnu'}
-								</span>
-							{/if}
-						</div>
-					{/each}
+			{#if pendingLayers.length > 0}
+				<div
+					class="pointer-events-none absolute inset-0 z-10 flex items-center justify-center bg-white/40 backdrop-blur-[1px]"
+					role="status"
+					aria-live="polite"
+				>
+					<div
+						class="pointer-events-auto flex items-center gap-3 rounded-full bg-white px-4 py-2 shadow-md"
+					>
+						<span
+							class="block h-4 w-4 animate-spin rounded-full border-2 border-brand-navy border-t-transparent"
+							aria-hidden="true"
+						></span>
+						<span class="text-sm font-medium text-brand-navy">Chargement…</span>
+					</div>
 				</div>
-			</Popup>
-		{/if}
+			{/if}
 
-		<CyclewayLayer
-			isLayerVisible={(id) => id === 'cycleways' && isLayerActive('cycleways')}
-			voirieData={voirieInside}
-		/>
-
-		<OsmCyclewayLayer
-			isLayerVisible={(id) => id === 'osm-cycleways' && isLayerActive('osm-cycleways')}
-			{boundary}
-			activeLegendIds={params.cyclewayTypes}
-			{hoveredLegendId}
-		/>
-
-		<SpeedLimitsLayer
-			isLayerVisible={(id) => id === 'speed-limits' && isLayerActive('speed-limits')}
-			{boundary}
-			selectedBuckets={selectedSpeedBuckets}
-		/>
-
-		<CommuneMapLayers layers={effectiveLayers} {boundary} {map} yearRange={effectiveYearRange} />
-
-		<CyclewayLegendControl
-			activeIds={params.cyclewayTypes}
-			onToggle={toggleCyclewayType}
-			onHover={(id) => (hoveredLegendId = id)}
-			{lengthByLegendId}
-			position="bottom-left"
-		/>
-
-		{#if isLayerActive('speed-limits')}
-			<SpeedLimitsControl
-				selected={selectedSpeedBuckets}
-				stats={speedLimitsStats}
-				onToggle={toggleSpeedBucket}
-				onReset={resetSpeedBuckets}
-				position="bottom-right"
+			<CommuneLayerPills
+				{visibleOptional}
+				filterByYear={params.filterByYear}
+				{isFineActive}
+				{isCategoryActive}
+				{toggleLayer}
+				{toggleCategory}
+				onOpenSidebar={sidebarHidden ? toggleSidebar : undefined}
 			/>
-		{/if}
-	</MapLibre>
 
-	<MapContextMenu
-		visible={contextMenuVisible}
-		x={contextMenuX}
-		y={contextMenuY}
-		lngLat={contextMenuLngLat}
-		{defaultNavProvider}
-		onClose={closeContextMenu}
-		onPhotoFound={(loc) => (contextMenuPhotoLocation = loc)}
-	/>
+			{#if selectedFeatures.length > 0 && innerWidth >= 768}
+				<div class="absolute top-3 left-3 z-20 max-w-sm">
+					<FeatureInfo
+						features={selectedFeatures}
+						coordinates={selectedLngLat}
+						onOpenPanoramax={() => (showPanoramax = true)}
+						onPhotoHover={(loc: { lng: number; lat: number } | null) =>
+							(hoveredPhotoLocation = loc)}
+						onClose={() => {
+							selectedFeatures = [];
+							selectedLngLat = null;
+							hoveredPhotoLocation = null;
+						}}
+					/>
+				</div>
+			{/if}
+
+			<MapLibre
+				bind:map
+				class="h-full w-full"
+				style={mapStyleState.getMapStyleUrl()}
+				{bounds}
+				fitBoundsOptions={{ padding: 24 }}
+				attributionControl={false}
+				maxZoom={18}
+				{cursor}
+				onclick={handleMapClick}
+				oncontextmenu={handleMapContextMenu}
+				onmousemove={handleMapMouseMove}
+				onmouseleave={handleMapMouseLeave}
+				onmovestart={handleMapMoveStart}
+				onzoomstart={handleMapMoveStart}
+			>
+				<AttributionControl compact={true} position="top-left" />
+				<NavigationControl position="top-right" showCompass={false} />
+				<FullScreenControl position="top-right" />
+				<MapStyleToggle
+					currentStyle={mapStyleState.mapStyle}
+					onSelect={mapStyleState.setMapStyle}
+					position="top-right"
+				/>
+				{#if isDesktop}
+					<CustomControl position="top-right">
+						<button
+							type="button"
+							onclick={toggleSidebar}
+							class="rounded-lg bg-white pl-1! shadow-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+							aria-label={sidebarHidden ? 'Afficher les calques' : 'Masquer les calques'}
+							title={sidebarHidden ? 'Afficher les calques' : 'Masquer les calques'}
+						>
+							{#if sidebarHidden}
+								<PanelRightOpen size={20} />
+							{:else}
+								<PanelRightClose size={20} />
+							{/if}
+						</button>
+					</CustomControl>
+				{/if}
+
+				<GeoJSONSource id="commune-outside-mask" data={outsideMask}>
+					<FillLayer
+						id="commune-outside-mask-fill"
+						paint={{ 'fill-color': '#ffffff', 'fill-opacity': 0.5 }}
+					/>
+				</GeoJSONSource>
+
+				<GeoJSONSource id="commune-boundary" data={boundary}>
+					<FillLayer id="commune-fill" paint={{ 'fill-color': '#1e3a5f', 'fill-opacity': 0.02 }} />
+					<LineLayer
+						id="commune-outline"
+						paint={{
+							'line-color': '#3a3a3a',
+							'line-width': 2,
+							'line-opacity': 0.9,
+							'line-dasharray': [4, 2, 1, 2],
+						}}
+					/>
+				</GeoJSONSource>
+
+				{#if selectedLngLat}
+					<Marker lnglat={selectedLngLat} />
+				{/if}
+
+				{#if hoveredPhotoLocation}
+					<Marker lnglat={hoveredPhotoLocation} />
+				{/if}
+
+				{#if contextMenuPhotoLocation}
+					<GeocoderMarker pulse={false} lnglat={contextMenuPhotoLocation} />
+				{/if}
+
+				{#if hoverPopupFeatures && hoverPopupFeatures.features.length > 0}
+					<Popup lnglat={hoverPopupFeatures.lngLat} closeButton={false} closeOnClick={false}>
+						<div
+							class="flex max-h-64 animate-[fade-in_0.2s_ease-out] flex-col gap-2 overflow-y-auto"
+						>
+							{#each hoverPopupFeatures.features as feature, i}
+								{#if i > 0}
+									<hr class="border-gray-200" />
+								{/if}
+								<div class="flex flex-col gap-1">
+									{#if feature.config?.formatPopup}
+										{@html feature.config.formatPopup(feature.properties, {
+											isLayerVisible: isConfigLayerVisible,
+										})}
+									{:else}
+										<span class="text-sm font-bold">
+											{feature.properties.name ||
+												feature.properties.nom ||
+												feature.properties.label ||
+												'Inconnu'}
+										</span>
+									{/if}
+								</div>
+							{/each}
+						</div>
+					</Popup>
+				{/if}
+
+				<CyclewayLayer
+					isLayerVisible={(id) => id === 'cycleways' && isLayerActive('cycleways')}
+					voirieData={voirieInside}
+				/>
+
+				<OsmCyclewayLayer
+					isLayerVisible={(id) => id === 'osm-cycleways' && isLayerActive('osm-cycleways')}
+					{boundary}
+					activeLegendIds={params.cyclewayTypes}
+					{hoveredLegendId}
+				/>
+
+				<SpeedLimitsLayer
+					isLayerVisible={(id) => id === 'speed-limits' && isLayerActive('speed-limits')}
+					{boundary}
+					selectedBuckets={selectedSpeedBuckets}
+				/>
+
+				<CommuneMapLayers
+					visible={effectiveVisibleSet}
+					{boundary}
+					{map}
+					yearRange={effectiveYearRange}
+					targetNetworkHorizons={params.targetNetworkHorizons}
+				/>
+
+				<CyclewayLegendControl
+					activeIds={params.cyclewayTypes}
+					onToggle={toggleCyclewayType}
+					onHover={(id) => (hoveredLegendId = id)}
+					{lengthByLegendId}
+					position="bottom-left"
+				/>
+
+				{#if isLayerActive('speed-limits')}
+					<SpeedLimitsControl
+						selected={selectedSpeedBuckets}
+						stats={speedLimitsStats}
+						onToggle={toggleSpeedBucket}
+						onReset={resetSpeedBuckets}
+						position="bottom-right"
+					/>
+				{/if}
+			</MapLibre>
+
+			<MapContextMenu
+				visible={contextMenuVisible}
+				x={contextMenuX}
+				y={contextMenuY}
+				lngLat={contextMenuLngLat}
+				{defaultNavProvider}
+				onClose={closeContextMenu}
+				onPhotoFound={(loc) => (contextMenuPhotoLocation = loc)}
+			/>
+		</div>
+
+		<div class="flex flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-0">
+			<label class="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-700">
+				<input
+					type="checkbox"
+					class="h-4 w-4 rounded border-gray-300 text-brand-navy focus:ring-brand-navy"
+					checked={params.filterByYear}
+					onchange={(e) => setFilterByYear((e.currentTarget as HTMLInputElement).checked)}
+				/>
+				<span>Filtrer par date de réalisation</span>
+			</label>
+			{#if params.filterByYear}
+				<div class="min-w-[12rem] flex-1">
+					{@render yearFilterSlot()}
+				</div>
+			{/if}
+			<button
+				type="button"
+				onclick={toggleMapExpand}
+				title={expanded ? 'Réduire la carte' : 'Agrandir la carte'}
+				aria-label={expanded ? 'Réduire la carte' : 'Agrandir la carte'}
+				class="ml-auto flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+			>
+				{#if expanded}
+					<Minimize2 size={13} />
+					<span>Réduire la carte</span>
+				{:else}
+					<Maximize2 size={13} />
+					<span>Agrandir la carte</span>
+				{/if}
+			</button>
+		</div>
+	</div>
+
+	{#if isDesktop && !sidebarHidden}
+		<aside
+			class="lg:mt-0 lg:w-80 lg:flex-shrink-0 lg:self-start lg:overflow-y-auto {expanded
+				? 'lg:max-h-[90vh]'
+				: 'lg:max-h-[68vh]'}"
+		>
+			<CommuneLayerControls
+				{visibleOptional}
+				{toggleOptionalCategory}
+				{isFineActive}
+				{isCategoryActive}
+				{toggleLayer}
+				{toggleCategory}
+				{toggleCyclewayReseau}
+				toggleCyclewayType={toggleCyclewayTypeFilter}
+				{toggleCyclewayLocalisation}
+				{isCyclewayReseauSelected}
+				{isCyclewayTypeSelected}
+				{isCyclewayLocalisationSelected}
+			/>
+		</aside>
+	{/if}
 </div>
+
+{#if !isDesktop}
+	<MobileDrawer
+		open={!sidebarHidden}
+		snapPoints={[0.5, 0.9]}
+		initialSnapPoint={1}
+		onClose={() => (params.sidebar = 'closed')}
+	>
+		<div class="px-2 pb-4">
+			<CommuneLayerControls
+				{visibleOptional}
+				{toggleOptionalCategory}
+				{isFineActive}
+				{isCategoryActive}
+				{toggleLayer}
+				{toggleCategory}
+			/>
+		</div>
+	</MobileDrawer>
+{/if}
 
 {#if innerWidth < 768 && selectedFeatures.length > 0}
 	<MobileDrawer
@@ -734,17 +962,6 @@
 		}}
 	/>
 {/snippet}
-
-<div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-	<CommuneLayerToggles
-		bind:layers={params.layers}
-		bind:filterByYear={params.filterByYear}
-		groups={layerToggleGroups}
-		{yearFilterSlot}
-		mapExpanded={expanded}
-		onToggleMapExpand={toggleMapExpand}
-	/>
-</div>
 
 {#if showPanoramax && selectedLngLat}
 	<PanoramaxViewer

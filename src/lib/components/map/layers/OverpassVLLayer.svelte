@@ -7,15 +7,18 @@
 		createCompositeLineShieldIcon,
 		calculateLineDistance,
 	} from '$lib/utils/mapUtils';
-	import type { GeoJSON } from 'geojson';
+	import type { GeoJSON, FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 
 	let {
 		isLayerVisible,
 		map,
+		boundary,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		map: maplibregl.Map | undefined;
+		boundary?: FeatureCollection;
 	} = $props();
 
 	const anyOsmVLVisible = $derived(
@@ -195,10 +198,10 @@
 		{@const lineIndex = lineNumber - 1}
 		{@const vlVisible = isLayerVisible(`vl-${lineNumber}`)}
 		{#if overpassQuery.data.grouped[lineNumber]}
-			<GeoJSONSource
-				id={`osm-vl-${lineNumber}-source`}
-				data={overpassQuery.data.grouped[lineNumber]}
-			>
+			{@const lineData = boundary
+				? filterFeaturesInsideBoundary(overpassQuery.data.grouped[lineNumber], boundary)
+				: overpassQuery.data.grouped[lineNumber]}
+			<GeoJSONSource id={`osm-vl-${lineNumber}-source`} data={lineData}>
 				<LineLayer
 					id={`osm-vl-${lineNumber}-line-contour`}
 					filter={['==', ['get', 'showShield'], 1]}

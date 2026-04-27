@@ -26,7 +26,13 @@
 	}
 </script>
 
-<div class:rounded-lg={!plain} class:bg-white={!plain} class:p-4={!plain} class:shadow={!plain}>
+<div
+	class:rounded-lg={!plain}
+	class:bg-white={!plain}
+	class:p-4={!plain}
+	class:shadow={!plain}
+	class="max-w-[400px]"
+>
 	<div class="mb-3 flex items-baseline justify-between gap-3">
 		{#if !plain}
 			<h2 class="text-sm font-semibold text-brand-navy uppercase">Année de réalisation</h2>

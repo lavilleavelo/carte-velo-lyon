@@ -2,8 +2,17 @@
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
 	import type { FeatureCollection } from 'geojson';
 	import targetNetworkData from '$lib/data/r_seau_cible_m_tropole_lyon_2040.json';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 
-	let { isLayerVisible, targetNetworkHorizons } = $props();
+	let {
+		isLayerVisible,
+		targetNetworkHorizons,
+		boundary,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		targetNetworkHorizons: string[];
+		boundary?: FeatureCollection;
+	} = $props();
 
 	const data = {
 		...targetNetworkData,
@@ -26,9 +35,11 @@
 			};
 		}),
 	} as FeatureCollection;
+
+	const visibleData = $derived(boundary ? filterFeaturesInsideBoundary(data, boundary) : data);
 </script>
 
-<GeoJSONSource {data} id="target-network-source">
+<GeoJSONSource data={visibleData} id="target-network-source">
 	<LineLayer
 		id="target-network-casing"
 		paint={{

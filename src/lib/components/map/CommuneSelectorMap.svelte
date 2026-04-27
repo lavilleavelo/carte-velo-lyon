@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
+	import { buildCommuneHref } from '$lib/utils/communeNavigation';
 	import {
 		MapLibre,
 		AttributionControl,
@@ -70,7 +71,7 @@
 		const insee = features[0].properties?.insee as string | undefined;
 		if (!insee) return;
 		const target = slugByInsee.get(insee);
-		if (target) goto(`/communes/${target.slug}`);
+		if (target) goto(buildCommuneHref(target.slug));
 	}
 </script>
 

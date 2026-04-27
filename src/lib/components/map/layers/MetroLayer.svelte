@@ -2,8 +2,22 @@
 	import { GeoJSONSource, LineLayer, SymbolLayer, CircleLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { processTransportData, loadTransportShieldIcons } from '$lib/utils/mapUtils';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import type { FeatureCollection } from 'geojson';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave, map } = $props();
+	let {
+		isLayerVisible,
+		handleMouseEnter,
+		handleMouseLeave,
+		map,
+		boundary,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		handleMouseEnter?: () => void;
+		handleMouseLeave?: () => void;
+		map?: import('maplibre-gl').Map;
+		boundary?: FeatureCollection;
+	} = $props();
 
 	const metroQuery = createQuery(() => ({
 		queryKey: ['metro'],
@@ -25,13 +39,15 @@
 			loadTransportShieldIcons(map, metroQuery.data.features, 'metro');
 		}
 	});
+
+	const visibleData = $derived.by<FeatureCollection>(() => {
+		const raw = metroQuery.data;
+		if (!raw) return { type: 'FeatureCollection', features: [] };
+		return boundary ? filterFeaturesInsideBoundary(raw, boundary) : raw;
+	});
 </script>
 
-<GeoJSONSource
-	maxzoom={13}
-	id="metro-data"
-	data={metroQuery.data || { type: 'FeatureCollection', features: [] }}
->
+<GeoJSONSource maxzoom={13} id="metro-data" data={visibleData}>
 	<LineLayer
 		id="metro-layer-contour"
 		layout={{

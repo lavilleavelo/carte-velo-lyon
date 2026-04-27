@@ -28,6 +28,7 @@ export interface CommuneMetadata {
 	insee: string;
 	name: string;
 	codePostal: string | null;
+	population2023?: number | null;
 	population2022: number | null;
 	population2021: number | null;
 	wikipediaUrl: string | null;

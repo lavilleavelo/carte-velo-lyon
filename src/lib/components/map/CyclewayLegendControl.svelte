@@ -90,23 +90,20 @@
 		<div
 			class="cycleway-legend-control rounded-lg bg-white/85 shadow-md ring-1 ring-black/5 backdrop-blur-sm"
 		>
-			<button
-				type="button"
-				onclick={() => (open = !open)}
-				class="flex items-center gap-2 rounded-lg text-left"
-				aria-expanded={open}
-			>
+			<div class="flex items-center gap-2 rounded-lg p-2 text-left">
 				<span class="text-xs font-semibold tracking-wide text-brand-navy uppercase">Légende</span>
 				{#if totalKm}
 					<span class="ml-auto text-xs font-semibold text-gray-700 tabular-nums">{totalKm}</span>
 				{/if}
-				<ChevronDown
-					size={16}
-					class="{totalKm ? '' : 'ml-auto'} text-gray-500 transition-transform duration-200 {open
-						? 'rotate-180'
-						: ''}"
-				/>
-			</button>
+				<button type="button" onclick={() => (open = !open)} aria-expanded={open}>
+					<ChevronDown
+						size={16}
+						class="{totalKm ? '' : 'ml-auto'} text-gray-500 transition-transform duration-200 {open
+							? 'rotate-180'
+							: ''}"
+					/>
+				</button>
+			</div>
 
 			{#if open}
 				<ul

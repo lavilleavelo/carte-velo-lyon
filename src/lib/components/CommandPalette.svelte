@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { browser } from '$app/environment';
 	import { goto } from '$app/navigation';
+	import { buildCommuneHref } from '$lib/utils/communeNavigation';
 	import SearchIcon from '@lucide/svelte/icons/search';
 	import MapPinIcon from '@lucide/svelte/icons/map-pin';
 	import MapIcon from '@lucide/svelte/icons/map';
@@ -87,7 +88,7 @@
 			{#each communes as commune (commune.insee)}
 				<Command.Item
 					value={`${commune.name}|${commune.slug}|${commune.insee}`}
-					onSelect={() => go(`/communes/${commune.slug}`)}
+					onSelect={() => go(buildCommuneHref(commune.slug))}
 				>
 					<MapPinIcon class="mr-2 h-4 w-4" />
 					<span>{commune.name}</span>

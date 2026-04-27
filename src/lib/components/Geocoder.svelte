@@ -2,12 +2,14 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { Debounced } from 'runed';
 	import { goto } from '$app/navigation';
+	import { buildCommuneHref } from '$lib/utils/communeNavigation';
 	import Check from '@lucide/svelte/icons/check';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
 	import Building2 from '@lucide/svelte/icons/building-2';
 	import { cn } from '$lib/utils';
 	import * as Command from '$lib/components/ui/command';
 	import communesIndex from '$lib/data/communes/_index.json';
+	import communeMetadata from '$lib/data/communeMetadata.json';
 
 	function normalize(s: string): string {
 		return s
@@ -94,10 +96,34 @@
 	const isLoading = $derived(geocoderQuery.isLoading);
 	const isSearching = $derived(isLoading || inputValue !== debouncedQuery.current);
 
+	const populationByInsee = (() => {
+		const m = new Map<string, number>();
+		const records = communeMetadata as Record<
+			string,
+			{
+				population2023?: number | null;
+				population2022?: number | null;
+				population2021?: number | null;
+			}
+		>;
+		for (const [insee, data] of Object.entries(records)) {
+			m.set(insee, data.population2023 ?? data.population2022 ?? data.population2021 ?? 0);
+		}
+		return m;
+	})();
+	const lyonPopulation = (() => {
+		let total = 0;
+		for (let i = 1; i <= 9; i += 1) {
+			total += populationByInsee.get(`6938${i}`) ?? 0;
+		}
+		return total;
+	})();
+	populationByInsee.set('69123', lyonPopulation);
+
 	const allCommunes = [
 		{ slug: 'lyon', name: 'Lyon (ville entière)', insee: '69123' },
 		...communesIndex,
-	];
+	].sort((a, b) => (populationByInsee.get(b.insee) ?? 0) - (populationByInsee.get(a.insee) ?? 0));
 
 	const communeMatches = $derived.by(() => {
 		const q = inputValue.trim();
@@ -196,7 +222,7 @@
 	function handleCommuneSelect(slug: string, name: string) {
 		inputValue = name;
 		open = false;
-		goto(`/communes/${slug}`);
+		goto(buildCommuneHref(slug));
 	}
 
 	function handleClickOutside(event: MouseEvent) {

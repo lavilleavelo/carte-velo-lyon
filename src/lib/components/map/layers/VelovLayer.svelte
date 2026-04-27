@@ -59,20 +59,21 @@
 		meta: { loadingLabel: 'Stations Vélo’v' },
 	}));
 
-	const velovSourceData = $derived.by(() => {
-		if (!velovQuery.data) {
-			return undefined;
-		}
+	const EMPTY_FC: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
 
-		if (!boundary) {
-			return velovQuery.data;
-		}
+	const velovSourceData = $derived.by<FeatureCollection<Point> | string>(() => {
+		if (boundary) {
+			if (!velovQuery.data) {
+				return EMPTY_FC;
+			}
 
-		return filterFeaturesInsideBoundary(velovQuery.data, boundary);
+			return filterFeaturesInsideBoundary(velovQuery.data, boundary) as FeatureCollection<Point>;
+		}
+		return velovQuery.data ?? velovDataUrl;
 	});
 </script>
 
-<GeoJSONSource maxzoom={14} id="velov-stations-source" data={velovSourceData ?? velovDataUrl}>
+<GeoJSONSource maxzoom={14} id="velov-stations-source" data={velovSourceData}>
 	<ImageLoader images={{ velov: '/velov-station.png' }}>
 		<SymbolLayer
 			id="velov-stations-layer"

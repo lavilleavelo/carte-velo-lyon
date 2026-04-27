@@ -1,9 +1,22 @@
 <script lang="ts">
 	import { GeoJSONSource, SymbolLayer, CircleLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
-	import type { GeoJSON } from 'geojson';
+	import type { GeoJSON, FeatureCollection } from 'geojson';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 
-	let { isLayerVisible, handleMouseEnter, handleMouseLeave, map } = $props();
+	let {
+		isLayerVisible,
+		handleMouseEnter,
+		handleMouseLeave,
+		map,
+		boundary,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		handleMouseEnter?: () => void;
+		handleMouseLeave?: () => void;
+		map?: import('maplibre-gl').Map;
+		boundary?: FeatureCollection;
+	} = $props();
 
 	type SchoolType = 'maternelle' | 'elementaire' | 'college' | 'lycee';
 
@@ -81,6 +94,11 @@
 
 	const features = $derived(schoolsQuery.data || []);
 
+	const visibleData = $derived.by<FeatureCollection>(() => {
+		const fc: FeatureCollection = { type: 'FeatureCollection', features: features as any };
+		return boundary ? filterFeaturesInsideBoundary(fc, boundary) : fc;
+	});
+
 	const schoolTypes: { type: SchoolType; layerId: string; color: string; label: string }[] = [
 		{ type: 'maternelle', layerId: 'schools-maternelle', color: '#f59e0b', label: 'Mat' },
 		{ type: 'elementaire', layerId: 'schools-elementaire', color: '#3b82f6', label: 'Elem' },
@@ -129,13 +147,7 @@
 	});
 </script>
 
-<GeoJSONSource
-	id="schools-source"
-	data={{
-		type: 'FeatureCollection',
-		features: features,
-	}}
->
+<GeoJSONSource id="schools-source" data={visibleData}>
 	{#each schoolTypes as st}
 		<SymbolLayer
 			id={`schools-${st.type}-layer`}

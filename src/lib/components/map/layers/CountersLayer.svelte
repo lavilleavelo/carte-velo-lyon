@@ -1,15 +1,19 @@
 <script lang="ts">
 	import { GeoJSONSource, CircleLayer, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
+	import type { FeatureCollection } from 'geojson';
+	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 
 	let {
 		isLayerVisible,
 		handleMouseEnter,
 		handleMouseLeave,
+		boundary,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		handleMouseEnter: () => void;
 		handleMouseLeave: () => void;
+		boundary?: FeatureCollection;
 	} = $props();
 
 	interface CounterData {
@@ -101,10 +105,21 @@
 		17,
 		['interpolate', ['linear'], ['get', 'lastCount'], 0, 7, 200000, 14, 500000, 24],
 	];
+
+	const visibleVelo = $derived.by<FeatureCollection>(() => {
+		const raw = countersQuery.data?.velo;
+		if (!raw) return { type: 'FeatureCollection', features: [] };
+		return boundary ? filterFeaturesInsideBoundary(raw, boundary) : raw;
+	});
+	const visibleVoiture = $derived.by<FeatureCollection>(() => {
+		const raw = countersQuery.data?.voiture;
+		if (!raw) return { type: 'FeatureCollection', features: [] };
+		return boundary ? filterFeaturesInsideBoundary(raw, boundary) : raw;
+	});
 </script>
 
 {#if countersQuery.data}
-	<GeoJSONSource id="counters-velo-source" data={countersQuery.data.velo}>
+	<GeoJSONSource id="counters-velo-source" data={visibleVelo}>
 		<CircleLayer
 			id="counters-velo-layer"
 			minzoom={11}
@@ -155,7 +170,7 @@
 		/>
 	</GeoJSONSource>
 
-	<GeoJSONSource id="counters-voiture-source" data={countersQuery.data.voiture}>
+	<GeoJSONSource id="counters-voiture-source" data={visibleVoiture}>
 		<CircleLayer
 			id="counters-voiture-layer"
 			minzoom={11}
