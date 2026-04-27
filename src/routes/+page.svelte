@@ -1031,6 +1031,12 @@
 
 			<TramLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
+			<OverpassOnewayArrowsLayer />
+
+			<SpeedLimitsLayer {isLayerVisible} enabledBuckets={enabledSpeedBuckets} />
+
+			<OsmCyclewayLayer {isLayerVisible} />
+
 			<VoiesLyonnaisesLayer
 				{isLayerVisible}
 				{map}
@@ -1038,15 +1044,9 @@
 				{projectVLSubLayers}
 			/>
 
-			<CountersLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
-
 			<OverpassVLLayer {isLayerVisible} {map} />
 
-			<OverpassOnewayArrowsLayer />
-
-			<OsmCyclewayLayer {isLayerVisible} />
-
-			<SpeedLimitsLayer {isLayerVisible} enabledBuckets={enabledSpeedBuckets} />
+			<CountersLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<PumpLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 

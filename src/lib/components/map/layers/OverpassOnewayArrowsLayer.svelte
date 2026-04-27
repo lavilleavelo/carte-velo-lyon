@@ -2,7 +2,7 @@
 	import { GeoJSONSource, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { FeatureCollection } from 'geojson';
-	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import { EMPTY_FEATURE_COLLECTION, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 
 	let {
 		boundary,
@@ -67,13 +67,12 @@
 
 	const filteredData = $derived.by(() => {
 		const data = onewaysQuery.data;
-		if (!data) return undefined;
+		if (!data) return EMPTY_FEATURE_COLLECTION;
 		return boundary ? filterFeaturesInsideBoundary(data, boundary) : data;
 	});
 </script>
 
-{#if filteredData}
-	<GeoJSONSource id="overpass-oneways-source" data={filteredData}>
+<GeoJSONSource id="overpass-oneways-source" data={filteredData}>
 		<SymbolLayer
 			id="overpass-oneways-major"
 			minzoom={11}
@@ -119,5 +118,4 @@
 				'text-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0.7, 13.5, 0.95],
 			}}
 		/>
-	</GeoJSONSource>
-{/if}
+</GeoJSONSource>

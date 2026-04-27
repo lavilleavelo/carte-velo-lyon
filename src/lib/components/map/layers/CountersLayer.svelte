@@ -118,106 +118,104 @@
 	});
 </script>
 
-{#if countersQuery.data}
-	<GeoJSONSource id="counters-velo-source" data={visibleVelo}>
-		<CircleLayer
-			id="counters-velo-layer"
-			minzoom={11}
-			layout={{
-				visibility: isLayerVisible('counters-velo') ? 'visible' : 'none',
-			}}
-			paint={{
-				'circle-color': '#1e3a5f',
-				'circle-radius': veloRadiusExpr,
-				'circle-opacity': 0.85,
-				'circle-stroke-color': '#ffffff',
-				'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 2],
-			}}
-		/>
+<GeoJSONSource id="counters-velo-source" data={visibleVelo}>
+	<CircleLayer
+		id="counters-velo-layer"
+		minzoom={11}
+		layout={{
+			visibility: isLayerVisible('counters-velo') ? 'visible' : 'none',
+		}}
+		paint={{
+			'circle-color': '#1e3a5f',
+			'circle-radius': veloRadiusExpr,
+			'circle-opacity': 0.85,
+			'circle-stroke-color': '#ffffff',
+			'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 2],
+		}}
+	/>
 
-		<CircleLayer
-			id="counters-velo-hitarea"
-			minzoom={11}
-			layout={{
-				visibility: isLayerVisible('counters-velo') ? 'visible' : 'none',
-			}}
-			paint={{
-				'circle-color': 'transparent',
-				'circle-opacity': 0,
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 14, 14, 20, 17, 28],
-			}}
-			onmouseenter={handleMouseEnter}
-			onmouseleave={handleMouseLeave}
-		/>
+	<CircleLayer
+		id="counters-velo-hitarea"
+		minzoom={11}
+		layout={{
+			visibility: isLayerVisible('counters-velo') ? 'visible' : 'none',
+		}}
+		paint={{
+			'circle-color': 'transparent',
+			'circle-opacity': 0,
+			'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 14, 14, 20, 17, 28],
+		}}
+		onmouseenter={handleMouseEnter}
+		onmouseleave={handleMouseLeave}
+	/>
 
-		<SymbolLayer
-			id="counters-velo-label"
-			minzoom={13}
-			layout={{
-				visibility: isLayerVisible('counters-velo') ? 'visible' : 'none',
-				'text-field': ['get', 'name'],
-				'text-size': ['interpolate', ['linear'], ['zoom'], 13, 9, 16, 12],
-				'text-offset': [0, 1.8],
-				'text-anchor': 'top',
-				'text-font': ['Open Sans Bold'],
-				'text-optional': true,
-			}}
-			paint={{
-				'text-color': '#1e3a5f',
-				'text-halo-color': '#ffffff',
-				'text-halo-width': 1.5,
-			}}
-		/>
-	</GeoJSONSource>
+	<SymbolLayer
+		id="counters-velo-label"
+		minzoom={13}
+		layout={{
+			visibility: isLayerVisible('counters-velo') ? 'visible' : 'none',
+			'text-field': ['get', 'name'],
+			'text-size': ['interpolate', ['linear'], ['zoom'], 13, 9, 16, 12],
+			'text-offset': [0, 1.8],
+			'text-anchor': 'top',
+			'text-font': ['Open Sans Bold'],
+			'text-optional': true,
+		}}
+		paint={{
+			'text-color': '#1e3a5f',
+			'text-halo-color': '#ffffff',
+			'text-halo-width': 1.5,
+		}}
+	/>
+</GeoJSONSource>
 
-	<GeoJSONSource id="counters-voiture-source" data={visibleVoiture}>
-		<CircleLayer
-			id="counters-voiture-layer"
-			minzoom={11}
-			layout={{
-				visibility: isLayerVisible('counters-voiture') ? 'visible' : 'none',
-			}}
-			paint={{
-				'circle-color': '#dc2626',
-				'circle-radius': voitureRadiusExpr,
-				'circle-opacity': 0.85,
-				'circle-stroke-color': '#ffffff',
-				'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 2],
-			}}
-		/>
+<GeoJSONSource id="counters-voiture-source" data={visibleVoiture}>
+	<CircleLayer
+		id="counters-voiture-layer"
+		minzoom={11}
+		layout={{
+			visibility: isLayerVisible('counters-voiture') ? 'visible' : 'none',
+		}}
+		paint={{
+			'circle-color': '#dc2626',
+			'circle-radius': voitureRadiusExpr,
+			'circle-opacity': 0.85,
+			'circle-stroke-color': '#ffffff',
+			'circle-stroke-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 2],
+		}}
+	/>
 
-		<CircleLayer
-			id="counters-voiture-hitarea"
-			minzoom={11}
-			layout={{
-				visibility: isLayerVisible('counters-voiture') ? 'visible' : 'none',
-			}}
-			paint={{
-				'circle-color': 'transparent',
-				'circle-opacity': 0,
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 14, 14, 20, 17, 28],
-			}}
-			onmouseenter={handleMouseEnter}
-			onmouseleave={handleMouseLeave}
-		/>
+	<CircleLayer
+		id="counters-voiture-hitarea"
+		minzoom={11}
+		layout={{
+			visibility: isLayerVisible('counters-voiture') ? 'visible' : 'none',
+		}}
+		paint={{
+			'circle-color': 'transparent',
+			'circle-opacity': 0,
+			'circle-radius': ['interpolate', ['linear'], ['zoom'], 11, 14, 14, 20, 17, 28],
+		}}
+		onmouseenter={handleMouseEnter}
+		onmouseleave={handleMouseLeave}
+	/>
 
-		<SymbolLayer
-			id="counters-voiture-label"
-			minzoom={13}
-			layout={{
-				visibility: isLayerVisible('counters-voiture') ? 'visible' : 'none',
-				'text-field': ['get', 'name'],
-				'text-size': ['interpolate', ['linear'], ['zoom'], 13, 9, 16, 12],
-				'text-offset': [0, 1.8],
-				'text-anchor': 'top',
-				'text-font': ['Open Sans Bold'],
-				'text-optional': true,
-			}}
-			paint={{
-				'text-color': '#991b1b',
-				'text-halo-color': '#ffffff',
-				'text-halo-width': 1.5,
-			}}
-		/>
-	</GeoJSONSource>
-{/if}
+	<SymbolLayer
+		id="counters-voiture-label"
+		minzoom={13}
+		layout={{
+			visibility: isLayerVisible('counters-voiture') ? 'visible' : 'none',
+			'text-field': ['get', 'name'],
+			'text-size': ['interpolate', ['linear'], ['zoom'], 13, 9, 16, 12],
+			'text-offset': [0, 1.8],
+			'text-anchor': 'top',
+			'text-font': ['Open Sans Bold'],
+			'text-optional': true,
+		}}
+		paint={{
+			'text-color': '#991b1b',
+			'text-halo-color': '#ffffff',
+			'text-halo-width': 1.5,
+		}}
+	/>
+</GeoJSONSource>

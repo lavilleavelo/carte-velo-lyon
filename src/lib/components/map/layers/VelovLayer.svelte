@@ -73,57 +73,57 @@
 	});
 </script>
 
-<GeoJSONSource maxzoom={14} id="velov-stations-source" data={velovSourceData}>
-	<ImageLoader images={{ velov: '/velov-station.png' }}>
-		<SymbolLayer
-			id="velov-stations-layer"
-			layout={{
-				visibility: isLayerVisible('velov') ? 'visible' : 'none',
-				'icon-image': 'velov',
-				'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.2, 14, 0.7, 18, 1, 22, 1.1],
-				'icon-allow-overlap': true,
-				'icon-ignore-placement': true,
-				'text-allow-overlap': true,
-				'text-ignore-placement': true,
-				'symbol-sort-key': 0,
-				'text-field': [
-					'step',
-					['zoom'],
-					'',
-					15,
-					[
-						'format',
-						[
-							'concat',
-							['to-string', ['get', 'available_bikes']],
-							' / ',
-							['to-string', ['get', 'capacity']],
-						],
-						{ 'font-scale': 1, 'text-color': '#ffffff' },
-					],
-				],
-				'text-offset': [0, 1.2],
-				'text-anchor': 'top',
-				'text-size': ['interpolate', ['linear'], ['zoom'], 15, 12, 18, 14],
-			}}
-			paint={{
-				'text-halo-color': '#d61016',
-				'text-halo-width': 2,
-			}}
-		/>
+<ImageLoader images={{ velov: '/velov-station.png' }} />
 
-		<CircleLayer
-			id="velov-stations-layer-hitarea"
-			layout={{
-				visibility: isLayerVisible('velov') ? 'visible' : 'none',
-			}}
-			paint={{
-				'circle-opacity': 0,
-				'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 10, 14, 20, 18, 28, 22, 32],
-				'circle-color': 'transparent',
-			}}
-			onmouseenter={handleMouseEnter}
-			onmouseleave={handleMouseLeave}
-		/>
-	</ImageLoader>
+<GeoJSONSource maxzoom={14} id="velov-stations-source" data={velovSourceData}>
+	<SymbolLayer
+		id="velov-stations-layer"
+		layout={{
+			visibility: isLayerVisible('velov') ? 'visible' : 'none',
+			'icon-image': 'velov',
+			'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.2, 14, 0.7, 18, 1, 22, 1.1],
+			'icon-allow-overlap': true,
+			'icon-ignore-placement': true,
+			'text-allow-overlap': true,
+			'text-ignore-placement': true,
+			'symbol-sort-key': 0,
+			'text-field': [
+				'step',
+				['zoom'],
+				'',
+				15,
+				[
+					'format',
+					[
+						'concat',
+						['to-string', ['get', 'available_bikes']],
+						' / ',
+						['to-string', ['get', 'capacity']],
+					],
+					{ 'font-scale': 1, 'text-color': '#ffffff' },
+				],
+			],
+			'text-offset': [0, 1.2],
+			'text-anchor': 'top',
+			'text-size': ['interpolate', ['linear'], ['zoom'], 15, 12, 18, 14],
+		}}
+		paint={{
+			'text-halo-color': '#d61016',
+			'text-halo-width': 2,
+		}}
+	/>
+
+	<CircleLayer
+		id="velov-stations-layer-hitarea"
+		layout={{
+			visibility: isLayerVisible('velov') ? 'visible' : 'none',
+		}}
+		paint={{
+			'circle-opacity': 0,
+			'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 10, 14, 20, 18, 28, 22, 32],
+			'circle-color': 'transparent',
+		}}
+		onmouseenter={handleMouseEnter}
+		onmouseleave={handleMouseLeave}
+	/>
 </GeoJSONSource>
