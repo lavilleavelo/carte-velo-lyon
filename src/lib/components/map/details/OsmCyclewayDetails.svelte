@@ -104,7 +104,7 @@
 					<a
 						href={osmUrl}
 						target="_blank"
-						rel="noopener noreferrer"
+						rel="noopener"
 						onclick={(e) => e.stopPropagation()}
 						class="inline-flex items-center gap-1 text-gray-400 hover:text-brand-navy"
 					>

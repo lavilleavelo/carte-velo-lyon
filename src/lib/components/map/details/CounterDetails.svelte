@@ -186,7 +186,7 @@
 				>Données : <a
 					href="https://data.eco-counter.com/ParcPublic/?id=3902#"
 					target="_blank"
-					rel="noopener noreferrer"
+					rel="noopener"
 					class="hover:underline">data.eco-counter.com</a
 				></span
 			>
@@ -194,7 +194,7 @@
 			<a
 				href="https://avatar.cerema.fr"
 				target="_blank"
-				rel="noopener noreferrer"
+				rel="noopener"
 				class="flex items-center gap-1.5 hover:underline"
 			>
 				<img src="https://cyclopolis.lavilleavelo.org/avatar_cerema.png" alt="CEREMA" class="h-4" />

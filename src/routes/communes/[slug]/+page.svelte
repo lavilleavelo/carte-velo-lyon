@@ -97,7 +97,7 @@
 		<a
 			href={veloscoreUrl}
 			target="_blank"
-			rel="noopener noreferrer"
+			rel="noopener"
 			class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
 		>
 			Vélo-score 2026
@@ -108,7 +108,7 @@
 			<a
 				href={metadata.wikipediaUrl}
 				target="_blank"
-				rel="noopener noreferrer"
+				rel="noopener"
 				class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
 			>
 				Wikipédia
@@ -126,7 +126,7 @@
 						<a
 							href={article.url}
 							target="_blank"
-							rel="noopener noreferrer"
+							rel="noopener"
 							class="group flex flex-col gap-0.5 rounded-md border border-gray-100 bg-white p-3 shadow-sm transition-colors hover:border-brand-navy/30 hover:bg-brand-navy/5"
 						>
 							<span class="flex items-start gap-2">

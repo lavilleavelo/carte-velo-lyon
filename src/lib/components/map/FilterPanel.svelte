@@ -189,7 +189,7 @@
 						<a
 							href={infoData.sourceUrl}
 							target="_blank"
-							rel="noopener noreferrer"
+							rel="noopener"
 							class="mt-1 flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
 						>
 							<ExternalLink size={13} />
@@ -205,7 +205,7 @@
 							<a
 								href={link.url}
 								target="_blank"
-								rel="noopener noreferrer"
+								rel="noopener"
 								class="flex items-center gap-1.5 text-sm text-blue-600 hover:underline"
 							>
 								<ExternalLink size={13} class="shrink-0" />
@@ -218,7 +218,7 @@
 					<div class="flex items-center gap-3">
 						{#each infoData.logos as logo}
 							{#if logo.url}
-								<a href={logo.url} target="_blank" rel="noopener noreferrer">
+								<a href={logo.url} target="_blank" rel="noopener">
 									<img src={logo.src} alt={logo.alt} class="h-8" />
 								</a>
 							{:else}

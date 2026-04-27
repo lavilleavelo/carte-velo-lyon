@@ -23,7 +23,7 @@
 				<a
 					href="https://lavilleavelo.org/sinvestir/adherer/"
 					target="_blank"
-					rel="noopener noreferrer"
+					rel="noopener"
 					class="flex max-h-12 w-24 transform items-center justify-center rounded-md border border-transparent bg-white px-5 py-3 text-base font-medium text-brand-navy transition duration-300 hover:scale-105 sm:shrink-0"
 				>
 					Adhérer
@@ -31,7 +31,7 @@
 				<a
 					href="https://lavilleavelo.org/sinvestir/faire-un-don/"
 					target="_blank"
-					rel="noopener noreferrer"
+					rel="noopener"
 					class="flex max-h-12 w-24 transform items-center justify-center rounded-md border-2 border-white bg-brand-navy px-5 py-3 text-base font-medium text-white transition duration-300 hover:scale-105 sm:shrink-0"
 				>
 					Donner
@@ -40,7 +40,7 @@
 			<a
 				href="https://lavilleavelo.org"
 				target="_blank"
-				rel="noopener noreferrer"
+				rel="noopener"
 				class="flex max-h-12 transform items-center justify-center rounded-md border-2 border-white bg-brand-navy px-5 py-3 text-base font-medium text-white transition duration-300 hover:scale-105 sm:w-auto sm:shrink-0"
 			>
 				En&nbsp;savoir&nbsp;+

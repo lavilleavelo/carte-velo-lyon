@@ -561,7 +561,7 @@
 			<a
 				href="https://data.grandlyon.com/portail/fr/jeux-de-donnees/amenagements-cyclables-metropole-lyon/donnees"
 				target="_blank"
-				rel="noopener noreferrer"
+				rel="noopener"
 				class="underline hover:text-brand-navy"
 			>
 				data.grandlyon.com

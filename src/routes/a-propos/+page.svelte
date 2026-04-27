@@ -84,7 +84,7 @@
 				<a
 					href="https://cyclopolis.fr/"
 					target="_blank"
-					rel="noreferrer noopener"
+					rel="noopener"
 					class="group mb-4 text-center text-xl font-semibold text-gray-800 hover:text-brand-navy"
 				>
 					Cyclopolis, Avancement des voies lyonnaises
@@ -112,7 +112,7 @@
 				<a
 					href="https://veloscore.lavilleavelo.org/"
 					target="_blank"
-					rel="noreferrer noopener"
+					rel="noopener"
 					class="group mb-4 text-center text-xl font-semibold text-gray-800 hover:text-brand-navy"
 				>
 					Vélo-score des communes de la métropole de Lyon

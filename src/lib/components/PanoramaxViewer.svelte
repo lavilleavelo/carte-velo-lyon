@@ -90,7 +90,7 @@
 					<a
 						href="https://www.google.com/maps/@{coordinates[1]},{coordinates[0]},19z"
 						target="_blank"
-						rel="noopener noreferrer"
+						rel="noopener"
 						class="flex items-center justify-center gap-1 rounded-md bg-white px-2 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-100 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
 					>
 						<span class="whitespace-nowrap">Google Maps</span>
@@ -99,7 +99,7 @@
 					<a
 						href={`https://www.google.com/maps/@?api=1&map_action=pano&viewpoint=${coordinates[1]},${coordinates[0]}`}
 						target="_blank"
-						rel="noopener noreferrer"
+						rel="noopener"
 						class="flex items-center justify-center gap-1 rounded-md bg-white px-2 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-100 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
 					>
 						<span class="whitespace-nowrap">Street View</span>
@@ -110,7 +110,7 @@
 							? `&pic=${panoramaxQuery.data.picture}`
 							: ''}"
 						target="_blank"
-						rel="noopener noreferrer"
+						rel="noopener"
 						class="flex items-center justify-center gap-1 rounded-md bg-white px-2 py-1.5 text-xs font-medium text-gray-700 shadow-sm transition-colors hover:bg-gray-100 sm:gap-2 sm:px-4 sm:py-2 sm:text-sm"
 					>
 						<span class="whitespace-nowrap">Panoramax</span>

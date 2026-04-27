@@ -120,7 +120,7 @@
 					<a
 						href="https://mobilites.grandlyon.com/ville30"
 						target="_blank"
-						rel="noopener noreferrer"
+						rel="noopener"
 						class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
 					>
 						Page officielle de la Métropole de Lyon
@@ -131,7 +131,7 @@
 					<a
 						href="https://www.cerema.fr/system/files/documents/2024/01/presentation_ville_30_lyon.pdf"
 						target="_blank"
-						rel="noopener noreferrer"
+						rel="noopener"
 						class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
 					>
 						Présentation Ville 30 à Lyon, Cerema (PDF, décembre 2023)

@@ -52,7 +52,7 @@
 		<a
 			href={primaryHref}
 			target="_blank"
-			rel="noopener noreferrer"
+			rel="noopener"
 			class="flex flex-1 items-center justify-center gap-2 rounded-lg border border-gray-200 bg-gray-50 py-2 text-sm font-medium text-gray-700 transition-all hover:bg-gray-100 hover:text-gray-900 active:scale-[0.98]"
 		>
 			<MapPin size={15} />
@@ -80,7 +80,7 @@
 					<a
 						href={link.url}
 						target="_blank"
-						rel="noopener noreferrer"
+						rel="noopener"
 						class="flex w-full items-center rounded-md px-3 py-1.5 text-sm font-medium text-blue-700 transition-colors hover:bg-blue-50"
 					>
 						{link.label}
@@ -93,7 +93,7 @@
 					<a
 						href={getProviderUrl(provider, lat, lng)}
 						target="_blank"
-						rel="noopener noreferrer"
+						rel="noopener"
 						class="flex w-full items-center rounded-md px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"
 					>
 						{provider.label}
