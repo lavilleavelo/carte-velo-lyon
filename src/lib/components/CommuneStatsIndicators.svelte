@@ -69,7 +69,7 @@
 			<h2 class="text-xl font-bold text-brand-navy">Indicateurs vélo</h2>
 			{#if stats.population && stats.populationYear}
 				<span class="text-xs text-gray-500">
-					Base population&nbsp;: {populationFormatter.format(stats.population)} hab. ({stats.populationYear})
+					Population&nbsp;: {populationFormatter.format(stats.population)} hab. ({stats.populationYear})
 				</span>
 			{/if}
 		</div>
