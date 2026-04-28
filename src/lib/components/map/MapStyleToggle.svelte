@@ -1,6 +1,11 @@
 <script lang="ts">
 	import { CustomControl } from 'svelte-maplibre-gl';
 	import Map from '@lucide/svelte/icons/map';
+	import Check from '@lucide/svelte/icons/check';
+	import X from '@lucide/svelte/icons/x';
+	import * as Dialog from '$lib/components/ui/dialog';
+	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
+	import MapStylePreview from './MapStylePreview.svelte';
 	import type { MapStyle } from '$lib/utils/mapStyleToggle.svelte';
 
 	interface Props {
@@ -12,8 +17,8 @@
 	let { currentStyle, onSelect, position = 'top-right' }: Props = $props();
 
 	let open = $state(false);
-	let buttonEl: HTMLButtonElement | undefined = $state();
-	let menuStyle = $state('');
+	let innerWidth = $state(0);
+	const isDesktop = $derived(innerWidth === 0 || innerWidth >= 1024);
 
 	const styles: { id: MapStyle; label: string; description: string }[] = [
 		{ id: 'cyclopolis', label: 'Par défaut', description: 'Style clair avec détails' },
@@ -22,7 +27,7 @@
 		{
 			id: 'osm-bright',
 			label: 'OSM Bright',
-			description: 'Style coloré alternatif avec bâtiments 3D',
+			description: 'Style coloré avec bâtiments 3D',
 		},
 		{ id: 'osm-eu', label: 'OSM-eu', description: 'Fond neutre OSM Europe' },
 		{ id: 'hybrid', label: 'Satellite hybride', description: 'Photos aériennes IGN + rues' },
@@ -30,38 +35,17 @@
 		{ id: 'cyclosm', label: 'CyclOSM', description: 'Style OpenStreetMap alternatif vélo' },
 	];
 
-	function toggle(e: MouseEvent) {
-		e.stopPropagation();
-		if (!open && buttonEl) {
-			const rect = buttonEl.getBoundingClientRect();
-			const spaceBelow = window.innerHeight - rect.bottom;
-			const menuHeight = styles.length * 52 + 12;
-
-			if (position.startsWith('bottom') || spaceBelow < menuHeight) {
-				menuStyle = `bottom: ${window.innerHeight - rect.top + 4}px; right: ${window.innerWidth - rect.right}px;`;
-			} else {
-				menuStyle = `top: ${rect.bottom + 4}px; right: ${window.innerWidth - rect.right}px;`;
-			}
-		}
-		open = !open;
-	}
-
 	function select(style: MapStyle) {
 		onSelect(style);
 		open = false;
 	}
 </script>
 
-<svelte:window
-	onclick={() => {
-		if (open) open = false;
-	}}
-/>
+<svelte:window bind:innerWidth />
 
 <CustomControl {position}>
 	<button
-		bind:this={buttonEl}
-		onclick={toggle}
+		onclick={() => (open = true)}
 		class="bg-whitetext-gray-700 rounded-lg pl-1! shadow-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
 		aria-label="Changer le style de carte"
 		title="Changer le style de carte"
@@ -70,37 +54,56 @@
 	</button>
 </CustomControl>
 
-{#if open}
-	<!-- svelte-ignore a11y_click_events_have_key_events -->
-	<!-- svelte-ignore a11y_no_static_element_interactions -->
-	<div
-		onclick={(e) => e.stopPropagation()}
-		class="fixed z-50 min-w-56 rounded-lg bg-white p-1 shadow-lg ring-1 ring-black/5"
-		style={menuStyle}
-	>
-		{#each styles as style}
+{#snippet grid()}
+	<div class="grid grid-cols-2 gap-3">
+		{#each styles as style (style.id)}
+			{@const selected = currentStyle === style.id}
 			<button
+				type="button"
 				onclick={() => select(style.id)}
-				class="flex w-full items-center justify-between gap-3 rounded-md px-3 py-1.5 text-left text-sm transition-colors"
-				class:bg-gray-100={currentStyle === style.id}
-				class:hover:bg-gray-50={currentStyle !== style.id}
+				aria-pressed={selected}
+				class="group relative flex flex-col overflow-hidden rounded-lg border bg-white text-left transition hover:shadow focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {selected
+					? 'border-blue-600 ring-2 ring-blue-600'
+					: 'border-gray-200 hover:border-blue-400'}"
 			>
-				<span class="flex flex-col">
-					<span class="text-gray-800" class:font-semibold={currentStyle === style.id}>
-						{style.label}
-					</span>
-					<span class="text-xs text-gray-500">{style.description}</span>
-				</span>
-				{#if currentStyle === style.id}
-					<svg class="h-4 w-4 shrink-0 text-blue-600" viewBox="0 0 20 20" fill="currentColor">
-						<path
-							fill-rule="evenodd"
-							d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z"
-							clip-rule="evenodd"
-						/>
-					</svg>
-				{/if}
+				<div class="relative h-24 w-full overflow-hidden bg-gray-100">
+					<MapStylePreview styleId={style.id} alt={style.label} />
+					{#if selected}
+						<div
+							class="absolute top-1.5 right-1.5 flex h-6 w-6 items-center justify-center rounded-full bg-blue-600 shadow"
+						>
+							<Check size={14} class="text-white" />
+						</div>
+					{/if}
+				</div>
+				<div class="px-3 py-2">
+					<div class="text-sm font-medium text-gray-900">{style.label}</div>
+					<div class="mt-0.5 text-xs text-gray-500">{style.description}</div>
+				</div>
 			</button>
 		{/each}
 	</div>
+{/snippet}
+
+{#if isDesktop}
+	<Dialog.Root bind:open>
+		<Dialog.Content class="max-w-2xl" showCloseButton={false}>
+			<div class="flex items-center justify-between">
+				<Dialog.Title>Style de carte</Dialog.Title>
+				<Dialog.Close
+					class="rounded-md p-1 text-gray-500 transition hover:bg-gray-100 hover:text-gray-900 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500"
+					aria-label="Fermer"
+				>
+					<X size={18} />
+				</Dialog.Close>
+			</div>
+			<Dialog.Description class="sr-only">Choisir un style de carte</Dialog.Description>
+			{@render grid()}
+		</Dialog.Content>
+	</Dialog.Root>
+{:else}
+	<MobileDrawer bind:open snapPoints={[0.7, 0.95]} initialSnapPoint={0}>
+		<h2 class="px-2 pb-3 text-base font-semibold text-gray-900">Style de carte</h2>
+		{@render grid()}
+	</MobileDrawer>
 {/if}
