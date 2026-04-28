@@ -110,7 +110,7 @@
 
 <CircleLayer
 	id="metro-stops"
-	source="openmaptiles"
+	source="osm-vector"
 	source-layer="poi"
 	filter={['all', ['==', 'class', 'railway'], ['==', 'subclass', 'subway']]}
 	minzoom={13}
@@ -127,7 +127,7 @@
 
 <SymbolLayer
 	id="metro-stop-labels"
-	source="openmaptiles"
+	source="osm-vector"
 	source-layer="poi"
 	filter={['all', ['==', 'class', 'railway'], ['==', 'subclass', 'subway']]}
 	minzoom={14}

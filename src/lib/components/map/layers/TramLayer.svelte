@@ -110,7 +110,7 @@
 
 <CircleLayer
 	id="tram-stops"
-	source="openmaptiles"
+	source="osm-vector"
 	source-layer="poi"
 	filter={['all', ['==', 'class', 'railway'], ['==', 'subclass', 'tram_stop']]}
 	minzoom={13}

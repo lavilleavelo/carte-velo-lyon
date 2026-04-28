@@ -10,6 +10,7 @@
 		FillLayer,
 		Popup,
 		Marker,
+		VectorTileSource,
 	} from 'svelte-maplibre-gl';
 	import { untrack } from 'svelte';
 	import { createQuery, useIsFetching } from '@tanstack/svelte-query';
@@ -872,6 +873,8 @@
 					{boundary}
 					selectedBuckets={selectedSpeedBuckets}
 				/>
+
+				<VectorTileSource id="osm-vector" url="https://tiles.openfreemap.org/planet" />
 
 				<CommuneMapLayers
 					visible={effectiveVisibleSet}

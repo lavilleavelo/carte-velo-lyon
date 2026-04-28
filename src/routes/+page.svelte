@@ -12,6 +12,7 @@
 		NavigationControl,
 		Marker,
 		Popup,
+		VectorTileSource,
 	} from 'svelte-maplibre-gl';
 	import maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
@@ -1026,6 +1027,8 @@
 			<ParkingLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<BusLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
+
+			<VectorTileSource id="osm-vector" url="https://tiles.openfreemap.org/planet" />
 
 			<MetroLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
