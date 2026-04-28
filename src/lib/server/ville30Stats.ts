@@ -3,6 +3,7 @@ import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 import { computeVille30Stats, type Ville30Stats } from '$lib/utils/speedLimits';
 import { getCachedGrandLyonData } from '$lib/server/cache';
 import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
+import { LYON_ARRONDISSEMENT_INSEE, isLyonAggregateInsee } from '$lib/config/lyon';
 
 const features = communesGeoJSON.features as unknown as Feature<Geometry>[];
 
@@ -11,18 +12,6 @@ for (const f of features) {
 	const insee = (f.properties as { insee?: string } | null)?.insee;
 	if (insee) featureByInsee.set(insee, f);
 }
-
-const LYON_ARRONDISSEMENT_INSEE = [
-	'69381',
-	'69382',
-	'69383',
-	'69384',
-	'69385',
-	'69386',
-	'69387',
-	'69388',
-	'69389',
-] as const;
 
 let cachedAllData: FeatureCollection | null = null;
 let cachedAllPromise: Promise<FeatureCollection> | null = null;
@@ -49,7 +38,7 @@ export async function getVille30StatsForCommune(insee: string): Promise<Ville30S
 	if (statsCache.has(insee)) return statsCache.get(insee) ?? null;
 
 	let boundary: FeatureCollection | null;
-	if (insee === '69123') {
+	if (isLyonAggregateInsee(insee)) {
 		boundary = buildBoundary(LYON_ARRONDISSEMENT_INSEE);
 	} else {
 		boundary = buildBoundary([insee]);

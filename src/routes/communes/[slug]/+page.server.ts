@@ -6,6 +6,7 @@ import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
 import communeMetadataJson from '$lib/data/communeMetadata.json';
 import { absoluteUrl } from '$lib/config/site';
 import { getVille30StatsForCommune } from '$lib/server/ville30Stats';
+import { getCommuneStatsForInsee } from '$lib/server/communeStats';
 
 export interface Commune {
 	slug: string;
@@ -35,9 +36,8 @@ export interface CommuneMetadata {
 	insee: string;
 	name: string;
 	codePostal: string | null;
-	population2023?: number | null;
-	population2022: number | null;
-	population2021: number | null;
+	population: number | null;
+	populationYear: number | null;
 	wikipediaUrl: string | null;
 	articles: CommuneArticle[];
 	ville30?: Ville30Status;
@@ -65,7 +65,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	};
 
 	const metadata = metadataByInsee[commune.insee] ?? null;
-	const ville30Stats = await getVille30StatsForCommune(commune.insee);
+	const [ville30Stats, communeStats] = await Promise.all([
+		getVille30StatsForCommune(commune.insee),
+		getCommuneStatsForInsee(commune.insee),
+	]);
 
 	return {
 		commune: { ...commune, codePostal: metadata?.codePostal ?? null },
@@ -73,10 +76,25 @@ export const load: PageServerLoad = async ({ params }) => {
 		metadata,
 		ville30: metadata?.ville30 ?? null,
 		ville30Stats,
+		communeStats,
 		seo: {
-			title: `${commune.name} – Carte vélo Métropole de Lyon`,
-			description: `Aménagements cyclables, Voies Lyonnaises, stationnements et services vélo à ${commune.name}. Carte interactive des infrastructures vélo.`,
+			title: `Carte vélo ${commune.name}`,
+			description: buildCommuneSeoDescription(commune.name, communeStats),
 			image: absoluteUrl(`/og/communes/${commune.slug}.jpg`),
 		},
 	};
 };
+
+const numberFormatter = new Intl.NumberFormat('fr-FR');
+
+function buildCommuneSeoDescription(
+	name: string,
+	stats: { totalBikeLanesKm: number; parkingPlaces: number } | null,
+): string {
+	if (!stats || stats.totalBikeLanesKm <= 0) {
+		return `Carte interactive des infrastructures cyclables à ${name} : aménagements, stationnements, Voies Lyonnaises et services vélo.`;
+	}
+	const km = numberFormatter.format(Math.round(stats.totalBikeLanesKm));
+	const parking = numberFormatter.format(stats.parkingPlaces);
+	return `Carte interactive des infrastructures cyclables à ${name} : ${km} km d'aménagements, ${parking} places de stationnement, Voies Lyonnaises et services vélo.`;
+}

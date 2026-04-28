@@ -3,6 +3,7 @@
 	import CommuneMap from '$lib/components/map/CommuneMap.svelte';
 	import InfrastructureEvolutionChart from '$lib/components/charts/InfrastructureEvolutionChart.svelte';
 	import Ville30Indicator from '$lib/components/Ville30Indicator.svelte';
+	import CommuneStatsIndicators from '$lib/components/CommuneStatsIndicators.svelte';
 	import LavilleaveloCta from '$lib/components/LavilleaveloCta.svelte';
 	import { getVeloscoreUrl } from '$lib/utils';
 	import type { PageData } from './$types';
@@ -17,18 +18,8 @@
 	const veloscoreUrl = $derived(getVeloscoreUrl(commune.name));
 
 	const populationFormatter = new Intl.NumberFormat('fr-FR');
-	const population = $derived(
-		metadata?.population2023 ?? metadata?.population2022 ?? metadata?.population2021 ?? null,
-	);
-	const populationYear = $derived(
-		metadata?.population2023
-			? 2023
-			: metadata?.population2022
-				? 2022
-				: metadata?.population2021
-					? 2021
-					: null,
-	);
+	const population = $derived(metadata?.population ?? null);
+	const populationYear = $derived(metadata?.populationYear ?? null);
 	const density = $derived.by(() => {
 		if (!population || !commune.surfaceKm2) return null;
 		return Math.round(population / commune.surfaceKm2);
@@ -51,11 +42,12 @@
 		<CommuneMap boundary={data.boundary} {bounds} communeName={commune.name} />
 	</div>
 
-	<header class="flex flex-wrap items-center gap-x-3 gap-y-2">
-		<h1 class="text-2xl font-bold text-brand-navy md:text-3xl">{commune.name}</h1>
-	</header>
+	<div class="space-y-2">
+		<header class="flex flex-wrap items-center gap-x-3 gap-y-2">
+			<h1 class="text-2xl font-bold text-brand-navy md:text-3xl">{commune.name}</h1>
+		</header>
 
-	<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
+		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
 		<span>
 			<span class="uppercase">INSEE</span>
 			<span class="font-semibold text-gray-700">{commune.insee}</span>
@@ -115,6 +107,7 @@
 				<ExternalLink class="h-3 w-3" />
 			</a>
 		{/if}
+		</div>
 	</div>
 
 	{#if metadata?.articles && metadata.articles.length > 0}
@@ -154,7 +147,16 @@
 		stats={data.ville30Stats}
 	/>
 
-	<InfrastructureEvolutionChart communeName={commune.name} boundary={data.boundary} />
+	<CommuneStatsIndicators communeName={commune.name} stats={data.communeStats} />
+
+	{#if data.communeStats}
+		<InfrastructureEvolutionChart
+			communeName={commune.name}
+			chart={data.communeStats.chart}
+			totalBikeLanesKm={data.communeStats.totalBikeLanesKm}
+			totalParkingPlaces={data.communeStats.parkingPlaces}
+		/>
+	{/if}
 
 	<LavilleaveloCta />
 </div>

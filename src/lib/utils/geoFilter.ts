@@ -151,9 +151,20 @@ export function filterFeaturesByYear(
 			? yearGetter
 			: (f) => {
 					const v = (f.properties as Record<string, unknown> | null)?.[yearGetter];
-					if (v == null) return null;
+					if (v == null || v === '') {
+						return null;
+					}
 					const n = typeof v === 'number' ? v : Number(v);
-					return Number.isNaN(n) ? null : n;
+
+					if (Number.isNaN(n)) {
+						return null;
+					}
+
+					if (n < 1900) {
+						return null;
+					}
+
+					return n;
 				};
 
 	const features = data.features.filter((f) => {

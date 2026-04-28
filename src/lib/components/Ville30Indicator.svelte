@@ -96,7 +96,7 @@
 		<div class="rounded-lg border border-gray-200 bg-gray-50 p-4">
 			{#if stats.eligibleKm > 0}
 				<div>
-					<div class="text-3xl font-bold text-brand-navy">
+					<div class="text-2xl font-bold text-brand-navy">
 						{numFormatter.format(stats.eligibleUnder30KmPercentage)}%
 					</div>
 					<div class="mt-1 text-sm text-gray-700">
@@ -110,7 +110,7 @@
 				</div>
 			{:else}
 				<div>
-					<div class="text-3xl font-bold text-brand-navy">
+					<div class="text-2xl font-bold text-brand-navy">
 						{numFormatter.format(stats.under30KmPercentage)}%
 					</div>
 					<div class="mt-1 text-sm text-gray-700">de voirie limitée à 30 km/h ou moins</div>
@@ -167,7 +167,7 @@
 					{/each}
 				</div>
 				<p class="mt-3 text-xs text-gray-500">
-					{stats.totalStreets} tronçons de rue analysés
+					{stats.totalStreets.toLocaleString('fr-FR')} tronçons de rue analysés
 				</p>
 			</details>
 		</div>

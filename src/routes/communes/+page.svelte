@@ -8,6 +8,7 @@
 	import CommuneSelectorMap from '$lib/components/map/CommuneSelectorMap.svelte';
 	import LavilleaveloCta from '$lib/components/LavilleaveloCta.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
+	import { LYON_INSEE } from '$lib/config/lyon';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
@@ -79,7 +80,7 @@
 			<span class="flex items-center gap-2 text-xs text-gray-500">
 				<span>69001–69009</span>
 				<span aria-hidden="true">·</span>
-				<span>INSEE 69123</span>
+				<span>INSEE {LYON_INSEE}</span>
 				<span aria-hidden="true">·</span>
 				<span>9 arrondissements</span>
 			</span>

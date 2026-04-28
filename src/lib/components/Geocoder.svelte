@@ -10,6 +10,7 @@
 	import * as Command from '$lib/components/ui/command';
 	import communesIndex from '$lib/data/communes/_index.json';
 	import communeMetadata from '$lib/data/communeMetadata.json';
+	import { LYON_INSEE, LYON_SLUG } from '$lib/config/lyon';
 
 	function normalize(s: string): string {
 		return s
@@ -98,30 +99,15 @@
 
 	const populationByInsee = (() => {
 		const m = new Map<string, number>();
-		const records = communeMetadata as Record<
-			string,
-			{
-				population2023?: number | null;
-				population2022?: number | null;
-				population2021?: number | null;
-			}
-		>;
+		const records = communeMetadata as Record<string, { population?: number | null }>;
 		for (const [insee, data] of Object.entries(records)) {
-			m.set(insee, data.population2023 ?? data.population2022 ?? data.population2021 ?? 0);
+			m.set(insee, data.population ?? 0);
 		}
 		return m;
 	})();
-	const lyonPopulation = (() => {
-		let total = 0;
-		for (let i = 1; i <= 9; i += 1) {
-			total += populationByInsee.get(`6938${i}`) ?? 0;
-		}
-		return total;
-	})();
-	populationByInsee.set('69123', lyonPopulation);
 
 	const allCommunes = [
-		{ slug: 'lyon', name: 'Lyon (ville entière)', insee: '69123' },
+		{ slug: LYON_SLUG, name: 'Lyon (ville entière)', insee: LYON_INSEE },
 		...communesIndex,
 	].sort((a, b) => (populationByInsee.get(b.insee) ?? 0) - (populationByInsee.get(a.insee) ?? 0));
 

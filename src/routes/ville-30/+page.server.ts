@@ -1,6 +1,7 @@
 import type { PageServerLoad } from './$types';
 import communeMetadataJson from '$lib/data/communeMetadata.json';
 import communesIndex from '$lib/data/communes/_index.json';
+import { LYON_INSEE, LYON_SLUG, isLyonArrondissementInsee } from '$lib/config/lyon';
 
 interface MetadataEntry {
 	insee: string;
@@ -27,18 +28,6 @@ const slugByInsee = new Map<string, string>(
 	(communesIndex as { slug: string; insee: string }[]).map((c) => [c.insee, c.slug]),
 );
 
-const LYON_ARRONDISSEMENT_INSEE = new Set([
-	'69381',
-	'69382',
-	'69383',
-	'69384',
-	'69385',
-	'69386',
-	'69387',
-	'69388',
-	'69389',
-]);
-
 export const prerender = true;
 
 export const load: PageServerLoad = async () => {
@@ -48,7 +37,7 @@ export const load: PageServerLoad = async () => {
 
 	for (const [insee, entry] of Object.entries(metadataByInsee)) {
 		if (!entry.ville30) continue;
-		if (LYON_ARRONDISSEMENT_INSEE.has(insee)) {
+		if (isLyonArrondissementInsee(insee)) {
 			fullInsees.push(insee);
 			continue;
 		}
@@ -62,7 +51,7 @@ export const load: PageServerLoad = async () => {
 
 		ville30.push({
 			insee,
-			slug: slugByInsee.get(insee) ?? (insee === '69123' ? 'lyon' : null),
+			slug: slugByInsee.get(insee) ?? (insee === LYON_INSEE ? LYON_SLUG : null),
 			name: entry.name,
 			adoptedAt: entry.ville30.adoptedAt ?? null,
 			partial,
@@ -80,13 +69,13 @@ export const load: PageServerLoad = async () => {
 	});
 
 	const totalCommunes = Object.keys(metadataByInsee).filter(
-		(insee) => !LYON_ARRONDISSEMENT_INSEE.has(insee),
+		(insee) => !isLyonArrondissementInsee(insee),
 	).length;
 
 	const allCommuneLinks: CommuneLink[] = (
 		communesIndex as { slug: string; insee: string; name: string }[]
 	).map((c) => ({ insee: c.insee, slug: c.slug, name: c.name }));
-	allCommuneLinks.push({ insee: '69123', slug: 'lyon', name: 'Lyon' });
+	allCommuneLinks.push({ insee: LYON_INSEE, slug: LYON_SLUG, name: 'Lyon' });
 
 	return {
 		ville30,

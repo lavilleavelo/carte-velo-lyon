@@ -2,14 +2,10 @@
 	import * as Chart from '$lib/components/ui/chart/index.js';
 	import { AreaChart, BarChart, type ChartContextValue } from 'layerchart';
 	import { cubicInOut } from 'svelte/easing';
-	import { createQuery } from '@tanstack/svelte-query';
 	import { Checkbox } from '$lib/components/ui/checkbox';
 	import { Label } from '$lib/components/ui/label';
 	import { MediaQuery } from 'svelte/reactivity';
-	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
-	import { voirieQueryOptions } from '$lib/queries/cyclewayQueries';
-	import { parkingQueryOptions } from '$lib/queries/parkingQueries';
-	import type { FeatureCollection } from 'geojson';
+	import type { CommuneInfraChart } from '$lib/server/communeStats';
 	import {
 		typeColors,
 		parkingTypeColors,
@@ -17,57 +13,27 @@
 		createParkingTypeChartConfig,
 		createTypeSeries,
 		createParkingTypeSeries,
-		computeBikeLanesEvolution,
-		computeParkingEvolution,
-		computeParkingWithoutYear,
-		computeBikeLanesWithoutYear,
-		extractFacilityTypes,
-		extractParkingTypes,
-		buildChartData,
 		computeStackLabelPositions,
 	} from './infrastructure-chart-utils';
 
 	interface Props {
 		communeName: string;
-		boundary: FeatureCollection;
+		chart: CommuneInfraChart;
+		totalBikeLanesKm: number;
+		totalParkingPlaces: number;
 	}
 
-	let { communeName, boundary }: Props = $props();
-
-	const voirieQuery = createQuery(() => voirieQueryOptions());
-
-	const parkingQuery = createQuery(() => parkingQueryOptions());
-
-	const voirieInside = $derived.by(() => {
-		if (!voirieQuery.data) return { type: 'FeatureCollection' as const, features: [] };
-		return filterFeaturesInsideBoundary(voirieQuery.data, boundary);
-	});
-
-	const parkingInside = $derived.by(() => {
-		if (!parkingQuery.data) return { type: 'FeatureCollection' as const, features: [] };
-		return filterFeaturesInsideBoundary(parkingQuery.data, boundary);
-	});
+	let { communeName, chart, totalBikeLanesKm, totalParkingPlaces }: Props = $props();
 
 	let includeUnknownBikeLanes = $state(false);
 
-	const bikeLanesEvolution = $derived.by(() =>
-		computeBikeLanesEvolution(voirieInside.features, includeUnknownBikeLanes),
-	);
+	const facilityTypes = $derived(chart.facilityTypes);
+	const parkingTypes = $derived(chart.parkingTypes);
+	const parkingWithoutYear = $derived(chart.parkingWithoutYear);
+	const bikeLanesWithoutYear = $derived(chart.bikeLanesWithoutYear);
 
-	const parkingEvolution = $derived.by(() => computeParkingEvolution(parkingInside.features));
-
-	const parkingWithoutYear = $derived.by(() => computeParkingWithoutYear(parkingInside.features));
-
-	const bikeLanesWithoutYear = $derived.by(() =>
-		computeBikeLanesWithoutYear(voirieInside.features),
-	);
-
-	const facilityTypes = $derived.by(() => extractFacilityTypes(voirieInside.features));
-
-	const parkingTypes = $derived.by(() => extractParkingTypes(parkingInside.features));
-
-	const chartData = $derived.by(() =>
-		buildChartData(bikeLanesEvolution, parkingEvolution, facilityTypes, parkingTypes, 2010),
+	const chartData = $derived(
+		includeUnknownBikeLanes ? chart.chartDataIncludingUnknowns : chart.chartDataExcludingUnknowns,
 	);
 
 	const chartConfig = {
@@ -87,15 +53,8 @@
 	const parkingTypeSeries = $derived(createParkingTypeSeries(parkingTypes, showCumulative));
 
 	const total = $derived({
-		bikeLanesKm:
-			Math.round(
-				(voirieInside.features?.reduce(
-					(acc: number, curr: any) => acc + (curr.properties?.longueur || 0),
-					0,
-				) || 0) / 10,
-			) / 100,
-		parkingPlaces:
-			chartData.reduce((acc, curr) => acc + curr.parkingPlaces, 0) + parkingWithoutYear.capacity,
+		bikeLanesKm: Math.round(totalBikeLanesKm * 100) / 100,
+		parkingPlaces: totalParkingPlaces,
 	});
 
 	const activeSeriesKey = $derived(
@@ -114,10 +73,8 @@
 		},
 	]);
 
-	const isLoading = $derived(voirieQuery.isPending || parkingQuery.isPending);
-
 	const hasData = $derived(
-		!isLoading && chartData.length > 0 && (total.bikeLanesKm > 0 || total.parkingPlaces > 0),
+		chartData.length > 0 && (total.bikeLanesKm > 0 || total.parkingPlaces > 0),
 	);
 
 	const isMobile = new MediaQuery('(max-width: 1000px)');
@@ -312,7 +269,7 @@
 					{chartConfig.bikeLanesKm.label}
 				</span>
 				<span class="text-lg leading-none font-bold sm:text-3xl">
-					{voirieQuery.isPending ? '…' : `${total.bikeLanesKm.toLocaleString('fr-FR')}\u00a0km`}
+					{total.bikeLanesKm.toLocaleString('fr-FR')}&nbsp;km
 				</span>
 			</button>
 			<button
@@ -324,17 +281,13 @@
 					{chartConfig.parkingPlaces.label}
 				</span>
 				<span class="text-lg leading-none font-bold sm:text-3xl">
-					{parkingQuery.isPending ? '…' : total.parkingPlaces.toLocaleString('fr-FR')}
+					{total.parkingPlaces.toLocaleString('fr-FR')}
 				</span>
 			</button>
 		</div>
 	</div>
 	<div class="px-6 pt-5 pb-6 sm:p-6">
-		{#if isLoading}
-			<div class="flex h-[250px] items-center justify-center">
-				<span class="text-gray-500">Chargement des données…</span>
-			</div>
-		{:else if !hasData}
+		{#if !hasData}
 			<div class="flex h-[250px] items-center justify-center">
 				<span class="text-sm text-gray-500">
 					Aucune donnée d'infrastructure disponible pour cette commune.
@@ -557,15 +510,12 @@
 			</div>
 		{/if}
 		<p class="mt-6 border-t border-gray-100 pt-3 text-xs text-gray-500">
-			Source&nbsp;:&nbsp;
-			<a
+			Source&nbsp;:&nbsp;<a
 				href="https://data.grandlyon.com/portail/fr/jeux-de-donnees/amenagements-cyclables-metropole-lyon/donnees"
 				target="_blank"
 				rel="noopener"
-				class="underline hover:text-brand-navy"
-			>
-				data.grandlyon.com
-			</a>
+				class="underline hover:text-brand-navy">data.grandlyon.com</a
+			>. Les longueurs peuvent légèrement différer des données OpenStreetMap affichées sur la carte.
 		</p>
 	</div>
 </section>

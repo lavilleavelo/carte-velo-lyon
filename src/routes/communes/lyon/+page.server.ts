@@ -4,22 +4,12 @@ import type { PageServerLoad } from './$types';
 import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
 import communeMetadataJson from '$lib/data/communeMetadata.json';
 import { getVille30StatsForCommune } from '$lib/server/ville30Stats';
+import { getCommuneStatsForInsee } from '$lib/server/communeStats';
+import { LYON_ARRONDISSEMENT_INSEE_SET, LYON_INSEE } from '$lib/config/lyon';
 
 const lyonMetadata = (communeMetadataJson as Record<string, { ville30?: { adoptedAt?: string } }>)[
-	'69123'
+	LYON_INSEE
 ];
-
-const LYON_ARRONDISSEMENT_INSEE = new Set([
-	'69381',
-	'69382',
-	'69383',
-	'69384',
-	'69385',
-	'69386',
-	'69387',
-	'69388',
-	'69389',
-]);
 
 export const prerender = true;
 
@@ -51,7 +41,7 @@ function bboxOfFeatures(features: Feature<Geometry>[]): [number, number, number,
 export const load: PageServerLoad = async () => {
 	const all = communesGeoJSON.features as unknown as Feature<Geometry>[];
 	const features = all.filter((f) =>
-		LYON_ARRONDISSEMENT_INSEE.has((f.properties as { insee: string }).insee),
+		LYON_ARRONDISSEMENT_INSEE_SET.has((f.properties as { insee: string }).insee),
 	);
 	if (features.length === 0) throw error(500, 'Géométrie de Lyon introuvable');
 
@@ -61,7 +51,10 @@ export const load: PageServerLoad = async () => {
 	};
 
 	const bbox = bboxOfFeatures(features);
-	const ville30Stats = await getVille30StatsForCommune('69123');
+	const [ville30Stats, communeStats] = await Promise.all([
+		getVille30StatsForCommune(LYON_INSEE),
+		getCommuneStatsForInsee(LYON_INSEE),
+	]);
 
 	return {
 		boundary,
@@ -69,10 +62,23 @@ export const load: PageServerLoad = async () => {
 		arrondissementCount: features.length,
 		ville30: lyonMetadata?.ville30 ?? null,
 		ville30Stats,
+		communeStats,
 		seo: {
-			title: 'Lyon (ville entière) – Carte vélo de la Métropole',
-			description:
-				"Vue d'ensemble des aménagements cyclables sur les 9 arrondissements de la ville de Lyon : pistes, Voies Lyonnaises, stationnements et services vélo.",
+			title: 'Carte vélo Lyon',
+			description: buildLyonSeoDescription(communeStats),
 		},
 	};
 };
+
+const numberFormatter = new Intl.NumberFormat('fr-FR');
+
+function buildLyonSeoDescription(
+	stats: { totalBikeLanesKm: number; parkingPlaces: number } | null,
+): string {
+	if (!stats || stats.totalBikeLanesKm <= 0) {
+		return 'Carte interactive des infrastructures cyclables à Lyon : aménagements, stationnements, Voies Lyonnaises et services vélo sur les 9 arrondissements.';
+	}
+	const km = numberFormatter.format(Math.round(stats.totalBikeLanesKm));
+	const parking = numberFormatter.format(stats.parkingPlaces);
+	return `Carte interactive des infrastructures cyclables à Lyon : ${km} km d'aménagements, ${parking} places de stationnement et Voies Lyonnaises sur les 9 arrondissements.`;
+}

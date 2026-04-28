@@ -26,6 +26,8 @@
 	import CommuneMapLayers from '$lib/components/map/CommuneMapLayers.svelte';
 	import CommuneLayerControls from '$lib/components/map/CommuneLayerControls.svelte';
 	import YearRangeFilter from '$lib/components/map/YearRangeFilter.svelte';
+	import { Checkbox } from '$lib/components/ui/checkbox';
+	import { Label } from '$lib/components/ui/label';
 	import {
 		availableLayers,
 		expandLayers,
@@ -71,7 +73,9 @@
 	import type { FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
 
-	const MIN_YEAR = 2000;
+	// 1990 covers the oldest voies vertes in the dataset (e.g. Voie de la Dombes, 1996).
+	// Features with no year value are kept regardless (see filterFeaturesByYear).
+	const MIN_YEAR = 1990;
 	const MAX_YEAR = new Date().getFullYear();
 
 	let {
@@ -262,6 +266,7 @@
 			const next = new Set(visibleSet);
 			next.add('cycleways');
 			for (const id of layerGroups.parking) next.add(id);
+			for (const id of layerGroups.vl) next.add(id);
 			setLayers([...next]);
 			params.filterByYear = true;
 		} else {
@@ -324,13 +329,31 @@
 		),
 	);
 
-	const voirieBoundaryYearFiltered = $derived.by(() => {
+	const voirieBoundary = $derived.by(() => {
 		if (!voirieQuery.data) return undefined;
-		let filtered = filterFeaturesInsideBoundary(voirieQuery.data, boundary);
-		if (effectiveYearRange) {
-			filtered = filterFeaturesByYear(filtered, 'anneelivraison', effectiveYearRange);
+		return filterFeaturesInsideBoundary(voirieQuery.data, boundary);
+	});
+
+	// Slider lower bound: oldest realistic delivery year actually present in this commune.
+	// Falls back to MIN_YEAR while the data is loading or when the commune has no dated feature.
+	const sliderMinYear = $derived.by(() => {
+		const fc = voirieBoundary;
+		if (!fc || fc.features.length === 0) return MIN_YEAR;
+		let oldest: number | null = null;
+		for (const f of fc.features) {
+			const v = (f.properties as Record<string, unknown> | null)?.anneelivraison;
+			if (v == null || v === '') continue;
+			const n = typeof v === 'number' ? v : Number(v);
+			if (!Number.isFinite(n) || n < 1900) continue;
+			if (oldest === null || n < oldest) oldest = n;
 		}
-		return filtered;
+		return oldest ?? MIN_YEAR;
+	});
+
+	const voirieBoundaryYearFiltered = $derived.by(() => {
+		if (!voirieBoundary) return undefined;
+		if (!effectiveYearRange) return voirieBoundary;
+		return filterFeaturesByYear(voirieBoundary, 'anneelivraison', effectiveYearRange);
 	});
 
 	const voirieInside = $derived.by(() => {
@@ -914,36 +937,47 @@
 			/>
 		</div>
 
-		<div class="flex flex-wrap items-center gap-3 px-4 sm:px-6 lg:px-0">
-			<label class="inline-flex cursor-pointer items-center gap-2 text-sm text-gray-700">
-				<input
-					type="checkbox"
-					class="h-4 w-4 rounded border-gray-300 text-brand-navy focus:ring-brand-navy"
-					checked={params.filterByYear}
-					onchange={(e) => setFilterByYear((e.currentTarget as HTMLInputElement).checked)}
-				/>
-				<span>Filtrer par date de réalisation</span>
-			</label>
+		<div class="space-y-2 px-4 sm:px-6 lg:px-0">
+			<div class="flex flex-wrap items-center gap-x-4 gap-y-2">
+				<div class="flex items-center gap-2">
+					<Checkbox
+						id="filter-by-year-toggle"
+						checked={params.filterByYear}
+						onCheckedChange={(checked) => setFilterByYear(checked === true)}
+					/>
+					<Label for="filter-by-year-toggle" class="cursor-pointer text-sm text-gray-700">
+						Filtrer par date de réalisation
+					</Label>
+				</div>
+				<button
+					type="button"
+					onclick={toggleMapExpand}
+					title={expanded ? 'Réduire la carte' : 'Agrandir la carte'}
+					aria-label={expanded ? 'Réduire la carte' : 'Agrandir la carte'}
+					class="ml-auto flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
+				>
+					{#if expanded}
+						<Minimize2 size={13} />
+						<span>Réduire la carte</span>
+					{:else}
+						<Maximize2 size={13} />
+						<span>Agrandir la carte</span>
+					{/if}
+				</button>
+			</div>
 			{#if params.filterByYear}
-				<div class="min-w-[12rem] flex-1">
+				<div class="max-w-md">
 					{@render yearFilterSlot()}
 				</div>
+				<p class="text-[11px] text-gray-500">
+					Source&nbsp;:&nbsp;<a
+						href="https://data.grandlyon.com/portail/fr/jeux-de-donnees/amenagements-cyclables-metropole-lyon/donnees"
+						target="_blank"
+						rel="noopener"
+						class="underline hover:text-brand-navy">data.grandlyon.com</a
+					>. Les données peuvent varier légèrement des données OSM affichées par défaut sur la carte.
+				</p>
 			{/if}
-			<button
-				type="button"
-				onclick={toggleMapExpand}
-				title={expanded ? 'Réduire la carte' : 'Agrandir la carte'}
-				aria-label={expanded ? 'Réduire la carte' : 'Agrandir la carte'}
-				class="ml-auto flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
-			>
-				{#if expanded}
-					<Minimize2 size={13} />
-					<span>Réduire la carte</span>
-				{:else}
-					<Maximize2 size={13} />
-					<span>Agrandir la carte</span>
-				{/if}
-			</button>
 		</div>
 	</div>
 
@@ -1020,7 +1054,7 @@
 {#snippet yearFilterSlot()}
 	<YearRangeFilter
 		range={yearRange}
-		min={MIN_YEAR}
+		min={sliderMinYear}
 		max={MAX_YEAR}
 		plain
 		onRangeChange={(next) => {
