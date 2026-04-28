@@ -2,10 +2,12 @@
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { FeatureCollection } from 'geojson';
+	import type maplibregl from 'maplibre-gl';
 	import { EMPTY_FEATURE_COLLECTION, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
 	import { PAVED_SURFACES } from '$lib/utils/osmCycleway';
 	import { osmCyclewaysQueryOptions } from '$lib/queries/cyclewayQueries';
+	import { createDscArrowIcon } from '$lib/utils/mapUtils';
 	import {
 		BANDE_DASHARRAY,
 		BUS_VELO_DASHARRAY,
@@ -26,12 +28,18 @@
 		boundary,
 		activeLegendIds,
 		hoveredLegendId,
+		map,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		boundary?: FeatureCollection;
 		activeLegendIds?: string[];
 		hoveredLegendId?: string | null;
+		map?: maplibregl.Map;
 	} = $props();
+
+	const DSC_CAR_COLOR = '#000000';
+	const DSC_ICON_FORWARD = 'dsc-arrow-forward';
+	const DSC_ICON_REVERSE = 'dsc-arrow-reverse';
 
 	const DIMMED_OPACITY = 0.2;
 	const NORMAL_OPACITY = 0.9;
@@ -48,12 +56,36 @@
 	const opacityBusVelo = $derived(opacityFor('bus-velo'));
 	const opacityVelorue = $derived(opacityFor('velorue'));
 	const opacityDsc = $derived(opacityFor('dsc'));
-	const opacityDscBase = $derived(
-		hoveredLegendId ? (hoveredLegendId === 'dsc' ? 0.5 : DIMMED_OPACITY) : 0.5,
-	);
 
 	const COLOR = '#0369a1';
 	const COLOR_NON_PAVED = '#03527d';
+
+	function ensureDscIcons(m: maplibregl.Map) {
+		const register = (name: string, leftColor: string, rightColor: string) => {
+			if (m.hasImage(name)) {
+				return;
+			}
+
+			const canvas = createDscArrowIcon(leftColor, rightColor);
+			const ctx = canvas.getContext('2d');
+			const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
+			if (imageData) {
+				m.addImage(name, imageData, { pixelRatio: window.devicePixelRatio || 1 });
+			}
+		};
+
+		// forward (oneway=yes): line direction = car. Left of icon = bike (blue), right = car (black).
+		register(DSC_ICON_FORWARD, COLOR, DSC_CAR_COLOR);
+
+		// reverse (oneway=-1): line direction = opposite of car. Left = car (black), right = bike (blue).
+		register(DSC_ICON_REVERSE, DSC_CAR_COLOR, COLOR);
+	}
+
+	$effect(() => {
+		if (map) {
+			ensureDscIcons(map);
+		}
+	});
 
 	const enabled = $derived(isLayerVisible('osm-cycleways'));
 
@@ -209,33 +241,27 @@
 		layout={{ 'line-cap': VELORUE_LINE_CAP, visibility }}
 	/>
 
-	<LineLayer
-		id="osm-cw-dsc-base"
-		filter={filterDsc}
-		paint={{ 'line-color': COLOR, 'line-width': 1.5, 'line-opacity': opacityDscBase }}
-		layout={{ visibility }}
-	/>
-
 	<SymbolLayer
 		id="osm-cw-dsc-arrows"
 		filter={filterDsc}
 		layout={{
 			'symbol-placement': 'line',
 			'symbol-spacing': DSC_ARROW_SYMBOL_SPACING,
-			'text-field': '←',
-			'text-size': DSC_ARROW_TEXT_SIZE,
-			'text-keep-upright': false,
-			'text-rotation-alignment': 'map',
-			'text-pitch-alignment': 'map',
-			'text-allow-overlap': true,
-			'text-ignore-placement': true,
+			'icon-image': [
+				'case',
+				['==', ['get', 'oneway'], '-1'],
+				DSC_ICON_REVERSE,
+				DSC_ICON_FORWARD,
+			],
+			'icon-rotation-alignment': 'map',
+			'icon-pitch-alignment': 'map',
+			'icon-keep-upright': true,
+			'icon-allow-overlap': true,
+			'icon-ignore-placement': true,
 			visibility,
 		}}
 		paint={{
-			'text-color': COLOR,
-			'text-halo-color': '#ffffff',
-			'text-halo-width': 1,
-			'text-opacity': opacityDsc,
+			'icon-opacity': opacityDsc,
 		}}
 	/>
 

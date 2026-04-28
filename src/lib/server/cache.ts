@@ -307,11 +307,12 @@ const ONEWAY_HIGHWAY_TYPES =
 const OVERPASS_ONEWAYS_QUERY = [
 	`[out:json][timeout:120];`,
 	`(`,
-	`  way["highway"~"${ONEWAY_HIGHWAY_TYPES}"]["oneway"="yes"](${OVERPASS_BBOX});`,
-	`  way["highway"~"${ONEWAY_HIGHWAY_TYPES}"]["oneway"="-1"](${OVERPASS_BBOX});`,
+	`  way["highway"~"${ONEWAY_HIGHWAY_TYPES}"]["oneway"="yes"]["oneway:bicycle"!="no"](${OVERPASS_BBOX});`,
+	`  way["highway"~"${ONEWAY_HIGHWAY_TYPES}"]["oneway"="-1"]["oneway:bicycle"!="no"](${OVERPASS_BBOX});`,
 	`);`,
 	`out geom;`,
 ].join('\n');
+
 registerEntry('overpassOneways', overpassFetcher(OVERPASS_ONEWAYS_QUERY));
 
 export async function getCachedOverpassOnewaysData(): Promise<unknown> {

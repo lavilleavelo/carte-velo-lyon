@@ -17,6 +17,7 @@
 	import { useSearchParams } from 'runed/kit';
 	import { type } from 'arktype';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
+	import { registerArrowIconsHandler } from '$lib/utils/mapUtils';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
@@ -788,6 +789,11 @@
 				attributionControl={false}
 				maxZoom={18}
 				{cursor}
+				onload={() => {
+					if (map) {
+						registerArrowIconsHandler(map);
+					}
+				}}
 				onclick={handleMapClick}
 				oncontextmenu={handleMapContextMenu}
 				onmousemove={handleMapMouseMove}
@@ -889,6 +895,7 @@
 					{boundary}
 					activeLegendIds={params.cyclewayTypes}
 					{hoveredLegendId}
+					{map}
 				/>
 
 				<SpeedLimitsLayer

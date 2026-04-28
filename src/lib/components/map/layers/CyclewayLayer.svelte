@@ -95,20 +95,13 @@
 		layout={{ 'line-cap': BUS_VELO_LINE_CAP, visibility }}
 	/>
 
-	<LineLayer
-		id="cw-dsc-base"
-		filter={filterDsc}
-		paint={{ 'line-color': COLOR, 'line-width': 1.5, 'line-opacity': 0.5 }}
-		layout={{ visibility }}
-	/>
-
 	<SymbolLayer
 		id="cw-dsc-arrows"
 		filter={filterDsc}
 		layout={{
 			'symbol-placement': 'line',
 			'symbol-spacing': DSC_ARROW_SYMBOL_SPACING,
-			'text-field': '→',
+			'text-field': '↔',
 			'text-size': DSC_ARROW_TEXT_SIZE,
 			'text-keep-upright': false,
 			'text-rotation-alignment': 'map',
@@ -117,7 +110,7 @@
 			'text-ignore-placement': true,
 			visibility,
 		}}
-		paint={{ 'text-color': COLOR, 'text-halo-color': '#ffffff', 'text-halo-width': 1 }}
+		paint={{ 'text-color': COLOR, 'text-halo-color': '#ffffff', 'text-halo-width': 1.5 }}
 	/>
 
 	<LineLayer

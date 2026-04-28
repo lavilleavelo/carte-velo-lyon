@@ -45,6 +45,7 @@
 		getInteractableLayerIds,
 		createLayerToFeatureTypeMap,
 	} from '$lib/config/layers';
+	import { registerArrowIconsHandler } from '$lib/utils/mapUtils';
 	import {
 		availableLayers,
 		expandLayers,
@@ -904,6 +905,7 @@
 			maxZoom={18}
 			onload={async () => {
 				if (map) {
+					registerArrowIconsHandler(map);
 					if (params.selected && params.selected.length === 2) {
 						setTimeout(() => {
 							if (!map) return;
@@ -1034,11 +1036,11 @@
 
 			<TramLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
-			<OverpassOnewayArrowsLayer />
+			<OverpassOnewayArrowsLayer {map} />
 
 			<SpeedLimitsLayer {isLayerVisible} enabledBuckets={enabledSpeedBuckets} />
 
-			<OsmCyclewayLayer {isLayerVisible} />
+			<OsmCyclewayLayer {isLayerVisible} {map} />
 
 			<VoiesLyonnaisesLayer
 				{isLayerVisible}

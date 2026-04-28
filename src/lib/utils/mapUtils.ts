@@ -59,6 +59,202 @@ export async function loadTransportShieldIcons(mapInstance: any, features: any[]
 	});
 }
 
+/**
+ * Layer ids of oneway-arrow layers baked into the various basemap styles.
+ * These render arrows from vector tiles (versatiles-shortbread / openmaptiles
+ * `transportation` / `streets` source layers) without our pair-detection or
+ * boundary-clipping. We hide them so `OverpassOnewayArrowsLayer` is the single
+ * source of truth for oneway arrows.
+ */
+const BASEMAP_ONEWAY_LAYER_IDS = [
+	'oneway-arrows-major',
+	'oneway-arrows-minor',
+	'oneway-arrows-forward-major',
+	'oneway-arrows-reverse-major',
+	'oneway-arrows-forward-minor',
+	'oneway-arrows-reverse-minor',
+	'road_oneway',
+	'road_oneway_opposite',
+];
+
+/**
+ * Registers a `styleimagemissing` handler that lazily creates the
+ * oneway / DSC arrow icons whenever a layer references them.
+ * Also hides the basemap-baked oneway arrow layers (across all styles)
+ * so our `OverpassOnewayArrowsLayer` remains the single source of truth.
+ * Idempotent — safe to call multiple times on the same map.
+ */
+export function registerArrowIconsHandler(map: any): void {
+	if (map.__arrowIconsHandlerRegistered) {
+		return;
+	}
+
+	map.__arrowIconsHandlerRegistered = true;
+
+	const handle = (e: { id: string }) => {
+		if (!map.style) return;
+		let canvas: HTMLCanvasElement | null = null;
+		switch (e.id) {
+			case 'oneway-arrow-forward':
+				canvas = createOnewayArrowIcon('#000000', false);
+				break;
+			case 'oneway-arrow-reverse':
+				canvas = createOnewayArrowIcon('#000000', true);
+				break;
+			case 'dsc-arrow-forward':
+				canvas = createDscArrowIcon('#0369a1', '#000000');
+				break;
+			case 'dsc-arrow-reverse':
+				canvas = createDscArrowIcon('#000000', '#0369a1');
+				break;
+		}
+		if (!canvas) {
+			return;
+		}
+
+		if (map.hasImage(e.id)) {
+			return;
+		}
+
+		const ctx = canvas.getContext('2d');
+		const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
+		if (imageData) {
+			map.addImage(e.id, imageData, { pixelRatio: window.devicePixelRatio || 1 });
+		}
+	};
+	map.on('styleimagemissing', handle);
+
+	const hideBasemapOnewayArrows = () => {
+		for (const id of BASEMAP_ONEWAY_LAYER_IDS) {
+			if (map.getLayer(id)) {
+				map.setLayoutProperty(id, 'visibility', 'none');
+			}
+		}
+	};
+	hideBasemapOnewayArrows();
+	map.on('styledata', hideBasemapOnewayArrows);
+}
+
+/**
+ * Draws a single horizontal arrow pointing right (or left if `reverse`).
+ * Style matches the right/left half of `createDscArrowIcon` so DSC and
+ * regular oneway arrows look like the same visual family.
+ */
+export function createOnewayArrowIcon(color: string, reverse = false): HTMLCanvasElement {
+	const canvas = document.createElement('canvas');
+	const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+	const width = 7;
+	const height = 7;
+
+	canvas.width = width * dpr;
+	canvas.height = height * dpr;
+
+	const ctx = canvas.getContext('2d');
+	if (!ctx) {
+		return canvas;
+	}
+
+	ctx.scale(dpr, dpr);
+
+	const midY = height / 2;
+	const headLen = 2.5;
+	const headHalf = 2.5;
+	const lineWidth = 1.2;
+
+	ctx.strokeStyle = color;
+	ctx.fillStyle = color;
+	ctx.lineWidth = lineWidth;
+	ctx.lineCap = 'butt';
+
+	if (reverse) {
+		// arrow pointing left
+		ctx.beginPath();
+		ctx.moveTo(width, midY);
+		ctx.lineTo(headLen, midY);
+		ctx.stroke();
+		ctx.beginPath();
+		ctx.moveTo(0, midY);
+		ctx.lineTo(headLen, midY - headHalf);
+		ctx.lineTo(headLen, midY + headHalf);
+		ctx.closePath();
+		ctx.fill();
+	} else {
+		// arrow pointing right
+		ctx.beginPath();
+		ctx.moveTo(0, midY);
+		ctx.lineTo(width - headLen, midY);
+		ctx.stroke();
+		ctx.beginPath();
+		ctx.moveTo(width, midY);
+		ctx.lineTo(width - headLen, midY - headHalf);
+		ctx.lineTo(width - headLen, midY + headHalf);
+		ctx.closePath();
+		ctx.fill();
+	}
+
+	return canvas;
+}
+
+/**
+ * Draws a horizontal double-arrow icon split into two colored halves.
+ * Used on DSC (double sens cyclable) streets: one half = bike contraflow direction,
+ * the other half = car direction.
+ *
+ * @param leftColor color of the left-pointing arrow (left half)
+ * @param rightColor color of the right-pointing arrow (right half)
+ */
+export function createDscArrowIcon(leftColor: string, rightColor: string): HTMLCanvasElement {
+	const canvas = document.createElement('canvas');
+	const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
+	const width = 14;
+	const height = 7;
+
+	canvas.width = width * dpr;
+	canvas.height = height * dpr;
+
+	const ctx = canvas.getContext('2d');
+	if (!ctx) return canvas;
+	ctx.scale(dpr, dpr);
+
+	const midY = height / 2;
+	const midX = width / 2;
+	const headLen = 2.5;
+	const headHalf = 2.5;
+	const lineWidth = 1.2;
+
+	// left half: arrow pointing left
+	ctx.strokeStyle = leftColor;
+	ctx.fillStyle = leftColor;
+	ctx.lineWidth = lineWidth;
+	ctx.lineCap = 'butt';
+	ctx.beginPath();
+	ctx.moveTo(midX, midY);
+	ctx.lineTo(headLen, midY);
+	ctx.stroke();
+	ctx.beginPath();
+	ctx.moveTo(0, midY);
+	ctx.lineTo(headLen, midY - headHalf);
+	ctx.lineTo(headLen, midY + headHalf);
+	ctx.closePath();
+	ctx.fill();
+
+	// right half: arrow pointing right
+	ctx.strokeStyle = rightColor;
+	ctx.fillStyle = rightColor;
+	ctx.beginPath();
+	ctx.moveTo(midX, midY);
+	ctx.lineTo(width - headLen, midY);
+	ctx.stroke();
+	ctx.beginPath();
+	ctx.moveTo(width, midY);
+	ctx.lineTo(width - headLen, midY - headHalf);
+	ctx.lineTo(width - headLen, midY + headHalf);
+	ctx.closePath();
+	ctx.fill();
+
+	return canvas;
+}
+
 export function createCompositeLineShieldIcon(
 	lineNumbers: number[],
 	colors: string[],

@@ -156,8 +156,10 @@
 									stroke-dasharray="8 4"
 								/>
 							{:else if item.render === 'arrow'}
-								<line x1="0" y1="6" x2="40" y2="6" stroke={COLOR} stroke-width="2" />
-								<polygon points="40,2 48,6 40,10" fill={COLOR} />
+								<line x1="8" y1="6" x2="24" y2="6" stroke="#000000" stroke-width="2" />
+								<polygon points="0,6 8,2 8,10" fill="#000000" />
+								<line x1="24" y1="6" x2="40" y2="6" stroke="#0369a1" stroke-width="2" />
+								<polygon points="48,6 40,2 40,10" fill="#0369a1" />
 							{/if}
 						</svg>
 						<span>{item.label}</span>
@@ -246,8 +248,10 @@
 									stroke-dasharray="8 4"
 								/>
 							{:else if item.render === 'arrow'}
-								<line x1="0" y1="6" x2="40" y2="6" stroke={COLOR} stroke-width="2" />
-								<polygon points="40,2 48,6 40,10" fill={COLOR} />
+								<line x1="8" y1="6" x2="24" y2="6" stroke="#000000" stroke-width="2" />
+								<polygon points="0,6 8,2 8,10" fill="#000000" />
+								<line x1="24" y1="6" x2="40" y2="6" stroke="#0369a1" stroke-width="2" />
+								<polygon points="48,6 40,2 40,10" fill="#0369a1" />
 							{/if}
 						</svg>
 						<span>{item.label}</span>
