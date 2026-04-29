@@ -124,7 +124,7 @@
 				'icon-image': iconImageExpr,
 				'icon-rotation-alignment': 'map',
 				'icon-pitch-alignment': 'map',
-				'icon-keep-upright': true,
+				'icon-keep-upright': false,
 				'icon-allow-overlap': true,
 				'icon-ignore-placement': true,
 			}}
@@ -144,7 +144,7 @@
 				'icon-image': iconImageExpr,
 				'icon-rotation-alignment': 'map',
 				'icon-pitch-alignment': 'map',
-				'icon-keep-upright': true,
+				'icon-keep-upright': false,
 				'icon-allow-overlap': true,
 				'icon-ignore-placement': true,
 			}}
