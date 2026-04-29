@@ -258,6 +258,17 @@
 		setLayers([...next]);
 	}
 
+	function deactivateCategory(category: string) {
+		const layerIds = availableLayers.filter((l) => l.category === category).map((l) => l.id);
+
+		const next = new Set(visibleSet);
+		for (const id of layerIds) {
+			next.delete(id);
+		}
+
+		setLayers([...next]);
+	}
+
 	let layersBeforeYearFilter: string[] | null = $state(null);
 
 	function setFilterByYear(on: boolean) {
@@ -760,6 +771,7 @@
 				{isCategoryActive}
 				{toggleLayer}
 				{toggleCategory}
+				{deactivateCategory}
 				onOpenSidebar={sidebarHidden ? toggleSidebar : undefined}
 			/>
 
