@@ -303,12 +303,12 @@ export async function getCachedOverpassPOIsData(): Promise<unknown> {
 // One-way streets — limited to drivable highway classes so we can render arrows
 // at lower zooms (z11+) than the OpenMapTiles vector layer allows (z14+).
 const ONEWAY_HIGHWAY_TYPES =
-	'^(motorway|trunk|primary|secondary|tertiary|primary_link|secondary_link|tertiary_link)$';
+	'^(motorway|trunk|primary|secondary|tertiary|residential|unclassified|living_street|primary_link|secondary_link|tertiary_link)$';
 const OVERPASS_ONEWAYS_QUERY = [
 	`[out:json][timeout:120];`,
 	`(`,
-	`  way["highway"~"${ONEWAY_HIGHWAY_TYPES}"]["oneway"="yes"]["oneway:bicycle"!="no"](${OVERPASS_BBOX});`,
-	`  way["highway"~"${ONEWAY_HIGHWAY_TYPES}"]["oneway"="-1"]["oneway:bicycle"!="no"](${OVERPASS_BBOX});`,
+	`  way["highway"~"${ONEWAY_HIGHWAY_TYPES}"]["oneway"="yes"](${OVERPASS_BBOX});`,
+	`  way["highway"~"${ONEWAY_HIGHWAY_TYPES}"]["oneway"="-1"](${OVERPASS_BBOX});`,
 	`);`,
 	`out geom;`,
 ].join('\n');
