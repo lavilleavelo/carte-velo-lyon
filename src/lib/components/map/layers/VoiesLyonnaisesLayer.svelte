@@ -23,6 +23,7 @@
 		projectVLSubLayers = [],
 		boundary,
 		yearRange,
+		opacityScale = 1,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		map: maplibregl.Map | undefined;
@@ -30,6 +31,7 @@
 		projectVLSubLayers?: readonly ProjectVLSubLayer[];
 		boundary?: FeatureCollection;
 		yearRange?: [number, number];
+		opacityScale?: number;
 	} = $props();
 
 	function getVlYear(f: Feature): number | null {
@@ -153,7 +155,7 @@
 				paint={{
 					'line-color': vlColors[lineIndex],
 					'line-width': 6,
-					'line-opacity': 1,
+					'line-opacity': opacityScale,
 				}}
 				filter={['==', ['get', 'status'], 'done']}
 			/>
@@ -167,7 +169,7 @@
 				paint={{
 					'line-color': '#000000',
 					'line-width': 3,
-					'line-opacity': 1,
+					'line-opacity': opacityScale,
 				}}
 				filter={['==', ['get', 'status'], 'done']}
 			/>
@@ -253,7 +255,7 @@
 				paint={{
 					'line-color': '#ffffff',
 					'line-width': 4,
-					'line-opacity': 0.8,
+					'line-opacity': 0.8 * opacityScale,
 				}}
 				layout={{
 					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
@@ -273,7 +275,7 @@
 				paint={{
 					'line-color': colorExpression,
 					'line-width': 3,
-					'line-opacity': 0.9,
+					'line-opacity': 0.9 * opacityScale,
 					'line-dasharray': dashArrayExpression,
 				}}
 				filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}

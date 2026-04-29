@@ -7,12 +7,14 @@
 		max,
 		onRangeChange,
 		plain = false,
+		label = 'Année de réalisation',
 	}: {
 		range: [number, number];
 		min: number;
 		max: number;
 		onRangeChange: (range: [number, number]) => void;
 		plain?: boolean;
+		label?: string;
 	} = $props();
 
 	const sliderValue = $derived([range[0], range[1]]);
@@ -31,13 +33,13 @@
 	class:bg-white={!plain}
 	class:p-4={!plain}
 	class:shadow={!plain}
-	class="max-w-[400px]"
+	class:max-w-[400px]={!plain}
 >
 	<div class="mb-3 flex items-baseline justify-between gap-3">
 		{#if !plain}
-			<h2 class="text-sm font-semibold text-brand-navy uppercase">Année de réalisation</h2>
+			<h2 class="text-sm font-semibold text-brand-navy uppercase">{label}</h2>
 		{:else}
-			<span class="text-xs font-medium text-gray-600 uppercase">Année de réalisation</span>
+			<span class="text-xs font-medium text-gray-600 uppercase">{label}</span>
 		{/if}
 		<span class="text-sm font-medium text-gray-700">
 			{range[0]} – {range[1]}

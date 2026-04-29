@@ -73,6 +73,7 @@
 	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
 	import ToiletLayer from '$lib/components/map/layers/ToiletLayer.svelte';
 	import SchoolLayer from '$lib/components/map/layers/SchoolLayer.svelte';
+	import AccidentsVeloLayer from '$lib/components/map/layers/AccidentsVeloLayer.svelte';
 	import AdditionalPOILayer from '$lib/components/map/layers/AdditionalPOILayer.svelte';
 	import CyclewayFilters from '$lib/components/map/filters/CyclewayFilters.svelte';
 	import TargetNetworkLayer from '$lib/components/map/layers/TargetNetworkLayer.svelte';
@@ -1064,6 +1065,8 @@
 			<AdditionalPOILayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
 			<VelovLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
+
+			<AccidentsVeloLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 		</MapLibre>
 
 		<a

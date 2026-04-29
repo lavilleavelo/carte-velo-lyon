@@ -7,6 +7,8 @@
 	import MapIcon from '@lucide/svelte/icons/map';
 	import Building2 from '@lucide/svelte/icons/building-2';
 	import Info from '@lucide/svelte/icons/info';
+	import Gauge from '@lucide/svelte/icons/gauge';
+	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import { onMount } from 'svelte';
 	import { computeCommandScore } from 'bits-ui';
@@ -77,6 +79,20 @@
 			<Command.Item value="Communes|/communes" onSelect={() => go('/communes')}>
 				<Building2 class="mr-2 h-4 w-4" />
 				<span>Communes</span>
+			</Command.Item>
+			<Command.Item
+				value="Ville 30|Ville30|limitation vitesse 30 km/h|/ville-30"
+				onSelect={() => go('/ville-30')}
+			>
+				<Gauge class="mr-2 h-4 w-4" />
+				<span>Ville 30</span>
+			</Command.Item>
+			<Command.Item
+				value="Accidents vélo|accidents|BAAC|/accidents"
+				onSelect={() => go('/accidents')}
+			>
+				<AlertTriangle class="mr-2 h-4 w-4" />
+				<span>Accidents vélo</span>
 			</Command.Item>
 			<Command.Item value="À propos|/a-propos" onSelect={() => go('/a-propos')}>
 				<Info class="mr-2 h-4 w-4" />

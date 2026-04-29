@@ -14,6 +14,7 @@
 	import AdditionalPOILayer from '$lib/components/map/layers/AdditionalPOILayer.svelte';
 	import CountersLayer from '$lib/components/map/layers/CountersLayer.svelte';
 	import TargetNetworkLayer from '$lib/components/map/layers/TargetNetworkLayer.svelte';
+	import AccidentsVeloLayer from '$lib/components/map/layers/AccidentsVeloLayer.svelte';
 	import type { FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
 
@@ -73,3 +74,10 @@
 />
 <CountersLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {boundary} />
 <TargetNetworkLayer {isLayerVisible} {targetNetworkHorizons} {boundary} />
+<AccidentsVeloLayer
+	{isLayerVisible}
+	handleMouseEnter={noop}
+	handleMouseLeave={noop}
+	{map}
+	{boundary}
+/>

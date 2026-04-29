@@ -117,7 +117,11 @@
 		{#if showNavbar}
 			<Navbar currentPath={page.url.pathname} />
 		{/if}
-		<main class="mx-auto w-full max-w-7xl flex-1 px-4 sm:px-6 lg:px-8">
+		<main
+			class="mx-auto w-full flex-1 px-4 sm:px-6 lg:px-8 {page.url.pathname === '/accidents'
+				? 'max-w-none'
+				: 'max-w-7xl'}"
+		>
 			{@render children()}
 		</main>
 		{#if showNavbar}

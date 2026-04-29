@@ -753,8 +753,126 @@ export function getOsmVLConfigs(): LayerConfig[] {
 	}));
 }
 
+const ACCIDENT_META = {
+	'accidents-tue': { label: 'Tué', color: '#111827', badgeBg: 'bg-gray-900 text-white' },
+	'accidents-hospitalise': {
+		label: 'Blessé hospitalisé',
+		color: '#dc2626',
+		badgeBg: 'bg-red-600 text-white',
+	},
+	'accidents-leger': {
+		label: 'Blessé léger',
+		color: '#facc15',
+		badgeBg: 'bg-yellow-400 text-gray-900',
+	},
+	'accidents-indemne': {
+		label: 'Indemne',
+		color: '#60a5fa',
+		badgeBg: 'bg-blue-500 text-white',
+	},
+} as const;
+
+const MONTHS_FR = [
+	'janvier',
+	'février',
+	'mars',
+	'avril',
+	'mai',
+	'juin',
+	'juillet',
+	'août',
+	'septembre',
+	'octobre',
+	'novembre',
+	'décembre',
+];
+
+function formatDateFr(iso: string): string {
+	const m = iso.match(/^(\d{4})-(\d{2})-(\d{2})/);
+	if (!m) return iso;
+	const day = Number(m[3]);
+	const monthIdx = Number(m[2]) - 1;
+	const year = Number(m[1]);
+	if (monthIdx < 0 || monthIdx > 11) return iso;
+	const dayLabel = day === 1 ? '1ᵉʳ' : String(day);
+	return `${dayLabel} ${MONTHS_FR[monthIdx]} ${year}`;
+}
+
+function escapeHtml(s: string): string {
+	return s
+		.replace(/&/g, '&amp;')
+		.replace(/</g, '&lt;')
+		.replace(/>/g, '&gt;')
+		.replace(/"/g, '&quot;')
+		.replace(/'/g, '&#039;');
+}
+
+// Match the role inference used by the click-popup `AccidentDetails` so the
+// hover tooltip never says "Cycliste" for a Piéton victim.
+function buildVictimLine(p: {
+	categorie?: string;
+	sexe_victime?: string;
+	age?: number | null;
+	victim_vehicle?: string;
+}): string {
+	const isPassenger = p.categorie === 'Passager';
+	const vehicle = String(p.victim_vehicle ?? 'Vélo');
+	let role: string;
+	if (vehicle === 'Piéton') role = 'Piéton·ne';
+	else if (vehicle === 'EDPM' || vehicle === 'EDP non motorisé')
+		role = isPassenger ? `Passager·ère ${vehicle}` : vehicle;
+	else if (vehicle === 'VAE') role = isPassenger ? 'Passager·ère VAE' : 'Cycliste (VAE)';
+	else role = isPassenger ? 'Passager·ère vélo' : 'Cycliste';
+	const parts = [role];
+	if (p.sexe_victime) parts.push(p.sexe_victime.toLowerCase());
+	if (Number.isFinite(p.age)) parts.push(`${p.age} ans`);
+	return parts.join(' · ');
+}
+
+function accidentsLayerConfigs(): LayerConfig[] {
+	return (Object.keys(ACCIDENT_META) as (keyof typeof ACCIDENT_META)[]).map((id) => {
+		const meta = ACCIDENT_META[id];
+		return {
+			id,
+			label: `Accident vélo - ${meta.label}`,
+			category: 'safety' as const,
+			interactableLayerIds: [`${id}-hitarea`],
+			featureType: 'accident',
+			// Hover tooltip: short summary. Click panel (AccidentDetails) covers the
+			// full breakdown (resume, bilan total, source, etc.).
+			formatPopup: (p: any) => {
+				const date = formatDateFr(String(p.annee ?? ''));
+				const adresse = p.adresse ? escapeHtml(String(p.adresse).trim()) : '';
+				const commune = p.libelle_commune ? escapeHtml(String(p.libelle_commune).trim()) : '';
+				const victim = escapeHtml(buildVictimLine(p));
+				const collision = p.collision_type ? escapeHtml(String(p.collision_type)) : '';
+				const locationLine = adresse
+					? `<div class="text-xs text-gray-600">${adresse}${commune ? `, ${commune}` : ''}</div>`
+					: commune
+						? `<div class="text-xs text-gray-600">${commune}</div>`
+						: '';
+				return `
+					<div class="flex flex-col gap-1 max-w-[260px]">
+						<div class="flex items-center gap-2 flex-wrap">
+							<span class="inline-flex w-fit items-center rounded-full px-1.5 py-0.5 text-[10px] font-semibold uppercase ${meta.badgeBg}">${meta.label}</span>
+							${date ? `<span class="text-[10px] text-gray-500">${date}</span>` : ''}
+						</div>
+						<div class="text-sm font-semibold text-gray-900">${victim}</div>
+						${locationLine}
+						${collision ? `<div class="text-[10px] text-gray-500"><span class="text-gray-400">Collision&nbsp;:</span> ${collision}</div>` : ''}
+					</div>`;
+			},
+		};
+	});
+}
+
 export function getAllLayerConfigs(): LayerConfig[] {
-	return [...layerConfigs, ...getVoiesLyonnaisesConfigs(), ...getOsmVLConfigs()];
+	return [
+		...layerConfigs,
+		...getVoiesLyonnaisesConfigs(),
+		...getOsmVLConfigs(),
+		...accidentsLayerConfigs(),
+	];
 }
 
 export function getInteractableLayerIds(isLayerVisible: (id: string) => boolean): string[] {

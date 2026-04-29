@@ -29,12 +29,14 @@
 		activeLegendIds,
 		hoveredLegendId,
 		map,
+		opacityScale = 1,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		boundary?: FeatureCollection;
 		activeLegendIds?: string[];
 		hoveredLegendId?: string | null;
 		map?: maplibregl.Map;
+		opacityScale?: number;
 	} = $props();
 
 	const DSC_CAR_COLOR = '#000000';
@@ -45,8 +47,13 @@
 	const NORMAL_OPACITY = 0.9;
 
 	function opacityFor(...legendIds: string[]): number {
-		if (!hoveredLegendId) return NORMAL_OPACITY;
-		return legendIds.includes(hoveredLegendId) ? NORMAL_OPACITY : DIMMED_OPACITY;
+		const base =
+			!hoveredLegendId
+				? NORMAL_OPACITY
+				: legendIds.includes(hoveredLegendId)
+					? NORMAL_OPACITY
+					: DIMMED_OPACITY;
+		return base * opacityScale;
 	}
 
 	const opacityPisteBidir = $derived(opacityFor('piste-bidir'));

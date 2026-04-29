@@ -235,6 +235,30 @@ export const availableLayers: readonly LayerCatalogEntry[] = [
 		category: 'Établissements scolaires',
 	},
 	{
+		id: 'accidents-indemne',
+		label: 'Indemne',
+		color: '#60a5fa',
+		category: 'Accidents vélo',
+	},
+	{
+		id: 'accidents-tue',
+		label: 'Tué',
+		color: '#111827',
+		category: 'Accidents vélo',
+	},
+	{
+		id: 'accidents-hospitalise',
+		label: 'Blessé hospitalisé',
+		color: '#dc2626',
+		category: 'Accidents vélo',
+	},
+	{
+		id: 'accidents-leger',
+		label: 'Blessé léger',
+		color: '#ca8a04',
+		category: 'Accidents vélo',
+	},
+	{
 		id: 'speed-limit-5',
 		label: '≤ 5 km/h',
 		color: '#648FFF',
@@ -297,6 +321,7 @@ export const layerGroups: Record<string, string[]> = {
 		'parking-velostation',
 		'parking-lpa',
 	],
+	accidents: ['accidents-tue', 'accidents-hospitalise', 'accidents-leger', 'accidents-indemne'],
 	fountains: ['water-fountains'],
 };
 
@@ -416,6 +441,7 @@ export const optionalCategories = [
 	'Confort & Repos',
 	'Santé & Sécurité',
 	'Établissements scolaires',
+	'Accidents vélo',
 	'Projets',
 ] as const;
 

@@ -9,6 +9,7 @@
 	import WaterFountainDetails from './details/WaterFountainDetails.svelte';
 	import ToiletDetails from './details/ToiletDetails.svelte';
 	import CounterDetails from './details/CounterDetails.svelte';
+	import AccidentDetails from './details/AccidentDetails.svelte';
 	import DefaultDetails from './details/DefaultDetails.svelte';
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
@@ -50,6 +51,7 @@
 		if (type === 'pump') return PumpDetails;
 		if (type === 'water-fountain') return WaterFountainDetails;
 		if (type === 'toilet') return ToiletDetails;
+		if (type === 'accident') return AccidentDetails;
 		if (type && type.startsWith('vl-')) return VoieLyonnaiseDetails;
 		return DefaultDetails;
 	}

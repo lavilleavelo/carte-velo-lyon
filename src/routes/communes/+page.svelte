@@ -3,6 +3,7 @@
 	import Map from '@lucide/svelte/icons/map';
 	import ChartLine from '@lucide/svelte/icons/chart-line';
 	import Gauge from '@lucide/svelte/icons/gauge';
+	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import MetropoleInfrastructureChart from '$lib/components/charts/MetropoleInfrastructureChart.svelte';
 	import CommuneSelectorMap from '$lib/components/map/CommuneSelectorMap.svelte';
@@ -70,6 +71,28 @@
 			<span class="text-sm font-semibold text-brand-navy">Ville 30 dans la Métropole</span>
 			<span class="text-xs text-gray-600">
 				Voir la carte des communes ayant adopté la limitation à 30 km/h par défaut.
+			</span>
+		</span>
+		<ChevronRight
+			class="ml-auto h-5 w-5 shrink-0 text-brand-navy transition-transform group-hover:translate-x-0.5"
+			aria-hidden="true"
+		/>
+	</a>
+
+	<a
+		href="/accidents"
+		class="group flex items-center gap-3 rounded-lg border border-red-300 bg-red-50 px-4 py-3 transition-colors hover:bg-red-100"
+	>
+		<span
+			class="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-red-200 text-red-700"
+			aria-hidden="true"
+		>
+			<AlertTriangle class="h-5 w-5" />
+		</span>
+		<span class="flex flex-col gap-0.5">
+			<span class="text-sm font-semibold text-brand-navy">Accidents vélo</span>
+			<span class="text-xs text-gray-600">
+				Cartographie et exploration des accidents corporels impliquant un vélo (BAAC, depuis 2017).
 			</span>
 		</span>
 		<ChevronRight
