@@ -5,13 +5,17 @@
 	let {
 		title,
 		collapsed = $bindable(false),
+		active = false,
 		headerActions,
+		collapsedSummary,
 		children,
 		divider = true,
 	}: {
 		title: string;
 		collapsed?: boolean;
+		active?: boolean;
 		headerActions?: Snippet;
+		collapsedSummary?: Snippet;
 		children?: Snippet;
 		divider?: boolean;
 	} = $props();
@@ -33,8 +37,17 @@
 					: 'rotate-0'}"
 			/>
 			<h2 class="text-xs font-medium text-gray-600 uppercase">{title}</h2>
+			{#if active}
+				<span
+					class="ml-1 inline-block h-1.5 w-1.5 shrink-0 rounded-full bg-brand-navy"
+					title="Filtre actif"
+					aria-label="Filtre actif"
+				></span>
+			{/if}
 		</button>
-		{#if !collapsed && headerActions}
+		{#if collapsed && collapsedSummary}
+			{@render collapsedSummary()}
+		{:else if !collapsed && headerActions}
 			{@render headerActions()}
 		{/if}
 	</div>

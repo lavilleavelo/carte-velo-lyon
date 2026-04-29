@@ -166,6 +166,43 @@
 	const streetKeySet = $derived(new Set(params.streets.map((s) => normalizeStreet(s))));
 	const streetsActive = $derived(streetKeySet.size > 0);
 
+
+	const gravityActive = $derived.by(() => {
+		const def = new Set(DEFAULT_GRAVITIES);
+		if (def.size !== gravitySet.size) {
+			return true;
+		}
+
+		for (const g of def) {
+			if (!gravitySet.has(g)) {
+				return true;
+			}
+		}
+		return false;
+	});
+
+	const vehicleActive = $derived.by(() => {
+		const def = new Set(DEFAULT_VICTIM_VEHICLES);
+		if (def.size !== vehicleSet.size) {
+			return true;
+		}
+
+		for (const v of def) {
+			if (!vehicleSet.has(v)) {
+				return true;
+			}
+		}
+
+		return false;
+	});
+
+	const collisionActive = $derived.by(() => {
+		const total = (COLLISION_TYPES as unknown as string[]).length;
+		return collisionSet.size !== total;
+	});
+
+	const communeActive = $derived(!communesAll);
+
 	const filtered = $derived<Feature<Point, AccidentProps>[]>(
 		allFeatures.filter((f) => {
 			const p = f.properties;
@@ -207,6 +244,7 @@
 			if (p.an < params.yearFrom || p.an > params.yearTo) continue;
 			if (!vehicleSet.has(p.victim_vehicle)) continue;
 			if (!communesAll && (communesNone || !communeSet.has(p.libelle_commune))) continue;
+			if (streetsActive && !streetKeySet.has(normalizeStreet(p.adresse))) continue;
 			let b = m.get(p.collision_type);
 			if (!b) {
 				b = emptyBreakdown();
@@ -224,6 +262,7 @@
 			if (p.an < params.yearFrom || p.an > params.yearTo) continue;
 			if (!collisionSet.has(p.collision_type)) continue;
 			if (!communesAll && (communesNone || !communeSet.has(p.libelle_commune))) continue;
+			if (streetsActive && !streetKeySet.has(normalizeStreet(p.adresse))) continue;
 			let b = m.get(p.victim_vehicle);
 			if (!b) {
 				b = emptyBreakdown();
@@ -242,6 +281,7 @@
 			if (!vehicleSet.has(p.victim_vehicle)) continue;
 			if (!collisionSet.has(p.collision_type)) continue;
 			if (!communesAll && (communesNone || !communeSet.has(p.libelle_commune))) continue;
+			if (streetsActive && !streetKeySet.has(normalizeStreet(p.adresse))) continue;
 			m.set(p.gravite, (m.get(p.gravite) ?? 0) + 1);
 		}
 		return m;
@@ -254,6 +294,7 @@
 			if (p.an < params.yearFrom || p.an > params.yearTo) continue;
 			if (!vehicleSet.has(p.victim_vehicle)) continue;
 			if (!collisionSet.has(p.collision_type)) continue;
+			if (streetsActive && !streetKeySet.has(normalizeStreet(p.adresse))) continue;
 			let b = m.get(p.libelle_commune);
 			if (!b) {
 				b = emptyBreakdown();
@@ -308,7 +349,9 @@
 		for (const f of allFeatures) {
 			const p = f.properties;
 			if (!collisionSet.has(p.collision_type)) continue;
+			if (!vehicleSet.has(p.victim_vehicle)) continue;
 			if (!communesAll && (communesNone || !communeSet.has(p.libelle_commune))) continue;
+			if (streetsActive && !streetKeySet.has(normalizeStreet(p.adresse))) continue;
 			const b = m.get(p.an);
 			if (b) b[p.gravite as GravityKey] += 1;
 		}
@@ -878,7 +921,24 @@
 				<AccidentInsights features={filtered} />
 			</CollapsibleSection>
 
-			<CollapsibleSection title="Gravité" bind:collapsed={collapsed.gravity}>
+			<CollapsibleSection
+				title="Gravité"
+				bind:collapsed={collapsed.gravity}
+				active={gravityActive}
+			>
+				{#snippet collapsedSummary()}
+					<span class="flex items-center gap-1">
+						{#each GRAVITIES as g (g.id)}
+							{#if gravitySet.has(g.id)}
+								<span
+									class="inline-block h-2 w-2 rounded-full ring-1 ring-white"
+									style="background-color: {g.color}"
+									title={g.label}
+								></span>
+							{/if}
+						{/each}
+					</span>
+				{/snippet}
 				{#snippet headerActions()}
 					<div class="flex gap-1 text-[10px]">
 						<button
@@ -930,7 +990,16 @@
 				</div>
 			</CollapsibleSection>
 
-			<CollapsibleSection title="Type de victime" bind:collapsed={collapsed.vehicle}>
+			<CollapsibleSection
+				title="Type de victime"
+				bind:collapsed={collapsed.vehicle}
+				active={vehicleActive}
+			>
+				{#snippet collapsedSummary()}
+					<span class="text-[10px] text-gray-500 tabular-nums">
+						{vehicleSet.size}/{VICTIM_VEHICLES.length}
+					</span>
+				{/snippet}
 				{#snippet headerActions()}
 					<div class="flex gap-1 text-[10px]">
 						<button type="button" onclick={selectAllVehicles} class="text-gray-400 hover:text-gray-700"
@@ -993,7 +1062,18 @@
 				</div>
 			</CollapsibleSection>
 
-			<CollapsibleSection title="Rues" bind:collapsed={collapsed.street}>
+			<CollapsibleSection
+				title="Rues"
+				bind:collapsed={collapsed.street}
+				active={streetsActive}
+			>
+				{#snippet collapsedSummary()}
+					{#if streetsActive}
+						<span class="text-[10px] text-gray-500 tabular-nums">
+							{params.streets.length} sélectionnée{params.streets.length > 1 ? 's' : ''}
+						</span>
+					{/if}
+				{/snippet}
 				{#snippet headerActions()}
 					<div class="flex items-center gap-2">
 						{#if streetsActive}
@@ -1022,7 +1102,22 @@
 				/>
 			</CollapsibleSection>
 
-			<CollapsibleSection title="Communes" bind:collapsed={collapsed.commune}>
+			<CollapsibleSection
+				title="Communes"
+				bind:collapsed={collapsed.commune}
+				active={communeActive}
+			>
+				{#snippet collapsedSummary()}
+					{#if communesNone}
+						<span class="rounded bg-red-100 px-1.5 py-0.5 text-[10px] font-bold text-red-700"
+							>aucune</span
+						>
+					{:else if !communesAll}
+						<span class="text-[10px] text-gray-500 tabular-nums">
+							{communeSet.size} sélectionnée{communeSet.size > 1 ? 's' : ''}
+						</span>
+					{/if}
+				{/snippet}
 				{#snippet headerActions()}
 					<div class="flex items-center gap-2">
 						{#if !communesAll && !communesNone}
@@ -1066,7 +1161,18 @@
 				/>
 			</CollapsibleSection>
 
-			<CollapsibleSection title="Type de collision" bind:collapsed={collapsed.collision}>
+			<CollapsibleSection
+				title="Type de collision"
+				bind:collapsed={collapsed.collision}
+				active={collisionActive}
+			>
+				{#snippet collapsedSummary()}
+					{#if collisionActive}
+						<span class="text-[10px] text-gray-500 tabular-nums">
+							{collisionSet.size}/{COLLISION_TYPES.length}
+						</span>
+					{/if}
+				{/snippet}
 				{#snippet headerActions()}
 					<div class="flex gap-1 text-[10px]">
 						<button
