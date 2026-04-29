@@ -81,7 +81,6 @@ export function createSharedAreaProps(
 		area: {
 			'fill-opacity': 0.6,
 			line: { class: 'stroke-1' },
-			motion: { type: 'tween' as const, duration: 500, easing: cubicInOut },
 		},
 		highlight: { area: { fill: 'none' } },
 		xAxis: {

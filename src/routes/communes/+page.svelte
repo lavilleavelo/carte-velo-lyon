@@ -9,12 +9,20 @@
 	import LavilleaveloCta from '$lib/components/LavilleaveloCta.svelte';
 	import * as Tabs from '$lib/components/ui/tabs';
 	import { LYON_INSEE } from '$lib/config/lyon';
+	import { useSearchParams } from 'runed/kit';
+	import { type } from 'arktype';
 	import type { PageData } from './$types';
 
 	let { data }: { data: PageData } = $props();
 
 	const arrondissements = $derived(data.communes.filter((c) => c.slug.startsWith('lyon-')));
 	const communes = $derived(data.communes.filter((c) => !c.slug.startsWith('lyon-')));
+
+	const paramsSchema = type({
+		tab: type.enumerated('carte', 'statistiques').default(() => 'carte'),
+	});
+
+	const params = useSearchParams(paramsSchema, { pushHistory: false, noScroll: true });
 </script>
 
 <div class="space-y-8 py-6">
@@ -29,21 +37,21 @@
 		</p>
 	</header>
 
-	<Tabs.Root value="map" class="w-full gap-4">
+	<Tabs.Root bind:value={params.tab} class="w-full gap-4">
 		<Tabs.List>
-			<Tabs.Trigger value="map">
+			<Tabs.Trigger value="carte">
 				<Map />
 				Carte
 			</Tabs.Trigger>
-			<Tabs.Trigger value="chart">
+			<Tabs.Trigger value="statistiques">
 				<ChartLine />
 				Statistiques
 			</Tabs.Trigger>
 		</Tabs.List>
-		<Tabs.Content value="map">
+		<Tabs.Content value="carte">
 			<CommuneSelectorMap communes={data.communes} />
 		</Tabs.Content>
-		<Tabs.Content value="chart">
+		<Tabs.Content value="statistiques">
 			<MetropoleInfrastructureChart />
 		</Tabs.Content>
 	</Tabs.Root>
