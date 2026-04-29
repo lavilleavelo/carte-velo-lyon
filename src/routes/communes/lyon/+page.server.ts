@@ -5,6 +5,8 @@ import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
 import communeMetadataJson from '$lib/data/communeMetadata.json';
 import { getVille30StatsForCommune } from '$lib/server/ville30Stats';
 import { getCommuneStatsForInsee } from '$lib/server/communeStats';
+import { getCommuneOsmCyclewaysKm } from '$lib/server/communeOsmStats';
+import { buildBikeMapSeoDescription } from '$lib/server/communeSeo';
 import { LYON_ARRONDISSEMENT_INSEE_SET, LYON_INSEE } from '$lib/config/lyon';
 
 const lyonMetadata = (communeMetadataJson as Record<string, { ville30?: { adoptedAt?: string } }>)[
@@ -51,9 +53,10 @@ export const load: PageServerLoad = async () => {
 	};
 
 	const bbox = bboxOfFeatures(features);
-	const [ville30Stats, communeStats] = await Promise.all([
+	const [ville30Stats, communeStats, osmCyclewaysKm] = await Promise.all([
 		getVille30StatsForCommune(LYON_INSEE),
 		getCommuneStatsForInsee(LYON_INSEE),
+		getCommuneOsmCyclewaysKm(LYON_INSEE),
 	]);
 
 	return {
@@ -65,20 +68,19 @@ export const load: PageServerLoad = async () => {
 		communeStats,
 		seo: {
 			title: 'Carte vélo Lyon',
-			description: buildLyonSeoDescription(communeStats),
+			description: buildBikeMapSeoDescription({
+				name: 'Lyon',
+				osmCyclewaysKm,
+				parkingPlaces: communeStats?.parkingPlaces ?? null,
+				trailingItemsWithData: ['Voies Lyonnaises'],
+				fallbackItemsWithoutData: [
+					'aménagements',
+					'stationnements',
+					'Voies Lyonnaises',
+					'services vélo',
+				],
+				suffix: 'sur les 9 arrondissements',
+			}),
 		},
 	};
 };
-
-const numberFormatter = new Intl.NumberFormat('fr-FR');
-
-function buildLyonSeoDescription(
-	stats: { totalBikeLanesKm: number; parkingPlaces: number } | null,
-): string {
-	if (!stats || stats.totalBikeLanesKm <= 0) {
-		return 'Carte interactive des infrastructures cyclables à Lyon : aménagements, stationnements, Voies Lyonnaises et services vélo sur les 9 arrondissements.';
-	}
-	const km = numberFormatter.format(Math.round(stats.totalBikeLanesKm));
-	const parking = numberFormatter.format(stats.parkingPlaces);
-	return `Carte interactive des infrastructures cyclables à Lyon : ${km} km d'aménagements, ${parking} places de stationnement et Voies Lyonnaises sur les 9 arrondissements.`;
-}

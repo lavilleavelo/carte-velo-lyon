@@ -1,48 +1,37 @@
-import type { Feature, FeatureCollection, Geometry } from 'geojson';
+import type { FeatureCollection } from 'geojson';
 import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 import { computeVille30Stats, type Ville30Stats } from '$lib/utils/speedLimits';
 import { getCachedGrandLyonData } from '$lib/server/cache';
-import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
-import { LYON_ARRONDISSEMENT_INSEE, isLyonAggregateInsee } from '$lib/config/lyon';
-
-const features = communesGeoJSON.features as unknown as Feature<Geometry>[];
-
-const featureByInsee = new Map<string, Feature<Geometry>>();
-for (const f of features) {
-	const insee = (f.properties as { insee?: string } | null)?.insee;
-	if (insee) featureByInsee.set(insee, f);
-}
+import { getCommuneBoundary } from '$lib/server/communeBoundary';
 
 let cachedAllData: FeatureCollection | null = null;
 let cachedAllPromise: Promise<FeatureCollection> | null = null;
 const statsCache = new Map<string, Ville30Stats | null>();
 
 async function getSpeedLimitsData(): Promise<FeatureCollection> {
-	if (cachedAllData) return cachedAllData;
-	if (cachedAllPromise) return cachedAllPromise;
+	if (cachedAllData) {
+		return cachedAllData;
+	}
+
+	if (cachedAllPromise) {
+		return cachedAllPromise;
+	}
+
 	cachedAllPromise = (async () => {
 		const raw = (await getCachedGrandLyonData('speedLimits')) as FeatureCollection;
 		cachedAllData = raw;
 		return raw;
 	})();
+
 	return cachedAllPromise;
 }
 
-function buildBoundary(insees: readonly string[]): FeatureCollection | null {
-	const matched = insees.map((i) => featureByInsee.get(i)).filter(Boolean) as Feature<Geometry>[];
-	if (matched.length === 0) return null;
-	return { type: 'FeatureCollection', features: matched };
-}
-
 export async function getVille30StatsForCommune(insee: string): Promise<Ville30Stats | null> {
-	if (statsCache.has(insee)) return statsCache.get(insee) ?? null;
-
-	let boundary: FeatureCollection | null;
-	if (isLyonAggregateInsee(insee)) {
-		boundary = buildBoundary(LYON_ARRONDISSEMENT_INSEE);
-	} else {
-		boundary = buildBoundary([insee]);
+	if (statsCache.has(insee)) {
+		return statsCache.get(insee) ?? null;
 	}
+
+	const boundary = getCommuneBoundary(insee);
 	if (!boundary) {
 		statsCache.set(insee, null);
 		return null;

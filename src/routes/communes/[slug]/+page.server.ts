@@ -7,6 +7,8 @@ import communeMetadataJson from '$lib/data/communeMetadata.json';
 import { absoluteUrl } from '$lib/config/site';
 import { getVille30StatsForCommune } from '$lib/server/ville30Stats';
 import { getCommuneStatsForInsee } from '$lib/server/communeStats';
+import { getCommuneOsmCyclewaysKm } from '$lib/server/communeOsmStats';
+import { buildBikeMapSeoDescription } from '$lib/server/communeSeo';
 
 export interface Commune {
 	slug: string;
@@ -51,13 +53,17 @@ export const entries: EntryGenerator = () => {
 
 export const load: PageServerLoad = async ({ params }) => {
 	const entry = communesIndex.find((c) => c.slug === params.slug);
-	if (!entry) throw error(404, 'Commune introuvable');
+	if (!entry) {
+		throw error(404, 'Commune introuvable');
+	}
 
 	const commune = (await import(`$lib/data/communes/${entry.slug}.json`)).default as Commune;
 
 	const features = communesGeoJSON.features as unknown as Feature<Geometry>[];
 	const feature = features.find((f) => (f.properties as { insee: string }).insee === commune.insee);
-	if (!feature) throw error(500, 'Géométrie introuvable pour cette commune');
+	if (!feature) {
+		throw error(500, 'Géométrie introuvable pour cette commune');
+	}
 
 	const boundary: FeatureCollection = {
 		type: 'FeatureCollection',
@@ -65,9 +71,10 @@ export const load: PageServerLoad = async ({ params }) => {
 	};
 
 	const metadata = metadataByInsee[commune.insee] ?? null;
-	const [ville30Stats, communeStats] = await Promise.all([
+	const [ville30Stats, communeStats, osmCyclewaysKm] = await Promise.all([
 		getVille30StatsForCommune(commune.insee),
 		getCommuneStatsForInsee(commune.insee),
+		getCommuneOsmCyclewaysKm(commune.insee),
 	]);
 
 	return {
@@ -79,22 +86,19 @@ export const load: PageServerLoad = async ({ params }) => {
 		communeStats,
 		seo: {
 			title: `Carte vélo ${commune.name}`,
-			description: buildCommuneSeoDescription(commune.name, communeStats),
+			description: buildBikeMapSeoDescription({
+				name: commune.name,
+				osmCyclewaysKm,
+				parkingPlaces: communeStats?.parkingPlaces ?? null,
+				trailingItemsWithData: ['Voies Lyonnaises', 'services vélo'],
+				fallbackItemsWithoutData: [
+					'aménagements',
+					'stationnements',
+					'Voies Lyonnaises',
+					'services vélo',
+				],
+			}),
 			image: absoluteUrl(`/og/communes/${commune.slug}.jpg`),
 		},
 	};
 };
-
-const numberFormatter = new Intl.NumberFormat('fr-FR');
-
-function buildCommuneSeoDescription(
-	name: string,
-	stats: { totalBikeLanesKm: number; parkingPlaces: number } | null,
-): string {
-	if (!stats || stats.totalBikeLanesKm <= 0) {
-		return `Carte interactive des infrastructures cyclables à ${name} : aménagements, stationnements, Voies Lyonnaises et services vélo.`;
-	}
-	const km = numberFormatter.format(Math.round(stats.totalBikeLanesKm));
-	const parking = numberFormatter.format(stats.parkingPlaces);
-	return `Carte interactive des infrastructures cyclables à ${name} : ${km} km d'aménagements, ${parking} places de stationnement, Voies Lyonnaises et services vélo.`;
-}

@@ -1,7 +1,7 @@
-import type { Feature, FeatureCollection, Geometry } from 'geojson';
+import type { FeatureCollection } from 'geojson';
 import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 import { getCachedGrandLyonData } from '$lib/server/cache';
-import communesGeoJSON from '$lib/data/communes_limit_arrondissements.json';
+import { buildBoundary, expandInsee, featureByInsee } from '$lib/server/communeBoundary';
 import communeMetadataJson from '$lib/data/communeMetadata.json';
 import {
 	buildChartData,
@@ -16,7 +16,6 @@ import {
 	LYON_ARRONDISSEMENT_INSEE,
 	LYON_ARRONDISSEMENT_INSEE_SET,
 	LYON_INSEE,
-	isLyonAggregateInsee,
 	isLyonArrondissementInsee,
 } from '$lib/config/lyon';
 
@@ -73,13 +72,6 @@ interface CommuneMetadataEntry {
 	populationYear?: number | null;
 }
 
-const features = communesGeoJSON.features as unknown as Feature<Geometry>[];
-const featureByInsee = new Map<string, Feature<Geometry>>();
-for (const f of features) {
-	const insee = (f.properties as { insee?: string } | null)?.insee;
-	if (insee) featureByInsee.set(insee, f);
-}
-
 const metadataByInsee = communeMetadataJson as Record<string, CommuneMetadataEntry>;
 
 function pickPopulation(insees: readonly string[]): {
@@ -99,18 +91,6 @@ function pickPopulation(insees: readonly string[]): {
 		}
 	}
 	return total > 0 ? { value: total, year } : { value: null, year: null };
-}
-
-function buildBoundary(insees: readonly string[]): FeatureCollection | null {
-	const matched = insees
-		.map((i) => featureByInsee.get(i))
-		.filter((f): f is Feature<Geometry> => Boolean(f));
-
-	if (matched.length === 0) {
-		return null;
-	}
-
-	return { type: 'FeatureCollection', features: matched };
 }
 
 const RECENT_WINDOW_YEARS = 3;
@@ -351,7 +331,7 @@ function buildRankings(insee: string): CommuneRankings | null {
 }
 
 export async function getCommuneStatsForInsee(insee: string): Promise<CommuneStats | null> {
-	const insees = isLyonAggregateInsee(insee) ? LYON_ARRONDISSEMENT_INSEE : [insee];
+	const insees = expandInsee(insee);
 
 	const [voirie, parking, speedLimits] = (await Promise.all([
 		getCachedGrandLyonData('voirie'),
