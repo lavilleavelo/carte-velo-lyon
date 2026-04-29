@@ -27,6 +27,7 @@
 	import { Label } from '$lib/components/ui/label';
 	import Plus from '@lucide/svelte/icons/plus';
 	import X from '@lucide/svelte/icons/x';
+	import Building2 from '@lucide/svelte/icons/building-2';
 	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
 	import FilterPanel from '$lib/components/map/FilterPanel.svelte';
 	import FeatureInfo from '$lib/components/map/FeatureInfo.svelte';
@@ -827,6 +828,15 @@
 	style="margin-left: calc(50% - 50vw); width: 100vw;"
 >
 	<div class="relative h-full flex-1">
+		<a
+			href="/communes"
+			class="absolute top-3 left-3 z-20 hidden items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-md ring-1 ring-gray-200 transition-all hover:bg-gray-50 active:scale-95 lg:inline-flex"
+			title="Voir la liste de toutes les communes"
+		>
+			<Building2 size={14} />
+			Communes
+		</a>
+
 		<div
 			class="absolute top-3 left-1/2 z-20 flex w-full max-w-xs -translate-x-1/2 flex-col gap-2 px-4 sm:max-w-sm md:max-w-md"
 		>

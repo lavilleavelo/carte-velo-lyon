@@ -6,6 +6,10 @@
 	import Check from '@lucide/svelte/icons/check';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
 	import Building2 from '@lucide/svelte/icons/building-2';
+	import MapIcon from '@lucide/svelte/icons/map';
+	import Gauge from '@lucide/svelte/icons/gauge';
+	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
+	import Info from '@lucide/svelte/icons/info';
 	import { cn } from '$lib/utils';
 	import * as Command from '$lib/components/ui/command';
 	import communesIndex from '$lib/data/communes/_index.json';
@@ -121,6 +125,64 @@
 		return allCommunes.filter((c) => normalize(c.name).includes(nq)).slice(0, 5);
 	});
 
+	type NavEntry = {
+		href: string;
+		label: string;
+		hint: string;
+		icon: typeof Building2;
+		keywords: string[];
+	};
+	const NAV_ENTRIES: NavEntry[] = [
+		{
+			href: '/communes',
+			label: 'Toutes les communes',
+			hint: 'Liste complète et carte par commune',
+			icon: Building2,
+			keywords: ['communes', 'liste', 'arrondissements', 'metropole'],
+		},
+		{
+			href: '/accidents',
+			label: 'Accidents vélo',
+			hint: 'Carte des accidents corporels (BAAC)',
+			icon: AlertTriangle,
+			keywords: ['accidents', 'accident', 'baac', 'velo', 'cyclistes'],
+		},
+		{
+			href: '/ville-30',
+			label: 'Ville 30',
+			hint: 'Communes ayant adopté le 30 km/h',
+			icon: Gauge,
+			keywords: ['ville 30', 'vitesse', 'limitation', '30 km/h'],
+		},
+		{
+			href: '/a-propos',
+			label: 'À propos',
+			hint: 'Informations, mentions légales, contact',
+			icon: Info,
+			keywords: ['a propos', 'about', 'mentions legales', 'contact'],
+		},
+		{
+			href: '/',
+			label: 'Carte (accueil)',
+			hint: 'Retour à la carte principale',
+			icon: MapIcon,
+			keywords: ['carte', 'accueil', 'home', 'map'],
+		},
+	];
+
+	const navMatches = $derived.by<NavEntry[]>(() => {
+		const q = inputValue.trim();
+		if (q.length < 2) {
+			return NAV_ENTRIES.filter((e) => e.href === '/communes');
+		}
+		const nq = normalize(q);
+		return NAV_ENTRIES.filter((entry) => {
+			if (normalize(entry.label).includes(nq)) return true;
+			if (normalize(entry.hint).includes(nq)) return true;
+			return entry.keywords.some((k) => normalize(k).includes(nq));
+		});
+	});
+
 	function getResultTitle(props: GeocoderResult['properties']): string {
 		if (props.name) return props.name;
 		if (props.housenumber && props.street) return `${props.housenumber} ${props.street}`;
@@ -211,6 +273,12 @@
 		goto(buildCommuneHref(slug));
 	}
 
+	function handleNavSelect(entry: NavEntry) {
+		inputValue = '';
+		open = false;
+		goto(entry.href);
+	}
+
 	function handleClickOutside(event: MouseEvent) {
 		if (wrapperRef && !wrapperRef.contains(event.target as Node)) {
 			open = false;
@@ -248,18 +316,41 @@
 	<Command.Root shouldFilter={false} class="overflow-visible rounded-lg border bg-white shadow-md">
 		<Command.Input
 			bind:ref={inputRef}
-			placeholder="Rechercher un lieu..."
+			placeholder="Un lieu ou une commune..."
 			bind:value={inputValue}
 			onfocus={() => (open = true)}
 			oninput={() => (open = true)}
 			class="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
 		/>
 
-		{#if open && (results.length > 0 || communeMatches.length > 0 || inputValue.length >= 2)}
+		{#if open && (results.length > 0 || communeMatches.length > 0 || navMatches.length > 0 || inputValue.length >= 2)}
 			<div
 				class="absolute top-[calc(100%+4px)] left-0 w-full animate-in rounded-md border bg-popover text-popover-foreground shadow-md fade-in-0 outline-none zoom-in-95"
 			>
 				<Command.List class="max-h-[300px] overflow-x-hidden overflow-y-auto p-1">
+					{#if navMatches.length > 0}
+						<Command.Group>
+							<div
+								class="px-2 pt-1 pb-0.5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase"
+							>
+								Pages
+							</div>
+							{#each navMatches as entry (entry.href)}
+								<Command.Item
+									value={`nav-${entry.href}`}
+									onSelect={() => handleNavSelect(entry)}
+									class="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+								>
+									<entry.icon class="mr-2 h-4 w-4 shrink-0 text-brand-navy" />
+									<div class="flex flex-col">
+										<span class="font-medium">{entry.label}</span>
+										<span class="text-xs text-muted-foreground">{entry.hint}</span>
+									</div>
+								</Command.Item>
+							{/each}
+						</Command.Group>
+					{/if}
+
 					{#if communeMatches.length > 0}
 						<Command.Group>
 							<div
@@ -288,7 +379,7 @@
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 							Recherche en cours...
 						</div>
-					{:else if results.length === 0 && communeMatches.length === 0}
+					{:else if results.length === 0 && communeMatches.length === 0 && navMatches.length === 0}
 						<Command.Empty class="py-6 text-center text-sm">Aucun résultat trouvé.</Command.Empty>
 					{/if}
 
