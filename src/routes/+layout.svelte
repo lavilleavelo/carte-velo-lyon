@@ -15,6 +15,7 @@
 	const seoRobots = $derived(page.data.seo?.robots ?? 'index, follow');
 	const canonical = $derived(`${SITE.url}${page.url.pathname}`);
 	const ogImage = $derived(page.data.seo?.image ?? `${SITE.url}${SITE.ogImagePath}`);
+	const ogImageAlt = $derived(page.data.seo?.imageAlt ?? SITE.ogImageAlt);
 
 	const showNavbar = $derived(page.url.pathname !== '/');
 
@@ -60,7 +61,7 @@
 	<meta property="og:image" content={ogImage} />
 	<meta property="og:image:width" content={String(SITE.ogImageWidth)} />
 	<meta property="og:image:height" content={String(SITE.ogImageHeight)} />
-	<meta property="og:image:alt" content={SITE.ogImageAlt} />
+	<meta property="og:image:alt" content={ogImageAlt} />
 
 	<meta name="twitter:card" content="summary_large_image" />
 	<meta name="twitter:title" content={seoTitle} />

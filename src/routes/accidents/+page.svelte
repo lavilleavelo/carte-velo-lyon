@@ -618,14 +618,6 @@
 	});
 </script>
 
-<svelte:head>
-	<title>Accidents vélo · Carte vélo Lyon</title>
-	<meta
-		name="description"
-		content="Cartographie et exploration des accidents impliquant un vélo dans la Métropole de Lyon, données BAAC 2019-2024."
-	/>
-</svelte:head>
-
 <div class="flex flex-col gap-2 py-2 lg:gap-4 lg:py-4">
 	<header class="flex flex-wrap items-center gap-3 px-3 lg:px-6">
 		<div class="flex flex-1 flex-col gap-0.5 lg:gap-1">
