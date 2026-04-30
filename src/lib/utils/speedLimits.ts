@@ -93,8 +93,7 @@ export function computeVille30Stats(features: Feature[] | undefined): Ville30Sta
 			under30Km += lengthKm;
 		}
 
-		const isEligible =
-			!Number.isNaN(numericSpeed) && numericSpeed > 5 && numericSpeed < 70;
+		const isEligible = !Number.isNaN(numericSpeed) && numericSpeed > 5 && numericSpeed < 70;
 		if (isEligible) {
 			eligibleKm += lengthKm;
 			if (numericSpeed <= 30) {

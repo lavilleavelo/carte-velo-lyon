@@ -3,8 +3,8 @@
 	import ParkingLayer from '$lib/components/map/layers/ParkingLayer.svelte';
 	import PumpLayer from '$lib/components/map/layers/PumpLayer.svelte';
 	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
-	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
-	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
+	import VoiesLyonnaisesShields from '$lib/components/map/layers/VoiesLyonnaisesShields.svelte';
+	import OverpassVLShields from '$lib/components/map/layers/OverpassVLShields.svelte';
 	import OverpassOnewayArrowsLayer from '$lib/components/map/layers/OverpassOnewayArrowsLayer.svelte';
 	import MetroLayer from '$lib/components/map/layers/MetroLayer.svelte';
 	import TramLayer from '$lib/components/map/layers/TramLayer.svelte';
@@ -52,8 +52,8 @@
 	{boundary}
 	{yearRange}
 />
-<VoiesLyonnaisesLayer {isLayerVisible} {map} {boundary} {yearRange} />
-<OverpassVLLayer {isLayerVisible} {map} {boundary} />
+<VoiesLyonnaisesShields {isLayerVisible} {map} {boundary} {yearRange} />
+<OverpassVLShields {isLayerVisible} {map} {boundary} />
 <OverpassOnewayArrowsLayer {boundary} {map} />
 <VelovLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {boundary} />
 {#if visible.has('metro')}

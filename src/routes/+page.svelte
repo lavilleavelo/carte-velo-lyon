@@ -71,6 +71,7 @@
 	import CommunesLayer from '$lib/components/map/layers/CommunesLayer.svelte';
 	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
 	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
+	import VoiesLyonnaisesShields from '$lib/components/map/layers/VoiesLyonnaisesShields.svelte';
 	import PumpLayer from '$lib/components/map/layers/PumpLayer.svelte';
 	import WaterFountainLayer from '$lib/components/map/layers/WaterFountainLayer.svelte';
 	import ToiletLayer from '$lib/components/map/layers/ToiletLayer.svelte';
@@ -82,6 +83,7 @@
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
 	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
+	import OverpassVLShields from '$lib/components/map/layers/OverpassVLShields.svelte';
 	import OverpassOnewayArrowsLayer from '$lib/components/map/layers/OverpassOnewayArrowsLayer.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
 	import SpeedLimitsLayer from '$lib/components/map/layers/SpeedLimitsLayer.svelte';
@@ -963,9 +965,7 @@
 								? 'bg-blue-600! text-white! hover:bg-blue-700!'
 								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
 							aria-pressed={safetyMode}
-							aria-label={safetyMode
-								? 'Désactiver le mode sécurité'
-								: 'Activer le mode sécurité'}
+							aria-label={safetyMode ? 'Désactiver le mode sécurité' : 'Activer le mode sécurité'}
 							title={safetyMode
 								? 'Mode sécurité activé (bleu = sûr, rouge = non sûr)'
 								: 'Colorer par sécurité (sûr / non sûr)'}
@@ -1007,9 +1007,7 @@
 								? 'bg-blue-600! text-white! hover:bg-blue-700!'
 								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
 							aria-pressed={safetyMode}
-							aria-label={safetyMode
-								? 'Désactiver le mode sécurité'
-								: 'Activer le mode sécurité'}
+							aria-label={safetyMode ? 'Désactiver le mode sécurité' : 'Activer le mode sécurité'}
 							title={safetyMode
 								? 'Mode sécurité activé (bleu = sûr, rouge = non sûr)'
 								: 'Colorer par sécurité (sûr / non sûr)'}
@@ -1092,8 +1090,6 @@
 
 			<SpeedLimitsLayer {isLayerVisible} enabledBuckets={enabledSpeedBuckets} />
 
-			<OsmCyclewayLayer {isLayerVisible} {map} {safetyMode} />
-
 			<VoiesLyonnaisesLayer
 				{isLayerVisible}
 				{map}
@@ -1102,6 +1098,12 @@
 			/>
 
 			<OverpassVLLayer {isLayerVisible} {map} />
+
+			<OsmCyclewayLayer {isLayerVisible} {map} {safetyMode} />
+
+			<VoiesLyonnaisesShields {isLayerVisible} {map} />
+
+			<OverpassVLShields {isLayerVisible} {map} />
 
 			<CountersLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 

@@ -53,12 +53,11 @@
 	const NORMAL_OPACITY = 0.9;
 
 	function opacityFor(...legendIds: string[]): number {
-		const base =
-			!hoveredLegendId
+		const base = !hoveredLegendId
+			? NORMAL_OPACITY
+			: legendIds.includes(hoveredLegendId)
 				? NORMAL_OPACITY
-				: legendIds.includes(hoveredLegendId)
-					? NORMAL_OPACITY
-					: DIMMED_OPACITY;
+				: DIMMED_OPACITY;
 		return base * opacityScale;
 	}
 
@@ -254,7 +253,7 @@
 		filter={filterBande}
 		paint={{
 			'line-color': lineColor,
-			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.6, 11, 1.4, 14, 2.4, 17, 3.5],
+			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.5, 11, 1.1, 14, 2, 17, 2.8],
 			'line-opacity': ['*', opacityBande, safetyOpacityExpr],
 			'line-dasharray': BANDE_DASHARRAY,
 			'line-offset': zoomedOffset,
@@ -294,34 +293,9 @@
 		minzoom={11}
 		layout={{
 			'symbol-placement': 'line',
-			'symbol-spacing': [
-				'interpolate',
-				['linear'],
-				['zoom'],
-				11,
-				80,
-				14,
-				50,
-				17,
-				35,
-			],
-			'icon-size': [
-				'interpolate',
-				['exponential', 1.4],
-				['zoom'],
-				11,
-				0.4,
-				14,
-				0.8,
-				17,
-				1.2,
-			],
-			'icon-image': [
-				'case',
-				['==', ['get', 'oneway'], '-1'],
-				DSC_ICON_REVERSE,
-				DSC_ICON_FORWARD,
-			],
+			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 11, 80, 14, 50, 17, 35],
+			'icon-size': ['interpolate', ['exponential', 1.4], ['zoom'], 11, 0.4, 14, 0.8, 17, 1.2],
+			'icon-image': ['case', ['==', ['get', 'oneway'], '-1'], DSC_ICON_REVERSE, DSC_ICON_FORWARD],
 			'icon-rotation-alignment': 'map',
 			'icon-pitch-alignment': 'map',
 			'icon-keep-upright': true,

@@ -31,13 +31,11 @@
 		<span class="text-xs font-medium text-gray-600 uppercase">Âge des victimes</span>
 		{#if hovered !== null}
 			{@const hv = buckets.find((b) => b.key === hovered)}
-			<span class="text-[10px] font-semibold tabular-nums text-gray-700"
+			<span class="text-[10px] font-semibold text-gray-700 tabular-nums"
 				>{hovered} ans : {numFmt.format(hv?.total ?? 0)}</span
 			>
 		{:else if unknown > 0}
-			<span class="text-[10px] tabular-nums text-gray-400"
-				>{numFmt.format(unknown)} sans âge</span
-			>
+			<span class="text-[10px] text-gray-400 tabular-nums">{numFmt.format(unknown)} sans âge</span>
 		{/if}
 	</div>
 	<div

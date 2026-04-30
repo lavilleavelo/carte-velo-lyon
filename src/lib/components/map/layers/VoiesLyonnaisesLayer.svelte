@@ -1,8 +1,12 @@
 <script lang="ts">
-	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
+	import { GeoJSONSource, LineLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { processVoiesLyonnaisesData, vlColors, loadShieldIcons } from '$lib/utils/mapUtils';
-	import { filterFeaturesByYear, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import {
+		EMPTY_FEATURE_COLLECTION,
+		filterFeaturesByYear,
+		filterFeaturesInsideBoundary,
+	} from '$lib/utils/geoFilter';
 	import type { Feature, FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
 
@@ -82,14 +86,16 @@
 				cases.push(status, layer.customStyle.color);
 			});
 		});
+
 		if (cases.length === 0) {
-			return '#000000' as maplibregl.DataDrivenPropertyValueSpecification<string>;
+			return '#ffffff' as maplibregl.DataDrivenPropertyValueSpecification<string>;
 		}
+
 		return [
 			'match',
 			['get', 'status'],
 			...cases,
-			'#000000',
+			'#ffffff',
 		] as maplibregl.DataDrivenPropertyValueSpecification<string>;
 	});
 
@@ -143,158 +149,102 @@
 {#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
 	{@const layerId = `vl-${lineNumber}`}
 	{@const lineIndex = lineNumber - 1}
-	{#if groupedLineData?.[lineNumber]}
-		<GeoJSONSource id={`vl-${lineNumber}-source`} data={groupedLineData[lineNumber]}>
-			<LineLayer
-				id={`vl-${lineNumber}-line-contour`}
-				layout={{
-					'line-join': 'round',
-					'line-cap': 'round',
-					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-				}}
-				paint={{
-					'line-color': vlColors[lineIndex],
-					'line-width': 6,
-					'line-opacity': opacityScale,
-				}}
-				filter={['==', ['get', 'status'], 'done']}
-			/>
-			<LineLayer
-				id={`vl-${lineNumber}-line`}
-				layout={{
-					'line-join': 'round',
-					'line-cap': 'round',
-					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-				}}
-				paint={{
-					'line-color': '#000000',
-					'line-width': 3,
-					'line-opacity': opacityScale,
-				}}
-				filter={['==', ['get', 'status'], 'done']}
-			/>
+	{@const lineData = groupedLineData?.[lineNumber] ?? EMPTY_FEATURE_COLLECTION}
+	<GeoJSONSource id={`vl-${lineNumber}-source`} data={lineData}>
+		<LineLayer
+			id={`vl-${lineNumber}-line-contour`}
+			layout={{
+				'line-join': 'round',
+				'line-cap': 'round',
+				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+			}}
+			paint={{
+				'line-color': vlColors[lineIndex],
+				'line-width': 6,
+				'line-opacity': opacityScale,
+			}}
+			filter={['==', ['get', 'status'], 'done']}
+		/>
+		<LineLayer
+			id={`vl-${lineNumber}-line`}
+			layout={{
+				'line-join': 'round',
+				'line-cap': 'round',
+				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+			}}
+			paint={{
+				'line-color': 'rgb(255 255 255 / 0.5)',
+				'line-width': 3,
+				'line-opacity': opacityScale,
+			}}
+			filter={['==', ['get', 'status'], 'done']}
+		/>
 
-			<LineLayer
-				id={`vl-${lineNumber}-line-hitarea`}
-				layout={{
-					'line-join': 'round',
-					'line-cap': 'round',
-					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-				}}
-				paint={{
-					'line-color': 'transparent',
-					'line-width': 20,
-					'line-opacity': 0,
-				}}
-				filter={['==', ['get', 'status'], 'done']}
-			/>
-
-			{@const osmVlVisible = isLayerVisible(`osm-vl-${lineNumber}`)}
-			<SymbolLayer
-				id={`vl-${lineNumber}-labels-low`}
-				maxzoom={14}
-				filter={['all', ['==', ['get', 'status'], 'done'], ['>=', ['get', 'distance'], 900]]}
-				layout={{
-					'icon-image': [
-						'coalesce',
-						['get', 'compositeIconName'],
-						['concat', 'line-shield-', lineNumber],
-					],
-					'icon-size': 0.3,
-					'symbol-spacing': 1000000,
-					'symbol-placement': 'line-center',
-					'icon-rotation-alignment': 'viewport',
-					visibility: isLayerVisible(layerId) && !osmVlVisible ? 'visible' : 'none',
-				}}
-			/>
-
-			<SymbolLayer
-				id={`vl-${lineNumber}-labels-med`}
-				minzoom={13}
-				maxzoom={17}
-				filter={['all', ['==', ['get', 'status'], 'done'], ['>=', ['get', 'distance'], 300]]}
-				layout={{
-					'icon-image': [
-						'coalesce',
-						['get', 'compositeIconName'],
-						['concat', 'line-shield-', lineNumber],
-					],
-					'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.3, 15, 0.3, 17, 0.4],
-					'symbol-spacing': 1000000,
-					'symbol-placement': 'line-center',
-					visibility: isLayerVisible(layerId) && !osmVlVisible ? 'visible' : 'none',
-				}}
-			/>
-
-			<SymbolLayer
-				id={`vl-${lineNumber}-labels-high`}
-				minzoom={17}
-				filter={['==', ['get', 'status'], 'done']}
-				layout={{
-					'icon-image': [
-						'coalesce',
-						['get', 'compositeIconName'],
-						['concat', 'line-shield-', lineNumber],
-					],
-					'icon-size': 0.4,
-					'symbol-spacing': 1000000,
-					'symbol-placement': 'line-center',
-					visibility: isLayerVisible(layerId) && !osmVlVisible ? 'visible' : 'none',
-				}}
-			/>
-		</GeoJSONSource>
-	{/if}
+		<LineLayer
+			id={`vl-${lineNumber}-line-hitarea`}
+			layout={{
+				'line-join': 'round',
+				'line-cap': 'round',
+				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+			}}
+			paint={{
+				'line-color': 'transparent',
+				'line-width': 20,
+				'line-opacity': 0,
+			}}
+			filter={['==', ['get', 'status'], 'done']}
+		/>
+	</GeoJSONSource>
 {/each}
 
 {#each Array.from({ length: 12 }, (_, index) => index + 1).reverse() as lineNumber}
 	{@const layerId = 'project-vl'}
-	{#if groupedLineData?.[lineNumber]}
-		<GeoJSONSource id={`vl-project-${lineNumber}-source`} data={groupedLineData[lineNumber]}>
-			<LineLayer
-				id={`vl-project-${lineNumber}-casing`}
-				paint={{
-					'line-color': '#ffffff',
-					'line-width': 4,
-					'line-opacity': 0.8 * opacityScale,
-				}}
-				layout={{
-					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-					'line-join': 'round',
-					'line-cap': 'round',
-				}}
-				filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
-			/>
+	{@const projectData = groupedLineData?.[lineNumber] ?? EMPTY_FEATURE_COLLECTION}
+	<GeoJSONSource id={`vl-project-${lineNumber}-source`} data={projectData}>
+		<LineLayer
+			id={`vl-project-${lineNumber}-casing`}
+			paint={{
+				'line-color': '#ffffff',
+				'line-width': 4,
+				'line-opacity': 0.8 * opacityScale,
+			}}
+			layout={{
+				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+				'line-join': 'round',
+				'line-cap': 'round',
+			}}
+			filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
+		/>
 
-			<LineLayer
-				id={`vl-project-${lineNumber}-line`}
-				layout={{
-					'line-join': 'round',
-					'line-cap': 'round',
-					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-				}}
-				paint={{
-					'line-color': colorExpression,
-					'line-width': 3,
-					'line-opacity': 0.9 * opacityScale,
-					'line-dasharray': dashArrayExpression,
-				}}
-				filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
-			/>
+		<LineLayer
+			id={`vl-project-${lineNumber}-line`}
+			layout={{
+				'line-join': 'round',
+				'line-cap': 'round',
+				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+			}}
+			paint={{
+				'line-color': colorExpression,
+				'line-width': 3,
+				'line-opacity': 0.9 * opacityScale,
+				'line-dasharray': dashArrayExpression,
+			}}
+			filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
+		/>
 
-			<LineLayer
-				id={`vl-project-${lineNumber}-line-hitarea`}
-				paint={{
-					'line-color': 'transparent',
-					'line-width': 20,
-					'line-opacity': 0,
-				}}
-				layout={{
-					visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-					'line-join': 'round',
-					'line-cap': 'round',
-				}}
-				filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
-			/>
-		</GeoJSONSource>
-	{/if}
+		<LineLayer
+			id={`vl-project-${lineNumber}-line-hitarea`}
+			paint={{
+				'line-color': 'transparent',
+				'line-width': 20,
+				'line-opacity': 0,
+			}}
+			layout={{
+				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
+				'line-join': 'round',
+				'line-cap': 'round',
+			}}
+			filter={['in', ['get', 'status'], ['literal', activeProjectStatuses]]}
+		/>
+	</GeoJSONSource>
 {/each}

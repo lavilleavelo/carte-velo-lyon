@@ -12,9 +12,7 @@
 				Origine et périmètre des données affichées sur cette page.
 			</Dialog.Description>
 		</Dialog.Header>
-		<div
-			class="-mr-2 flex-1 space-y-3 overflow-y-auto pr-2 text-sm leading-relaxed text-gray-700"
-		>
+		<div class="-mr-2 flex-1 space-y-3 overflow-y-auto pr-2 text-sm leading-relaxed text-gray-700">
 			<div>
 				<h3 class="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">Source</h3>
 				<p>
@@ -76,16 +74,14 @@
 						<i>Rupture méthodologique 2018-2019.</i>
 					</summary>
 					<p class="mt-2">
-						Les règles de saisie des forces de l'ordre
-						ont changé en 2018, et l'indicateur « blessé hospitalisé » n'est plus labellisé par
-						l'autorité de la statistique publique depuis 2019. La période 2019-{dataMaxYear} est donc
-						la seule strictement comparable. Les années 2017-2018 restent disponibles via le
-						curseur (avec barres atténuées et un trait pointillé sur l'histogramme) pour exposer
-						des tendances de long terme, mais leurs comptes de blessés hospitalisés ne sont pas
-						comparables aux années suivantes.
+						Les règles de saisie des forces de l'ordre ont changé en 2018, et l'indicateur « blessé
+						hospitalisé » n'est plus labellisé par l'autorité de la statistique publique depuis
+						2019. La période 2019-{dataMaxYear} est donc la seule strictement comparable. Les années
+						2017-2018 restent disponibles via le curseur (avec barres atténuées et un trait pointillé
+						sur l'histogramme) pour exposer des tendances de long terme, mais leurs comptes de blessés
+						hospitalisés ne sont pas comparables aux années suivantes.
 					</p>
 				</details>
-
 			</div>
 
 			<div>

@@ -60,7 +60,7 @@
 						onSolo(e.canonical);
 					}}
 					title="Sélectionner uniquement {e.canonical}"
-					class="hidden text-[10px] font-semibold text-brand-navy hover:underline group-hover:inline"
+					class="hidden text-[10px] font-semibold text-brand-navy group-hover:inline hover:underline"
 				>
 					seul
 				</button>
@@ -68,10 +68,7 @@
 					<span class="flex shrink-0 items-center gap-1.5 group-hover:hidden">
 						{#each GRAVITIES as g (g.id)}
 							{#if gravitySet.has(g.id)}
-								<span
-									class="flex items-center gap-0.5 text-[10px] tabular-nums"
-									title={g.label}
-								>
+								<span class="flex items-center gap-0.5 text-[10px] tabular-nums" title={g.label}>
 									<span
 										class="inline-block h-1.5 w-1.5 rounded-full"
 										style="background-color: {g.color}"
@@ -82,7 +79,7 @@
 						{/each}
 					</span>
 				{:else}
-					<span class="shrink-0 text-[10px] tabular-nums text-gray-400 group-hover:hidden">
+					<span class="shrink-0 text-[10px] text-gray-400 tabular-nums group-hover:hidden">
 						{numFmt.format(e.total)}
 					</span>
 				{/if}

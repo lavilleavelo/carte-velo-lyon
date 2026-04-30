@@ -57,13 +57,12 @@
 		</a>
 	</div>
 	{#if ville30 && isPartial}
-		<div
-			class="flex items-start gap-2.5 rounded-lg border border-amber-300 bg-amber-50 p-3"
-		>
+		<div class="flex items-start gap-2.5 rounded-lg border border-amber-300 bg-amber-50 p-3">
 			<CircleAlert class="mt-0.5 h-4 w-4 shrink-0 text-amber-600" aria-hidden="true" />
 			<p class="text-sm text-brand-navy">
 				<strong>{communeName} est partiellement une Ville 30.</strong>
-				{ville30?.partialNote ?? `Une partie seulement de la commune est passée à 30 km/h${adoptedLabel ? ` (depuis ${adoptedLabel})` : ''}.`}
+				{ville30?.partialNote ??
+					`Une partie seulement de la commune est passée à 30 km/h${adoptedLabel ? ` (depuis ${adoptedLabel})` : ''}.`}
 			</p>
 		</div>
 	{:else if ville30}
@@ -72,10 +71,11 @@
 		>
 			<Check class="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" aria-hidden="true" />
 			<p class="text-sm text-brand-navy">
-				<strong>{communeName} est une Ville 30{adoptedLabel ? ` depuis ${adoptedLabel}` : ''}.</strong
+				<strong
+					>{communeName} est une Ville 30{adoptedLabel ? ` depuis ${adoptedLabel}` : ''}.</strong
 				>
-				La vitesse y est limitée à <strong>30 km/h par défaut</strong>, sauf indication contraire (axes
-				principaux, zones piétonnes, etc.).
+				La vitesse y est limitée à <strong>30 km/h par défaut</strong>, sauf indication contraire
+				(axes principaux, zones piétonnes, etc.).
 			</p>
 		</div>
 	{:else}
@@ -99,9 +99,7 @@
 					<div class="text-2xl font-bold text-brand-navy">
 						{numFormatter.format(stats.eligibleUnder30KmPercentage)}%
 					</div>
-					<div class="mt-1 text-sm text-gray-700">
-						des rues sont limitées à 30 km/h ou moins
-					</div>
+					<div class="mt-1 text-sm text-gray-700">des rues sont limitées à 30 km/h ou moins</div>
 					<div class="mt-0.5 text-xs text-gray-500">
 						{numFormatter.format(stats.eligibleUnder30Km)}&nbsp;km sur {numFormatter.format(
 							stats.eligibleKm,
@@ -115,7 +113,9 @@
 					</div>
 					<div class="mt-1 text-sm text-gray-700">de voirie limitée à 30 km/h ou moins</div>
 					<div class="mt-0.5 text-xs text-gray-500">
-						{numFormatter.format(stats.under30Km)}&nbsp;km sur {numFormatter.format(stats.totalKm)}&nbsp;km
+						{numFormatter.format(stats.under30Km)}&nbsp;km sur {numFormatter.format(
+							stats.totalKm,
+						)}&nbsp;km
 					</div>
 				</div>
 			{/if}
@@ -133,8 +133,9 @@
 							{numFormatter.format(stats.under30KmPercentage)}% de voirie ≤ 30 km/h
 						</div>
 						<div class="text-xs text-gray-500">
-							{numFormatter.format(stats.under30Km)}&nbsp;km sur {numFormatter.format(stats.totalKm)}&nbsp;km
-							(toutes voies confondues)
+							{numFormatter.format(stats.under30Km)}&nbsp;km sur {numFormatter.format(
+								stats.totalKm,
+							)}&nbsp;km (toutes voies confondues)
 						</div>
 					</div>
 				</div>

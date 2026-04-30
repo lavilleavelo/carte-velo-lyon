@@ -193,8 +193,7 @@ export function classifyOsmCycleway(tags: Record<string, any>): Classification[]
 		const type = classifyValue(tags.cycleway);
 		if (type) {
 			const bidir = isAdvisory && type === 'Bande Cyclable';
-			const onewayWithoutContraflow =
-				tags.oneway === 'yes' && tags['oneway:bicycle'] !== 'no';
+			const onewayWithoutContraflow = tags.oneway === 'yes' && tags['oneway:bicycle'] !== 'no';
 			if (isCentered(type) || String(tags.cycleway).startsWith('opposite')) {
 				results.push({ typeamenagement: type, side: 'center', bidirectional: bidir });
 			} else if (type === 'Couloir bus vélo' || onewayWithoutContraflow) {

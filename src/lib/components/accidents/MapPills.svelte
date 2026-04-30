@@ -43,13 +43,13 @@
 	</button>
 	{#if dimVisible}
 		<label
-			class="pointer-events-auto inline-flex cursor-pointer select-none items-center gap-1.5 rounded-full bg-white px-2 py-1 text-[11px] font-medium whitespace-nowrap text-gray-600 shadow-sm ring-1 ring-gray-300 transition-all hover:bg-gray-50"
+			class="pointer-events-auto inline-flex cursor-pointer items-center gap-1.5 rounded-full bg-white px-2 py-1 text-[11px] font-medium whitespace-nowrap text-gray-600 shadow-sm ring-1 ring-gray-300 transition-all select-none hover:bg-gray-50"
 			title="Atténuer les aménagements pour faire ressortir les points"
 		>
 			<input type="checkbox" class="peer sr-only" bind:checked={dimOverlay} />
 			<span
 				aria-hidden="true"
-				class="relative inline-block h-3.5 w-6 shrink-0 rounded-full bg-gray-300 transition-colors after:absolute after:top-0.5 after:left-0.5 after:h-2.5 after:w-2.5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:bg-brand-navy peer-checked:after:translate-x-2.5"
+				class="relative inline-block h-3.5 w-6 shrink-0 rounded-full bg-gray-300 transition-colors peer-checked:bg-brand-navy after:absolute after:top-0.5 after:left-0.5 after:h-2.5 after:w-2.5 after:rounded-full after:bg-white after:shadow after:transition-all peer-checked:after:translate-x-2.5"
 			></span>
 			Atténuer
 		</label>

@@ -1,7 +1,12 @@
 <script lang="ts">
-	import { GeoJSONSource, LineLayer } from 'svelte-maplibre-gl';
+	import { GeoJSONSource, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
-	import { vlColors, calculateLineDistance } from '$lib/utils/mapUtils';
+	import {
+		vlColors,
+		loadShieldIcons,
+		createCompositeLineShieldIcon,
+		calculateLineDistance,
+	} from '$lib/utils/mapUtils';
 	import type { GeoJSON, FeatureCollection } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
 	import { EMPTY_FEATURE_COLLECTION, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
@@ -165,6 +170,26 @@
 		meta: { loadingLabel: 'Voies Lyonnaises (OSM)' },
 	}));
 
+	$effect(() => {
+		if (map && overpassQuery.data) {
+			const { grouped, compositeIcons } = overpassQuery.data;
+			const allFeatures = Object.values(grouped).flatMap((fc) => fc.features);
+			loadShieldIcons(map, allFeatures);
+
+			compositeIcons.forEach((combo) => {
+				const iconName = `line-shield-${combo}`;
+				if (map!.hasImage(iconName)) return;
+				const lineNumbers = combo.split('-').map(Number);
+				const colors = lineNumbers.map((line) => vlColors[line - 1]);
+				const canvas = createCompositeLineShieldIcon(lineNumbers, colors);
+				const imageData = canvas.getContext('2d')?.getImageData(0, 0, canvas.width, canvas.height);
+				if (imageData) {
+					map!.addImage(iconName, imageData);
+				}
+			});
+		}
+	});
+
 	const filteredByLine = $derived.by(() => {
 		const data = overpassQuery.data;
 		if (!data) return undefined;
@@ -178,65 +203,47 @@
 
 {#each Array.from({ length: 12 }, (_, index) => index + 1) as lineNumber}
 	{@const layerId = `osm-vl-${lineNumber}`}
-	{@const lineIndex = lineNumber - 1}
-	{@const vlVisible = isLayerVisible(`vl-${lineNumber}`)}
-	{@const lineData = filteredByLine?.[lineNumber] ?? EMPTY_FEATURE_COLLECTION}
-	<GeoJSONSource id={`osm-vl-${lineNumber}-source`} data={lineData}>
-		<LineLayer
-			id={`osm-vl-${lineNumber}-line-contour`}
+	{@const shieldVisibility = isLayerVisible(layerId) ? 'visible' : 'none'}
+	{@const shieldData = filteredByLine?.[lineNumber] ?? EMPTY_FEATURE_COLLECTION}
+	<GeoJSONSource id={`osm-vl-${lineNumber}-shield-source`} data={shieldData}>
+		<SymbolLayer
+			id={`osm-vl-${lineNumber}-shield-low`}
+			maxzoom={14}
+			filter={['all', ['==', ['get', 'showShield'], 1], ['>=', ['get', 'distance'], 900]]}
+			layout={{
+				'icon-image': ['coalesce', ['get', 'compositeIconName'], `line-shield-${lineNumber}`],
+				'icon-size': 0.3,
+				'symbol-spacing': 1000000,
+				'symbol-placement': 'line-center',
+				'icon-rotation-alignment': 'viewport',
+				visibility: shieldVisibility,
+			}}
+		/>
+		<SymbolLayer
+			id={`osm-vl-${lineNumber}-shield-med`}
+			minzoom={13}
+			maxzoom={17}
+			filter={['all', ['==', ['get', 'showShield'], 1], ['>=', ['get', 'distance'], 300]]}
+			layout={{
+				'icon-image': ['coalesce', ['get', 'compositeIconName'], `line-shield-${lineNumber}`],
+				'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.3, 15, 0.3, 17, 0.4],
+				'symbol-spacing': 1000000,
+				'symbol-placement': 'line-center',
+				'icon-rotation-alignment': 'viewport',
+				visibility: shieldVisibility,
+			}}
+		/>
+		<SymbolLayer
+			id={`osm-vl-${lineNumber}-shield-high`}
+			minzoom={17}
 			filter={['==', ['get', 'showShield'], 1]}
 			layout={{
-				'line-join': 'round',
-				'line-cap': 'round',
-				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-			}}
-			paint={{
-				'line-color': '#ffffff',
-				'line-width': ['get', 'contourWidth'],
-				'line-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.3, 14, 0.9],
-			}}
-		/>
-		<LineLayer
-			id={`osm-vl-${lineNumber}-line-casing`}
-			layout={{
-				'line-join': 'round',
-				'line-cap': 'round',
-				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-			}}
-			paint={{
-				'line-color': '#333333',
-				'line-width': 5,
-				'line-opacity': 0.4,
-				'line-offset': ['get', 'offset'],
-			}}
-		/>
-		<LineLayer
-			id={`osm-vl-${lineNumber}-line`}
-			layout={{
-				'line-join': 'round',
-				'line-cap': 'round',
-				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-			}}
-			paint={{
-				'line-color': vlColors[lineIndex],
-				'line-width': 3.5,
-				'line-opacity': 0.9,
-				'line-dasharray': vlVisible ? [4, 2] : [1, 0],
-				'line-offset': ['get', 'offset'],
-			}}
-		/>
-		<LineLayer
-			id={`osm-vl-${lineNumber}-line-hitarea`}
-			layout={{
-				'line-join': 'round',
-				'line-cap': 'round',
-				visibility: isLayerVisible(layerId) ? 'visible' : 'none',
-			}}
-			paint={{
-				'line-color': 'transparent',
-				'line-width': 20,
-				'line-opacity': 0,
-				'line-offset': ['get', 'offset'],
+				'icon-image': ['coalesce', ['get', 'compositeIconName'], `line-shield-${lineNumber}`],
+				'icon-size': 0.4,
+				'symbol-spacing': 1000000,
+				'symbol-placement': 'line-center',
+				'icon-rotation-alignment': 'viewport',
+				visibility: shieldVisibility,
 			}}
 		/>
 	</GeoJSONSource>

@@ -120,7 +120,7 @@
 	});
 </script>
 
-<GeoJSONSource id="accidents-velo-source" data={data}>
+<GeoJSONSource id="accidents-velo-source" {data}>
 	{#each gravities as g (g.id)}
 		{@const visible = isLayerVisible(g.id)}
 		<SymbolLayer

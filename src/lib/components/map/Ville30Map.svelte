@@ -147,10 +147,7 @@
 		/>
 
 		<GeoJSONSource id="ville30-communes" data={communesLimitUrl}>
-			<FillLayer
-				id="ville30-fill-base"
-				paint={{ 'fill-color': '#1e3a5f', 'fill-opacity': 0.04 }}
-			/>
+			<FillLayer id="ville30-fill-base" paint={{ 'fill-color': '#1e3a5f', 'fill-opacity': 0.04 }} />
 			<FillLayer
 				id="ville30-fill-adopted"
 				filter={fullFilter}
@@ -208,10 +205,7 @@
 			/>
 		</GeoJSONSource>
 
-		<SpeedLimitsLayer
-			isLayerVisible={isSpeedLimitsLayer}
-			selectedBuckets={selectedSpeedBuckets}
-		/>
+		<SpeedLimitsLayer isLayerVisible={isSpeedLimitsLayer} selectedBuckets={selectedSpeedBuckets} />
 	</MapLibre>
 
 	<div class="absolute top-3 left-3 flex flex-col gap-2">

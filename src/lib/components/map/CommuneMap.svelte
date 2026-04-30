@@ -25,6 +25,8 @@
 	import CyclewayLegendControl from '$lib/components/map/CyclewayLegendControl.svelte';
 	import SpeedLimitsControl from '$lib/components/map/SpeedLimitsControl.svelte';
 	import CommuneMapLayers from '$lib/components/map/CommuneMapLayers.svelte';
+	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
+	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
 	import CommuneLayerControls from '$lib/components/map/CommuneLayerControls.svelte';
 	import YearRangeFilter from '$lib/components/map/YearRangeFilter.svelte';
 	import { Checkbox } from '$lib/components/ui/checkbox';
@@ -163,7 +165,7 @@
 	});
 
 	const paramsSchema = type({
-		layers: type('string[]').default(() => ['osm-cycleways']),
+		layers: type('string[]').default(() => ['osm-cycleways', 'vl']),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),
 		yearFrom: type('number').default(() => MIN_YEAR),
 		yearTo: type('number').default(() => MAX_YEAR),
@@ -305,9 +307,9 @@
 			for (const id of layerGroups.vl) next.add(id);
 			setLayers([...next]);
 			params.filterByYear = true;
-				if (params.safety) {
-					params.safety = false;
-				}
+			if (params.safety) {
+				params.safety = false;
+			}
 		} else {
 			params.filterByYear = false;
 			if (layersBeforeYearFilter) {
@@ -530,8 +532,7 @@
 				const len = featureLineLengthMeters(f);
 				if ((f.properties as any)?.isSafe) {
 					safe += len;
-				}
-				else unsafe += len;
+				} else unsafe += len;
 			}
 		}
 		return { safe, unsafe };
@@ -878,9 +879,7 @@
 								? 'bg-blue-600! text-white! hover:bg-blue-700!'
 								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
 							aria-pressed={safetyMode}
-							aria-label={safetyMode
-								? 'Désactiver le mode sécurité'
-								: 'Activer le mode sécurité'}
+							aria-label={safetyMode ? 'Désactiver le mode sécurité' : 'Activer le mode sécurité'}
 							title={safetyMode
 								? 'Mode sécurité activé (bleu = sûr, rouge = non sûr)'
 								: 'Colorer par sécurité (sûr / non sûr)'}
@@ -967,6 +966,15 @@
 						</div>
 					</Popup>
 				{/if}
+
+				<VoiesLyonnaisesLayer
+					isLayerVisible={isLayerActive}
+					{map}
+					{boundary}
+					yearRange={effectiveYearRange}
+				/>
+
+				<OverpassVLLayer isLayerVisible={isLayerActive} {map} {boundary} />
 
 				<CyclewayLayer
 					isLayerVisible={(id) => id === 'cycleways' && isLayerActive('cycleways')}
@@ -1073,7 +1081,8 @@
 						target="_blank"
 						rel="noopener"
 						class="underline hover:text-brand-navy">data.grandlyon.com</a
-					>. Les données peuvent varier légèrement des données OSM affichées par défaut sur la carte.
+					>. Les données peuvent varier légèrement des données OSM affichées par défaut sur la
+					carte.
 				</p>
 			{/if}
 		</div>

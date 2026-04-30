@@ -29,10 +29,7 @@ const unsafeRoad: Record<string, string> = {
 	trunk_link: 'bretelle de voie rapide',
 };
 
-export function isSafePath(
-	tags: Record<string, string>,
-	typeamenagement?: string,
-): SafetyReason {
+export function isSafePath(tags: Record<string, string>, typeamenagement?: string): SafetyReason {
 	if (typeamenagement === 'Piste Cyclable') {
 		return {
 			isSafe: true,

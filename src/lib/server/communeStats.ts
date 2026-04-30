@@ -181,9 +181,7 @@ function computeCoreMetrics(insees: readonly string[], data: FilteredData): Comm
 		populationYear,
 		parkingPer1000: popK ? parkingPlaces / popK : null,
 		eligibleRoadwayKm: hasRoadwayData ? eligibleRoadwayKm : null,
-		bikeInfraPer100kmRoadway: hasRoadwayData
-			? (totalBikeLanesKm / eligibleRoadwayKm) * 100
-			: null,
+		bikeInfraPer100kmRoadway: hasRoadwayData ? (totalBikeLanesKm / eligibleRoadwayKm) * 100 : null,
 		recentBikeLanesKm,
 		recentBikeLanesPer100kmRoadway: hasRoadwayData
 			? (recentBikeLanesKm / eligibleRoadwayKm) * 100
@@ -339,11 +337,7 @@ export async function getCommuneStatsForInsee(insee: string): Promise<CommuneSta
 		getCachedGrandLyonData('speedLimits'),
 	])) as [FeatureCollection, FeatureCollection, FeatureCollection];
 
-	if (
-		cachedVoirie !== voirie ||
-		cachedParking !== parking ||
-		cachedSpeedLimits !== speedLimits
-	) {
+	if (cachedVoirie !== voirie || cachedParking !== parking || cachedSpeedLimits !== speedLimits) {
 		statsCache.clear();
 		coreMetricsCache.clear();
 		allMetricsComputed = false;

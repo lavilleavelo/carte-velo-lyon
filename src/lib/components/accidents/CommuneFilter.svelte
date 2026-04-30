@@ -1,11 +1,6 @@
 <script lang="ts">
 	import { Checkbox } from '$lib/components/ui/checkbox';
-	import {
-		GRAVITIES,
-		shortCommuneLabel,
-		totalForBreakdown,
-		type Breakdown,
-	} from './types';
+	import { GRAVITIES, shortCommuneLabel, totalForBreakdown, type Breakdown } from './types';
 
 	type CommuneEntry = { slug: string; name: string; insee: string };
 
@@ -57,9 +52,7 @@
 	);
 	const visibleOther = $derived(
 		sortByCasualtiesDesc(
-			other.filter((c) =>
-				!search ? true : c.name.toLowerCase().includes(search.toLowerCase()),
-			),
+			other.filter((c) => (!search ? true : c.name.toLowerCase().includes(search.toLowerCase()))),
 		),
 	);
 </script>
@@ -71,11 +64,7 @@
 	<label
 		class="group relative flex cursor-pointer items-center gap-2 rounded-md p-1 hover:bg-gray-50"
 	>
-		<Checkbox
-			{checked}
-			onCheckedChange={() => onToggle(c.name)}
-			class="border-gray-300"
-		/>
+		<Checkbox {checked} onCheckedChange={() => onToggle(c.name)} class="border-gray-300" />
 		<span class="flex-1 text-xs text-gray-700">{shortCommuneLabel(c.name)}</span>
 		<button
 			type="button"
@@ -85,7 +74,7 @@
 				onSolo(c.name);
 			}}
 			title="Sélectionner uniquement {shortCommuneLabel(c.name)}"
-			class="hidden text-[10px] font-semibold text-brand-navy hover:underline group-hover:inline"
+			class="hidden text-[10px] font-semibold text-brand-navy group-hover:inline hover:underline"
 		>
 			seul
 		</button>
@@ -93,10 +82,7 @@
 			<span class="flex items-center gap-1.5 group-hover:hidden">
 				{#each GRAVITIES as g (g.id)}
 					{#if gravitySet.has(g.id)}
-						<span
-							class="flex items-center gap-0.5 text-[10px] tabular-nums"
-							title={g.label}
-						>
+						<span class="flex items-center gap-0.5 text-[10px] tabular-nums" title={g.label}>
 							<span
 								class="inline-block h-1.5 w-1.5 rounded-full"
 								style="background-color: {g.color}"
@@ -107,7 +93,7 @@
 				{/each}
 			</span>
 		{:else}
-			<span class="text-[10px] tabular-nums text-gray-400 group-hover:hidden"
+			<span class="text-[10px] text-gray-400 tabular-nums group-hover:hidden"
 				>{numFmt.format(total)}</span
 			>
 		{/if}

@@ -113,7 +113,7 @@
 
 		<dl class="grid grid-cols-2 gap-x-3 gap-y-2 text-xs">
 			<div>
-				<dt class="text-[10px] text-gray-500 uppercase tracking-wide">Sexe</dt>
+				<dt class="text-[10px] tracking-wide text-gray-500 uppercase">Sexe</dt>
 				<dd class="mt-0.5 flex items-baseline gap-1.5 tabular-nums">
 					<span class="font-semibold text-gray-900">{pctFmt(stats.pctMale)}</span>
 					<span class="text-[10px] text-gray-500">M</span>
@@ -124,7 +124,7 @@
 			</div>
 
 			<div>
-				<dt class="text-[10px] text-gray-500 uppercase tracking-wide">Âge</dt>
+				<dt class="text-[10px] tracking-wide text-gray-500 uppercase">Âge</dt>
 				<dd class="mt-0.5 tabular-nums">
 					{#if stats.meanAge != null}
 						<span class="font-semibold text-gray-900">{stats.meanAge.toFixed(0)}</span>
@@ -136,14 +136,14 @@
 			</div>
 
 			<div>
-				<dt class="text-[10px] text-gray-500 uppercase tracking-wide">À un carrefour</dt>
+				<dt class="text-[10px] tracking-wide text-gray-500 uppercase">À un carrefour</dt>
 				<dd class="mt-0.5 tabular-nums">
 					<span class="font-semibold text-gray-900">{pctFmt(stats.pctIntersection)}</span>
 				</dd>
 			</div>
 
 			<div>
-				<dt class="text-[10px] text-gray-500 uppercase tracking-wide">Choc latéral</dt>
+				<dt class="text-[10px] tracking-wide text-gray-500 uppercase">Choc latéral</dt>
 				<dd class="mt-0.5 tabular-nums">
 					<span class="font-semibold text-gray-900">{pctFmt(stats.pctLateral)}</span>
 				</dd>
@@ -151,13 +151,13 @@
 		</dl>
 
 		<div class="mt-3">
-			<p class="text-[10px] text-gray-500 uppercase tracking-wide">Manœuvres principales</p>
+			<p class="text-[10px] tracking-wide text-gray-500 uppercase">Manœuvres principales</p>
 			<ul class="mt-1 space-y-0.5">
 				{#if stats.topManoeuvres.length > 0}
 					{#each stats.topManoeuvres as m (m.label)}
 						<li class="flex items-baseline justify-between gap-2 text-xs">
 							<span class="truncate text-gray-700" title={m.label}>{m.label}</span>
-							<span class="shrink-0 tabular-nums text-[10px] text-gray-500">
+							<span class="shrink-0 text-[10px] text-gray-500 tabular-nums">
 								{m.pct.toFixed(0)} %
 							</span>
 						</li>

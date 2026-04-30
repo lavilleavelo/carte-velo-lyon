@@ -32,9 +32,7 @@
 		>
 			<ChevronDown
 				size={12}
-				class="shrink-0 text-gray-400 transition-transform {collapsed
-					? '-rotate-90'
-					: 'rotate-0'}"
+				class="shrink-0 text-gray-400 transition-transform {collapsed ? '-rotate-90' : 'rotate-0'}"
 			/>
 			<h2 class="text-xs font-medium text-gray-600 uppercase">{title}</h2>
 			{#if active}

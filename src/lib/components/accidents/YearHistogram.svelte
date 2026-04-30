@@ -1,10 +1,5 @@
 <script lang="ts">
-	import {
-		GRAVITIES,
-		VELO_INTENSITY,
-		VELO_INTENSITY_AXIS_MAX,
-		type Breakdown,
-	} from './types';
+	import { GRAVITIES, VELO_INTENSITY, VELO_INTENSITY_AXIS_MAX, type Breakdown } from './types';
 
 	let {
 		yearHistogram,
@@ -46,7 +41,6 @@
 			.join(' '),
 	);
 
-
 	const breakX = $derived.by(() => {
 		if (labellisationBreakYear == null) return null;
 		const idx = yearHistogram.findIndex((d) => d.year === labellisationBreakYear);
@@ -67,8 +61,7 @@
 	>
 		{#each yearHistogram as { year, breakdown, total } (year)}
 			{@const inRange = year >= yearFrom && year <= yearTo}
-			{@const isPreBreak =
-				labellisationBreakYear != null && year <= labellisationBreakYear}
+			{@const isPreBreak = labellisationBreakYear != null && year <= labellisationBreakYear}
 			<button
 				type="button"
 				class="group relative flex h-full flex-1 flex-col-reverse rounded-t-sm transition-opacity hover:!opacity-100"
@@ -83,9 +76,7 @@
 					{@const c = gravitySet.has(g.id) ? breakdown[g.id] : 0}
 					{@const segH = (c / histogramMax) * HEIGHT}
 					{#if c > 0}
-						<div
-							style="background-color: {g.color}; height: {segH}px; width: 100%;"
-						></div>
+						<div style="background-color: {g.color}; height: {segH}px; width: 100%;"></div>
 					{/if}
 				{/each}
 				{#if total === 0}

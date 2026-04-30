@@ -14,7 +14,7 @@
 
 {#if failed}
 	<div
-		class="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 text-[10px] text-gray-500 uppercase tracking-wide"
+		class="flex h-full w-full items-center justify-center bg-gradient-to-br from-gray-200 to-gray-300 text-[10px] tracking-wide text-gray-500 uppercase"
 	>
 		{styleId}
 	</div>

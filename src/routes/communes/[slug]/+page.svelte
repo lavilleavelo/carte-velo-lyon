@@ -48,65 +48,65 @@
 		</header>
 
 		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-		<span>
-			<span class="uppercase">INSEE</span>
-			<span class="font-semibold text-gray-700">{commune.insee}</span>
-		</span>
-		{#if commune.codePostal}
-			<span class="text-gray-300">·</span>
 			<span>
-				<span class="uppercase">Code postal</span>
-				<span class="font-semibold text-gray-700">{commune.codePostal}</span>
+				<span class="uppercase">INSEE</span>
+				<span class="font-semibold text-gray-700">{commune.insee}</span>
 			</span>
-		{/if}
-		{#if commune.surfaceKm2 !== null}
-			<span class="text-gray-300">·</span>
-			<span>
-				<span class="uppercase">Surface</span>
-				<span class="font-semibold text-gray-700">{commune.surfaceKm2}&nbsp;km²</span>
-			</span>
-		{/if}
-		{#if population !== null}
-			<span class="text-gray-300">·</span>
-			<span>
-				<span class="uppercase">Population</span>
-				<span class="font-semibold text-gray-700">{populationFormatter.format(population)}</span>
-				{#if populationYear}
-					<span class="text-gray-400">({populationYear})</span>
-				{/if}
-			</span>
-		{/if}
-		{#if density !== null}
-			<span class="text-gray-300">·</span>
-			<span>
-				<span class="uppercase">Densité</span>
-				<span class="font-semibold text-gray-700"
-					>{populationFormatter.format(density)}&nbsp;hab/km²</span
-				>
-			</span>
-		{/if}
-		<span class="text-gray-300">·</span>
-		<a
-			href={veloscoreUrl}
-			target="_blank"
-			rel="noopener"
-			class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
-		>
-			Vélo-score 2026
-			<ExternalLink class="h-3 w-3" />
-		</a>
-		{#if metadata?.wikipediaUrl}
+			{#if commune.codePostal}
+				<span class="text-gray-300">·</span>
+				<span>
+					<span class="uppercase">Code postal</span>
+					<span class="font-semibold text-gray-700">{commune.codePostal}</span>
+				</span>
+			{/if}
+			{#if commune.surfaceKm2 !== null}
+				<span class="text-gray-300">·</span>
+				<span>
+					<span class="uppercase">Surface</span>
+					<span class="font-semibold text-gray-700">{commune.surfaceKm2}&nbsp;km²</span>
+				</span>
+			{/if}
+			{#if population !== null}
+				<span class="text-gray-300">·</span>
+				<span>
+					<span class="uppercase">Population</span>
+					<span class="font-semibold text-gray-700">{populationFormatter.format(population)}</span>
+					{#if populationYear}
+						<span class="text-gray-400">({populationYear})</span>
+					{/if}
+				</span>
+			{/if}
+			{#if density !== null}
+				<span class="text-gray-300">·</span>
+				<span>
+					<span class="uppercase">Densité</span>
+					<span class="font-semibold text-gray-700"
+						>{populationFormatter.format(density)}&nbsp;hab/km²</span
+					>
+				</span>
+			{/if}
 			<span class="text-gray-300">·</span>
 			<a
-				href={metadata.wikipediaUrl}
+				href={veloscoreUrl}
 				target="_blank"
 				rel="noopener"
 				class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
 			>
-				Wikipédia
+				Vélo-score 2026
 				<ExternalLink class="h-3 w-3" />
 			</a>
-		{/if}
+			{#if metadata?.wikipediaUrl}
+				<span class="text-gray-300">·</span>
+				<a
+					href={metadata.wikipediaUrl}
+					target="_blank"
+					rel="noopener"
+					class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
+				>
+					Wikipédia
+					<ExternalLink class="h-3 w-3" />
+				</a>
+			{/if}
 		</div>
 	</div>
 
@@ -141,11 +141,7 @@
 		</section>
 	{/if}
 
-	<Ville30Indicator
-		communeName={commune.name}
-		ville30={data.ville30}
-		stats={data.ville30Stats}
-	/>
+	<Ville30Indicator communeName={commune.name} ville30={data.ville30} stats={data.ville30Stats} />
 
 	<CommuneStatsIndicators communeName={commune.name} stats={data.communeStats} />
 

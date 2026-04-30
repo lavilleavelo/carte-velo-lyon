@@ -38,13 +38,7 @@ export const GRAVITIES: readonly GravityDef[] = [
 
 export const DEFAULT_GRAVITIES: GravityKey[] = ['Tué', 'Blessé hospitalisé', 'Blessé léger'];
 
-export const VICTIM_VEHICLES = [
-	'Vélo',
-	'VAE',
-	'EDPM',
-	'EDP non motorisé',
-	'Piéton',
-] as const;
+export const VICTIM_VEHICLES = ['Vélo', 'VAE', 'EDPM', 'EDP non motorisé', 'Piéton'] as const;
 
 export const COLLISION_TYPES = [
 	'Voiture',

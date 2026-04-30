@@ -42,11 +42,7 @@
 		</div>
 	</div>
 
-	<Ville30Indicator
-		communeName="Lyon"
-		ville30={data.ville30}
-		stats={data.ville30Stats}
-	/>
+	<Ville30Indicator communeName="Lyon" ville30={data.ville30} stats={data.ville30Stats} />
 
 	<CommuneStatsIndicators communeName="Lyon" stats={data.communeStats} />
 

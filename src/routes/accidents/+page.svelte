@@ -69,9 +69,9 @@
 	const LABEL_BREAK_YEAR = 2018;
 
 	type CommuneEntry = { slug: string; name: string; insee: string };
-	const ALL_COMMUNES: CommuneEntry[] = (communeIndex as CommuneEntry[]).slice().sort((a, b) =>
-		a.name.localeCompare(b.name, 'fr'),
-	);
+	const ALL_COMMUNES: CommuneEntry[] = (communeIndex as CommuneEntry[])
+		.slice()
+		.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
 	const ARRONDISSEMENTS = ALL_COMMUNES.filter((c) => c.slug.startsWith('lyon-'));
 	const COMMUNES_OTHER = ALL_COMMUNES.filter((c) => !c.slug.startsWith('lyon-'));
 
@@ -169,7 +169,6 @@
 	const streetKeySet = $derived(new Set(params.streets.map((s) => normalizeStreet(s))));
 	const streetsActive = $derived(streetKeySet.size > 0);
 
-
 	const gravityActive = $derived.by(() => {
 		const def = new Set(DEFAULT_GRAVITIES);
 		if (def.size !== gravitySet.size) {
@@ -221,7 +220,13 @@
 	);
 
 	const counts = $derived.by(() => {
-		const acc = { total: 0, tues: 0, hospitalises: 0, legers: 0, uniqueAccidents: new Set<number>() };
+		const acc = {
+			total: 0,
+			tues: 0,
+			hospitalises: 0,
+			legers: 0,
+			uniqueAccidents: new Set<number>(),
+		};
 		for (const f of filtered) {
 			const p = f.properties;
 			acc.total += 1;
@@ -238,7 +243,6 @@
 			legers: acc.legers,
 		};
 	});
-
 
 	const collisionBreakdown = $derived.by(() => {
 		const m = new Map<string, Breakdown>();
@@ -684,9 +688,7 @@
 
 	<!-- Break out of <main>'s mobile padding so the map is edge-to-edge.
 	     On lg+ the layout's px-8 already provides the gutter, so reset margins. -->
-	<div
-		class="-mx-4 flex flex-col gap-4 sm:-mx-6 lg:mx-0 lg:flex-row lg:items-stretch"
-	>
+	<div class="-mx-4 flex flex-col gap-4 sm:-mx-6 lg:mx-0 lg:flex-row lg:items-stretch">
 		<div class="flex-1">
 			<div
 				class="relative overflow-hidden shadow lg:rounded-lg"
@@ -774,17 +776,7 @@
 								filter={['==', ['get', 'gravite'], g.id]}
 								paint={{
 									'circle-color': g.color,
-									'circle-radius': [
-										'interpolate',
-										['linear'],
-										['zoom'],
-										10,
-										2.5,
-										14,
-										4.5,
-										17,
-										7,
-									],
+									'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 2.5, 14, 4.5, 17, 7],
 									'circle-stroke-color': '#ffffff',
 									'circle-stroke-width': 1,
 									'circle-opacity': 0.9,
@@ -795,17 +787,7 @@
 								filter={['==', ['get', 'gravite'], g.id]}
 								paint={{
 									'circle-opacity': 0,
-									'circle-radius': [
-										'interpolate',
-										['linear'],
-										['zoom'],
-										10,
-										8,
-										15,
-										14,
-										18,
-										22,
-									],
+									'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 8, 15, 14, 18, 22],
 									'circle-color': 'transparent',
 								}}
 							/>
@@ -813,12 +795,7 @@
 					</GeoJSONSource>
 
 					{#if hoverPopup && !selectedFeatures.length}
-						<Popup
-							lnglat={hoverPopup.lngLat}
-							closeButton={false}
-							closeOnClick={false}
-							offset={14}
-						>
+						<Popup lnglat={hoverPopup.lngLat} closeButton={false} closeOnClick={false} offset={14}>
 							<div class="flex max-h-64 flex-col gap-2 overflow-y-auto">
 								{@html hoverPopup.html}
 							</div>
@@ -876,7 +853,9 @@
 				>
 					<SlidersHorizontal size={14} />
 					Filtres
-					<span class="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium tabular-nums text-gray-600">
+					<span
+						class="rounded-full bg-gray-100 px-1.5 py-0.5 text-[10px] font-medium text-gray-600 tabular-nums"
+					>
 						{numFmt.format(counts.unique)}
 					</span>
 				</button>
@@ -946,11 +925,7 @@
 				<AccidentInsights features={filtered} />
 			</CollapsibleSection>
 
-			<CollapsibleSection
-				title="Gravité"
-				bind:collapsed={collapsed.gravity}
-				active={gravityActive}
-			>
+			<CollapsibleSection title="Gravité" bind:collapsed={collapsed.gravity} active={gravityActive}>
 				{#snippet collapsedSummary()}
 					<span class="flex items-center gap-1">
 						{#each GRAVITIES as g (g.id)}
@@ -972,10 +947,8 @@
 							class="text-gray-400 hover:text-gray-700">tout</button
 						>
 						<span class="text-gray-300">·</span>
-						<button
-							type="button"
-							onclick={clearGravities}
-							class="text-gray-400 hover:text-gray-700">aucun</button
+						<button type="button" onclick={clearGravities} class="text-gray-400 hover:text-gray-700"
+							>aucun</button
 						>
 					</div>
 				{/snippet}
@@ -983,7 +956,7 @@
 					{#each GRAVITIES as g (g.id)}
 						{@const total = gravityCounts.get(g.id) ?? 0}
 						<label
-							class="group relative flex cursor-pointer items-center gap-2 rounded-md py-0.5 px-1 hover:bg-gray-50"
+							class="group relative flex cursor-pointer items-center gap-2 rounded-md px-1 py-0.5 hover:bg-gray-50"
 						>
 							<Checkbox
 								checked={gravitySet.has(g.id)}
@@ -1003,7 +976,7 @@
 									params.gravities = [g.id];
 								}}
 								title="Sélectionner uniquement « {g.label} »"
-								class="hidden text-[10px] font-semibold text-brand-navy hover:underline group-hover:inline"
+								class="hidden text-[10px] font-semibold text-brand-navy group-hover:inline hover:underline"
 							>
 								seul
 							</button>
@@ -1027,8 +1000,10 @@
 				{/snippet}
 				{#snippet headerActions()}
 					<div class="flex gap-1 text-[10px]">
-						<button type="button" onclick={selectAllVehicles} class="text-gray-400 hover:text-gray-700"
-							>tout</button
+						<button
+							type="button"
+							onclick={selectAllVehicles}
+							class="text-gray-400 hover:text-gray-700">tout</button
 						>
 						<span class="text-gray-300">·</span>
 						<button type="button" onclick={clearVehicles} class="text-gray-400 hover:text-gray-700"
@@ -1041,7 +1016,7 @@
 						{@const breakdown = vehicleBreakdown.get(v)}
 						{@const total = totalForBreakdown(breakdown, gravitySet)}
 						<label
-							class="group relative flex cursor-pointer items-center gap-2 rounded-md py-0.5 px-1 hover:bg-gray-50"
+							class="group relative flex cursor-pointer items-center gap-2 rounded-md px-1 py-0.5 hover:bg-gray-50"
 						>
 							<Checkbox
 								checked={vehicleSet.has(v)}
@@ -1057,7 +1032,7 @@
 									soloVehicle(v);
 								}}
 								title="Sélectionner uniquement « {v} »"
-								class="hidden text-[10px] font-semibold text-brand-navy hover:underline group-hover:inline"
+								class="hidden text-[10px] font-semibold text-brand-navy group-hover:inline hover:underline"
 							>
 								seul
 							</button>
@@ -1065,7 +1040,10 @@
 								<span class="flex items-center gap-1.5 group-hover:hidden">
 									{#each GRAVITIES as g (g.id)}
 										{#if gravitySet.has(g.id)}
-											<span class="flex items-center gap-0.5 text-[10px] tabular-nums" title={g.label}>
+											<span
+												class="flex items-center gap-0.5 text-[10px] tabular-nums"
+												title={g.label}
+											>
 												<span
 													class="inline-block h-1.5 w-1.5 rounded-full"
 													style="background-color: {g.color}"
@@ -1076,9 +1054,7 @@
 									{/each}
 								</span>
 							{:else}
-								<span
-									class="text-[10px] text-gray-400 tabular-nums group-hover:hidden"
-								>
+								<span class="text-[10px] text-gray-400 tabular-nums group-hover:hidden">
 									{numFmt.format(total)}
 								</span>
 							{/if}
@@ -1087,11 +1063,7 @@
 				</div>
 			</CollapsibleSection>
 
-			<CollapsibleSection
-				title="Rues"
-				bind:collapsed={collapsed.street}
-				active={streetsActive}
-			>
+			<CollapsibleSection title="Rues" bind:collapsed={collapsed.street} active={streetsActive}>
 				{#snippet collapsedSummary()}
 					{#if streetsActive}
 						<span class="text-[10px] text-gray-500 tabular-nums">
@@ -1103,7 +1075,7 @@
 					<div class="flex items-center gap-2">
 						{#if streetsActive}
 							<span
-								class="rounded bg-brand-navy/10 px-1.5 py-0.5 text-[10px] font-bold tabular-nums text-brand-navy"
+								class="rounded bg-brand-navy/10 px-1.5 py-0.5 text-[10px] font-bold text-brand-navy tabular-nums"
 								>{params.streets.length}</span
 							>
 						{/if}
@@ -1234,7 +1206,7 @@
 									soloCollision(t);
 								}}
 								title="Sélectionner uniquement « {t} »"
-								class="hidden text-[10px] font-semibold text-brand-navy hover:underline group-hover:inline"
+								class="hidden text-[10px] font-semibold text-brand-navy group-hover:inline hover:underline"
 							>
 								seul
 							</button>
@@ -1256,9 +1228,7 @@
 									{/each}
 								</span>
 							{:else}
-								<span
-									class="text-[10px] text-gray-400 tabular-nums group-hover:hidden"
-								>
+								<span class="text-[10px] text-gray-400 tabular-nums group-hover:hidden">
 									{numFmt.format(total)}
 								</span>
 							{/if}

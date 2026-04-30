@@ -51,12 +51,7 @@
 		tags?: Record<string, string>;
 	};
 
-	const MAJOR_CLASSES = new Set([
-		'primary',
-		'secondary',
-		'primary_link',
-		'secondary_link',
-	]);
+	const MAJOR_CLASSES = new Set(['primary', 'secondary', 'primary_link', 'secondary_link']);
 
 	const EXCLUDED_HIGHWAYS = new Set(['motorway', 'motorway_link', 'trunk', 'trunk_link']);
 
@@ -113,43 +108,43 @@
 </script>
 
 <GeoJSONSource id="overpass-oneways-source" data={filteredData}>
-		<SymbolLayer
-			id="overpass-oneways-major"
-			minzoom={14}
-			{maxzoom}
-			filter={['==', ['get', 'isMajor'], 1]}
-			layout={{
-				'symbol-placement': 'line',
-				'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 11, 220, 14, 140],
-				'icon-image': iconImageExpr,
-				'icon-rotation-alignment': 'map',
-				'icon-pitch-alignment': 'map',
-				'icon-keep-upright': false,
-				'icon-allow-overlap': false,
-				'icon-ignore-placement': false,
-			}}
-			paint={{
-				'icon-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.4, 12, 0.5],
-			}}
-		/>
+	<SymbolLayer
+		id="overpass-oneways-major"
+		minzoom={14}
+		{maxzoom}
+		filter={['==', ['get', 'isMajor'], 1]}
+		layout={{
+			'symbol-placement': 'line',
+			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 11, 220, 14, 140],
+			'icon-image': iconImageExpr,
+			'icon-rotation-alignment': 'map',
+			'icon-pitch-alignment': 'map',
+			'icon-keep-upright': false,
+			'icon-allow-overlap': false,
+			'icon-ignore-placement': false,
+		}}
+		paint={{
+			'icon-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.4, 12, 0.5],
+		}}
+	/>
 
-		<SymbolLayer
-			id="overpass-oneways-minor"
-			minzoom={14}
-			{maxzoom}
-			filter={['==', ['get', 'isMajor'], 0]}
-			layout={{
-				'symbol-placement': 'line',
-				'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 12.5, 180, 14, 140],
-				'icon-image': iconImageExpr,
-				'icon-rotation-alignment': 'map',
-				'icon-pitch-alignment': 'map',
-				'icon-keep-upright': false,
-				'icon-allow-overlap': false,
-				'icon-ignore-placement': false,
-			}}
-			paint={{
-				'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0.4, 13.5, 0.5],
-			}}
-		/>
+	<SymbolLayer
+		id="overpass-oneways-minor"
+		minzoom={14}
+		{maxzoom}
+		filter={['==', ['get', 'isMajor'], 0]}
+		layout={{
+			'symbol-placement': 'line',
+			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 12.5, 180, 14, 140],
+			'icon-image': iconImageExpr,
+			'icon-rotation-alignment': 'map',
+			'icon-pitch-alignment': 'map',
+			'icon-keep-upright': false,
+			'icon-allow-overlap': false,
+			'icon-ignore-placement': false,
+		}}
+		paint={{
+			'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0.4, 13.5, 0.5],
+		}}
+	/>
 </GeoJSONSource>

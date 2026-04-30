@@ -47,18 +47,18 @@
 			</a>
 			<h1 class="text-3xl font-bold text-brand-navy md:text-4xl">Ville 30 dans la Métropole</h1>
 			<p class="max-w-3xl text-gray-600">
-				{data.ville30.length} communes sur {data.totalCommunes} ont adopté le statut <strong
-					>Ville 30</strong
-				> : la vitesse y est limitée à 30 km/h par défaut sur l'essentiel des rues, à l'exception
-				des grands axes et des zones piétonnes.
+				{data.ville30.length} communes sur {data.totalCommunes} ont adopté le statut
+				<strong>Ville 30</strong> : la vitesse y est limitée à 30 km/h par défaut sur l'essentiel des
+				rues, à l'exception des grands axes et des zones piétonnes.
 			</p>
 		</header>
 
 		<section class="prose prose-sm max-w-3xl text-gray-700">
 			<h2 class="text-xl font-bold text-brand-navy">Qu'est-ce qu'une Ville 30 ?</h2>
 			<p>
-				Une <strong>Ville 30</strong> est une commune qui inverse le principe habituel de la voirie urbaine
-				: au lieu d'autoriser 50 km/h partout sauf signalisation contraire, la limite par défaut devient
+				Une <strong>Ville 30</strong> est une commune qui inverse le principe habituel de la voirie
+				urbaine : au lieu d'autoriser 50 km/h partout sauf signalisation contraire, la limite par
+				défaut devient
 				<strong>30 km/h sur environ 80 % des rues</strong>. Les axes structurants (boulevards, voies
 				rapides) restent généralement à 50 km/h, et certaines zones de cœur de ville passent en zone
 				de rencontre (20 km/h) ou en aire piétonne.
@@ -66,8 +66,8 @@
 			<p>
 				Le passage à 30 km/h s'accompagne aussi de la généralisation des
 				<strong>doubles sens cyclables</strong> (obligatoire au titre de l'article 52 de la loi LOM),
-				d'une refonte des plans de circulation et, à terme, de dispositifs physiques (ralentisseurs, écluses,
-				rétrécissements) là où la signalisation ne suffit pas.
+				d'une refonte des plans de circulation et, à terme, de dispositifs physiques (ralentisseurs,
+				écluses, rétrécissements) là où la signalisation ne suffit pas.
 			</p>
 
 			<h3 class="mt-4 text-base font-semibold text-brand-navy">Pourquoi 30 km/h ?</h3>
@@ -105,8 +105,8 @@
 				<li><strong>−54 %</strong> de tués sur la voie publique</li>
 				<li><strong>−32 %</strong> de blessés hospitalisés</li>
 				<li>
-					Pour les <strong>piétons</strong> spécifiquement&nbsp;: −29 % d'accidents, −52 % de blessés
-					graves, et <strong>aucun tué en 2022</strong>
+					Pour les <strong>piétons</strong> spécifiquement&nbsp;: −29 % d'accidents, −52 % de
+					blessés graves, et <strong>aucun tué en 2022</strong>
 				</li>
 				<li>
 					Pour les <strong>véhicules légers et utilitaires</strong>&nbsp;: −15 % d'accidents, −71 %
@@ -189,8 +189,8 @@
 				{/each}
 			</ul>
 			<p class="text-xs text-gray-500">
-				La date affichée est celle de l'arrêté municipal, lorsqu'elle est connue. Le statut
-				« partiel » indique qu'une partie seulement de la commune est passée à 30 km/h.
+				La date affichée est celle de l'arrêté municipal, lorsqu'elle est connue. Le statut «
+				partiel » indique qu'une partie seulement de la commune est passée à 30 km/h.
 			</p>
 		</section>
 	</div>

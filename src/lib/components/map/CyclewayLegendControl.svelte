@@ -104,7 +104,12 @@
 	const safetyRows = $derived.by(() => {
 		if (!safetyMode || !safetyLengths) return null;
 		return [
-			{ key: 'safe' as const, label: 'S\u00e9curis\u00e9', color: '#2563eb', meters: safetyLengths.safe },
+			{
+				key: 'safe' as const,
+				label: 'S\u00e9curis\u00e9',
+				color: '#2563eb',
+				meters: safetyLengths.safe,
+			},
 			{
 				key: 'unsafe' as const,
 				label: 'Non s\u00e9curis\u00e9',
@@ -160,7 +165,12 @@
 								class="flex w-full items-center gap-2 rounded-md py-0.5 text-left text-xs whitespace-nowrap text-gray-700 transition-colors hover:text-brand-navy [&_svg]:shrink-0"
 								class:opacity-40={!active}
 							>
-								<svg viewBox="0 0 48 12" class="h-3 w-10 shrink-0" role="presentation" aria-hidden="true">
+								<svg
+									viewBox="0 0 48 12"
+									class="h-3 w-10 shrink-0"
+									role="presentation"
+									aria-hidden="true"
+								>
 									<line
 										x1="0"
 										y1="6"

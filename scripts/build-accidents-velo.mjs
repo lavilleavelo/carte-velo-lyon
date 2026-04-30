@@ -423,9 +423,7 @@ function buildResume({ caract, lieu, vehicles, usagers, focusUsager, focusVehicl
 					})
 					.join(' et ')
 			: '';
-		const passengerPart = passagers.length
-			? ` avec ${passagers.length} passager(s)`
-			: '';
+		const passengerPart = passagers.length ? ` avec ${passagers.length} passager(s)` : '';
 		let sentence = `1 ${catvLabel} circulant sur ${catrLabel}${vma} conduit par ${conductorPart}${passengerPart}`;
 
 		if (pietons.length && v === focusVehicle) {
@@ -450,35 +448,81 @@ function buildResume({ caract, lieu, vehicles, usagers, focusUsager, focusVehicl
 // or modern title case ("Allée des Tilleuls").  Normalize them all to a
 // French-styled "Type De Particule Nom" form.
 const STREET_TYPE_MAP = {
-	R: 'Rue', RUE: 'Rue', RU: 'Ruelle', RUELLE: 'Ruelle',
-	AV: 'Avenue', AVE: 'Avenue', AVENUE: 'Avenue',
-	BD: 'Boulevard', BLD: 'Boulevard', BOULEVARD: 'Boulevard',
-	PL: 'Place', PLACE: 'Place',
-	IMP: 'Impasse', IMPASSE: 'Impasse',
-	CH: 'Chemin', CHM: 'Chemin', CHEM: 'Chemin', CHEMIN: 'Chemin',
-	AL: 'Allée', ALL: 'Allée', ALLEE: 'Allée',
-	PAS: 'Passage', PASSAGE: 'Passage',
-	Q: 'Quai', QU: 'Quai', QUAI: 'Quai',
-	CR: 'Cours', CO: 'Cours', CRS: 'Cours', COURS: 'Cours',
-	RTE: 'Route', ROUTE: 'Route',
-	SQ: 'Square', SQUARE: 'Square',
-	RO: 'Rond-point', RP: 'Rond-point', RDPT: 'Rond-point',
+	R: 'Rue',
+	RUE: 'Rue',
+	RU: 'Ruelle',
+	RUELLE: 'Ruelle',
+	AV: 'Avenue',
+	AVE: 'Avenue',
+	AVENUE: 'Avenue',
+	BD: 'Boulevard',
+	BLD: 'Boulevard',
+	BOULEVARD: 'Boulevard',
+	PL: 'Place',
+	PLACE: 'Place',
+	IMP: 'Impasse',
+	IMPASSE: 'Impasse',
+	CH: 'Chemin',
+	CHM: 'Chemin',
+	CHEM: 'Chemin',
+	CHEMIN: 'Chemin',
+	AL: 'Allée',
+	ALL: 'Allée',
+	ALLEE: 'Allée',
+	PAS: 'Passage',
+	PASSAGE: 'Passage',
+	Q: 'Quai',
+	QU: 'Quai',
+	QUAI: 'Quai',
+	CR: 'Cours',
+	CO: 'Cours',
+	CRS: 'Cours',
+	COURS: 'Cours',
+	RTE: 'Route',
+	ROUTE: 'Route',
+	SQ: 'Square',
+	SQUARE: 'Square',
+	RO: 'Rond-point',
+	RP: 'Rond-point',
+	RDPT: 'Rond-point',
 	ROCADE: 'Rocade',
-	PT: 'Pont', PONT: 'Pont',
+	PT: 'Pont',
+	PONT: 'Pont',
 	CHAUSSEE: 'Chaussée',
-	VO: 'Voie', VOIE: 'Voie',
+	VO: 'Voie',
+	VOIE: 'Voie',
 	CARREFOUR: 'Carrefour',
 	CITE: 'Cité',
-	MO: 'Montée', MTE: 'Montée', MONT: 'Montée', MONTEE: 'Montée',
+	MO: 'Montée',
+	MTE: 'Montée',
+	MONT: 'Montée',
+	MONTEE: 'Montée',
 	VC: 'Voie Communale',
 	GR: 'Grande Rue',
-	TR: 'Traverse', TRAVERSE: 'Traverse',
-	VLA: 'Villa', VILLA: 'Villa',
+	TR: 'Traverse',
+	TRAVERSE: 'Traverse',
+	VLA: 'Villa',
+	VILLA: 'Villa',
 };
 
 const LOWERCASE_PARTICLES = new Set([
-	'de', 'du', 'des', 'la', 'le', 'les', "l", "d", 'à', 'au', 'aux',
-	'et', 'sur', 'sous', 'en', 'lès', 'sainte', // last is a stretch but rarely matters here
+	'de',
+	'du',
+	'des',
+	'la',
+	'le',
+	'les',
+	'l',
+	'd',
+	'à',
+	'au',
+	'aux',
+	'et',
+	'sur',
+	'sous',
+	'en',
+	'lès',
+	'sainte', // last is a stretch but rarely matters here
 ]);
 
 function titleCaseFr(s) {
@@ -539,11 +583,7 @@ function cleanAddress(raw) {
 				return LOWERCASE_PARTICLES.has(stripped);
 			};
 			const allParticles = matches.every((m) =>
-				m[1]
-					.trim()
-					.split(/\s+/)
-					.filter(Boolean)
-					.every(isParticle),
+				m[1].trim().split(/\s+/).filter(Boolean).every(isParticle),
 			);
 			if (allParticles) {
 				s = s.replace(parenRegex, ' ').replace(/\s+/g, ' ').trim();
@@ -593,7 +633,15 @@ function deriveCollision(accVehicles, accUsagers) {
 	const isBus = (c) => c === 37 || c === 38;
 	const isTram = (c) => c === 40 || c === 39;
 	const isMotorbike = (c) =>
-		c === 2 || c === 30 || c === 31 || c === 32 || c === 33 || c === 34 || c === 41 || c === 42 || c === 43;
+		c === 2 ||
+		c === 30 ||
+		c === 31 ||
+		c === 32 ||
+		c === 33 ||
+		c === 34 ||
+		c === 41 ||
+		c === 42 ||
+		c === 43;
 
 	const otherLabels = others.map((c) => CATV[c] || `Véhicule (${c})`);
 
@@ -726,7 +774,6 @@ async function main() {
 			const adresse = cleanAddress(caract.adr);
 			const communeName = inseeToName.get(caract.com) || caract.com;
 			const idAccident = Number(numAcc);
-
 
 			const intCode = Number(caract.int);
 			const intersectionLabel = INT[intCode] || '';

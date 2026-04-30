@@ -84,9 +84,7 @@
 					</span>
 					<div class="min-w-0 flex-1">
 						<div class="flex flex-wrap items-start justify-between gap-2">
-							<h3 class="text-sm font-semibold text-gray-700">
-								Densité d'aménagements cyclables
-							</h3>
+							<h3 class="text-sm font-semibold text-gray-700">Densité d'aménagements cyclables</h3>
 							{@render rankBadge(stats.rankings?.bikeInfraPer100kmRoadway ?? null)}
 						</div>
 						{#if stats.bikeInfraPer100kmRoadway !== null && stats.eligibleRoadwayKm !== null}
@@ -139,8 +137,8 @@
 								<span class="text-sm font-medium text-gray-500">m / 100 m</span>
 							</div>
 							<p class="mt-1 text-xs text-gray-500">
-								{decimalFormatter.format(stats.recentBikeLanesKm)}&nbsp;km livrés sur les 3 dernières
-								années
+								{decimalFormatter.format(stats.recentBikeLanesKm)}&nbsp;km livrés sur les 3
+								dernières années
 							</p>
 						{:else}
 							<div class="mt-1 flex items-baseline gap-1.5">
@@ -219,7 +217,9 @@
 							</div>
 							<p class="mt-1 text-xs text-gray-500">
 								{wholeFormatter.format(stats.recentParkingPlaces)}&nbsp;places ajoutées sur les 3
-								dernières années ({wholeFormatter.format(stats.recentParkingFeatures)}&nbsp;équipements)
+								dernières années ({wholeFormatter.format(
+									stats.recentParkingFeatures,
+								)}&nbsp;équipements)
 							</p>
 						{:else}
 							<div class="mt-1 flex items-baseline gap-1.5">

@@ -128,7 +128,9 @@
 	const commune = $derived(
 		properties.libelle_commune ? String(properties.libelle_commune).trim() : '',
 	);
-	const collisionType = $derived(properties.collision_type ? String(properties.collision_type) : '');
+	const collisionType = $derived(
+		properties.collision_type ? String(properties.collision_type) : '',
+	);
 	const otherVehicles = $derived.by<string[]>(() => {
 		const raw = properties.other_vehicles;
 		if (Array.isArray(raw)) {
@@ -146,9 +148,7 @@
 		return [];
 	});
 
-	const intersection = $derived(
-		properties.intersection ? String(properties.intersection) : '',
-	);
+	const intersection = $derived(properties.intersection ? String(properties.intersection) : '');
 	const collisionShape = $derived(
 		properties.collision_shape ? String(properties.collision_shape) : '',
 	);
@@ -232,7 +232,9 @@
 			<div class="flex items-start gap-2">
 				<Car size={14} class="mt-0.5 shrink-0 text-gray-400" />
 				<div class="flex-1">
-					<p class="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Type de collision</p>
+					<p class="text-[10px] font-bold tracking-wider text-gray-400 uppercase">
+						Type de collision
+					</p>
 					<p class="mt-0.5 text-sm font-semibold text-gray-900">{collisionType}</p>
 					{#if otherVehicles.length > 0}
 						<div class="mt-1 flex flex-wrap gap-1">
@@ -252,9 +254,7 @@
 
 	{#if conditions.length > 0}
 		<div class="rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2">
-			<p class="text-[10px] font-bold tracking-wider text-gray-400 uppercase">
-				Circonstances
-			</p>
+			<p class="text-[10px] font-bold tracking-wider text-gray-400 uppercase">Circonstances</p>
 			<dl class="mt-1 grid grid-cols-[max-content_1fr] gap-x-3 gap-y-0.5 text-xs">
 				{#each conditions as c (c.label)}
 					<dt class="text-gray-500">{c.label}</dt>
@@ -274,7 +274,7 @@
 	{/if}
 
 	{#if resumeTail}
-		<details class="rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2 group">
+		<details class="group rounded-lg border border-gray-100 bg-gray-50/50 px-3 py-2">
 			<summary
 				class="cursor-pointer text-[10px] font-bold tracking-wider text-gray-500 uppercase select-none hover:text-gray-700"
 			>

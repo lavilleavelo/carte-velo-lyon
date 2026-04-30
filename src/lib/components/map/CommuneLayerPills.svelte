@@ -1,11 +1,7 @@
 <script lang="ts">
 	import Ellipsis from '@lucide/svelte/icons/ellipsis';
 	import X from '@lucide/svelte/icons/x';
-	import {
-		COMMUNE_PINNED,
-		availableLayers,
-		type PinnedItem,
-	} from '$lib/config/mapLayerCatalog';
+	import { COMMUNE_PINNED, availableLayers, type PinnedItem } from '$lib/config/mapLayerCatalog';
 
 	let {
 		visibleOptional,
