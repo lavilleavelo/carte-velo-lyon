@@ -854,6 +854,16 @@
 				onload={() => {
 					if (map) {
 						registerArrowIconsHandler(map);
+						const keepMaskOnTop = () => {
+							if (map?.getLayer('commune-outside-mask-fill')) {
+								map.moveLayer('commune-outside-mask-fill');
+							}
+							if (map?.getLayer('commune-outline')) {
+								map.moveLayer('commune-outline');
+							}
+						};
+						keepMaskOnTop();
+						map.on('styledata', keepMaskOnTop);
 					}
 				}}
 				onclick={handleMapClick}
