@@ -125,7 +125,7 @@
 	const mapSearchParamsSchema = type({
 		layers: type('string[]').default(() => ['osm-cycleways', 'vl']),
 		commune: 'string = ""',
-		zoom: 'number = 11',
+		zoom: 'number = 13',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
 		selected: type('number[]').default(() => []),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => loadDefaultMapStyle()),
