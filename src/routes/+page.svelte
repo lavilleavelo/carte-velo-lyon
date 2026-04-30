@@ -999,6 +999,25 @@
 					onSelect={mapStyleState.setMapStyle}
 					position="bottom-left"
 				/>
+				{#if isLayerVisible('osm-cycleways')}
+					<CustomControl position="bottom-left">
+						<button
+							onclick={() => (params.safety = !params.safety)}
+							class="rounded-lg pl-1! shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none {safetyMode
+								? 'bg-blue-600! text-white! hover:bg-blue-700!'
+								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
+							aria-pressed={safetyMode}
+							aria-label={safetyMode
+								? 'Désactiver le mode sécurité'
+								: 'Activer le mode sécurité'}
+							title={safetyMode
+								? 'Mode sécurité activé (bleu = sûr, rouge = non sûr)'
+								: 'Colorer par sécurité (sûr / non sûr)'}
+						>
+							<ShieldCheck size={20} />
+						</button>
+					</CustomControl>
+				{/if}
 				<NavigationControl
 					position="bottom-right"
 					showCompass={true}

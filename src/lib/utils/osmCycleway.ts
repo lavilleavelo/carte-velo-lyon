@@ -45,9 +45,8 @@ export function overpassToGeoJSON(data: any): FeatureCollection {
 
 		const coordinates = element.geometry.map((p: { lon: number; lat: number }) => [p.lon, p.lat]);
 
-		const safety = isSafePath(tags);
-
 		for (const c of classifications) {
+			const safety = isSafePath(tags, c.typeamenagement);
 			features.push({
 				type: 'Feature',
 				properties: {
@@ -61,6 +60,7 @@ export function overpassToGeoJSON(data: any): FeatureCollection {
 					offset: sideOffset(c.side),
 					isSafe: safety.isSafe,
 					safetyReason: safety.reason,
+					safetyCaveat: safety.caveat,
 				},
 				geometry: {
 					type: 'LineString',

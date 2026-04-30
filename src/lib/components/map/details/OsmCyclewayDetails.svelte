@@ -3,6 +3,8 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import ShieldCheck from '@lucide/svelte/icons/shield-check';
+	import ShieldAlert from '@lucide/svelte/icons/shield-alert';
 
 	let { properties } = $props();
 
@@ -16,6 +18,9 @@
 		'offset',
 		'osmId',
 		'osmType',
+		'isSafe',
+		'safetyReason',
+		'safetyCaveat',
 	]);
 
 	const sideLabel = (side?: string) => {
@@ -81,6 +86,35 @@
 			<p class="mt-1 text-sm text-gray-600">{properties.name}</p>
 		{/if}
 	</div>
+
+	{#if properties?.isSafe !== undefined}
+		<div
+			class="flex items-start gap-2 rounded-md border px-2 py-1.5 {properties.isSafe
+				? 'border-blue-100 bg-blue-50 text-blue-900'
+				: 'border-red-100 bg-red-50 text-red-900'}"
+		>
+			<div class="mt-0.5 shrink-0">
+				{#if properties.isSafe}
+					<ShieldCheck size={16} />
+				{:else}
+					<ShieldAlert size={16} />
+				{/if}
+			</div>
+			<div class="flex flex-col">
+				<span class="text-xs font-bold tracking-wide uppercase">
+					{properties.isSafe ? 'Sécurisé' : 'Non sécurisé'}
+				</span>
+				{#if properties.safetyReason}
+					<span class="text-xs">{properties.safetyReason}</span>
+				{/if}
+				{#if properties.safetyCaveat}
+					<span class="mt-0.5 text-[11px] italic opacity-75">
+						⚠ {properties.safetyCaveat}
+					</span>
+				{/if}
+			</div>
+		</div>
+	{/if}
 
 	<div class="border-t border-gray-100 pt-3">
 		<button

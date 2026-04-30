@@ -125,11 +125,11 @@
 				'icon-rotation-alignment': 'map',
 				'icon-pitch-alignment': 'map',
 				'icon-keep-upright': false,
-				'icon-allow-overlap': true,
-				'icon-ignore-placement': true,
+				'icon-allow-overlap': false,
+				'icon-ignore-placement': false,
 			}}
 			paint={{
-				'icon-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.6, 12, 0.85],
+				'icon-opacity': ['interpolate', ['linear'], ['zoom'], 11, 0.4, 12, 0.5],
 			}}
 		/>
 
@@ -145,11 +145,11 @@
 				'icon-rotation-alignment': 'map',
 				'icon-pitch-alignment': 'map',
 				'icon-keep-upright': false,
-				'icon-allow-overlap': true,
-				'icon-ignore-placement': true,
+				'icon-allow-overlap': false,
+				'icon-ignore-placement': false,
 			}}
 			paint={{
-				'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0.6, 13.5, 0.85],
+				'icon-opacity': ['interpolate', ['linear'], ['zoom'], 12.5, 0.4, 13.5, 0.5],
 			}}
 		/>
 </GeoJSONSource>

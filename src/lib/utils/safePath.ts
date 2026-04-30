@@ -5,6 +5,7 @@ export interface SafetyReason {
 	reason: string;
 	relevantTags: string[];
 	condition?: string;
+	caveat?: string;
 }
 
 const unsafeRoadTypes: Record<string, string> = {
@@ -17,6 +18,9 @@ const unsafeRoadTypes: Record<string, string> = {
 };
 
 const unsafeRoad: Record<string, string> = {
+	primary: 'route principale',
+	secondary: 'route secondaire',
+	trunk: 'voie rapide',
 	tertiary: 'route tertiaire',
 	unclassified: 'route non classifiée',
 	residential: 'rue résidentielle',
@@ -25,7 +29,58 @@ const unsafeRoad: Record<string, string> = {
 	trunk_link: 'bretelle de voie rapide',
 };
 
-export function isSafePath(tags: Record<string, string>): SafetyReason {
+export function isSafePath(
+	tags: Record<string, string>,
+	typeamenagement?: string,
+): SafetyReason {
+	if (typeamenagement === 'Piste Cyclable') {
+		return {
+			isSafe: true,
+			reason: 'Piste cyclable séparée',
+			relevantTags: [],
+			condition: 'typeamenagement=Piste Cyclable',
+		};
+	}
+
+	if (typeamenagement === 'Voie verte') {
+		return {
+			isSafe: true,
+			reason: 'Voie verte dédiée',
+			relevantTags: [],
+			condition: 'typeamenagement=Voie verte',
+			caveat: 'Conflits piétons/cyclistes possibles',
+		};
+	}
+
+	if (typeamenagement === 'Vélorue') {
+		return {
+			isSafe: true,
+			reason: 'Rue cyclable (vélorue)',
+			relevantTags: [],
+			condition: 'typeamenagement=Vélorue',
+		};
+	}
+
+	if (typeamenagement === 'Bande Cyclable') {
+		const road = unsafeRoad[tags['highway']] || 'la rue';
+		return {
+			isSafe: false,
+			reason: `Bande cyclable sans séparation physique sur ${road}`,
+			relevantTags: ['highway', 'cycleway'],
+			condition: 'typeamenagement=Bande Cyclable',
+		};
+	}
+
+	if (typeamenagement === 'Couloir bus vélo') {
+		const road = unsafeRoad[tags['highway']] || 'la rue';
+		return {
+			isSafe: false,
+			reason: `Voie partagée bus-vélo sur ${road}`,
+			relevantTags: ['highway', 'cycleway'],
+			condition: 'typeamenagement=Couloir bus vélo',
+		};
+	}
+
 	if (
 		tags['bicycle'] !== 'designated' &&
 		(tags['highway'] === 'primary' ||

@@ -19,23 +19,27 @@
 		type="button"
 		aria-pressed={showCycleways}
 		onclick={() => (showCycleways = !showCycleways)}
+		title="Aménagements cyclables"
 		class="pointer-events-auto cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-sm transition-all active:scale-95"
 		style="background-color: {showCycleways ? '#15803d' : 'white'}; color: {showCycleways
 			? 'white'
 			: '#15803d'}; border: 1.5px solid #15803d;"
 	>
-		Aménagements cyclables
+		<span class="sm:hidden">Aménagements</span>
+		<span class="hidden sm:inline">Aménagements cyclables</span>
 	</button>
 	<button
 		type="button"
 		aria-pressed={showVL}
 		onclick={() => (showVL = !showVL)}
+		title="Voies Lyonnaises"
 		class="pointer-events-auto cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-sm transition-all active:scale-95"
 		style="background-color: {showVL ? '#152B68' : 'white'}; color: {showVL
 			? 'white'
 			: '#152B68'}; border: 1.5px solid #152B68;"
 	>
-		Voies Lyonnaises
+		<span class="sm:hidden">VL</span>
+		<span class="hidden sm:inline">Voies Lyonnaises</span>
 	</button>
 	{#if dimVisible}
 		<label
