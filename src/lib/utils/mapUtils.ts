@@ -133,6 +133,32 @@ export function registerArrowIconsHandler(map: any): void {
 	};
 	hideBasemapOnewayArrows();
 	map.on('styledata', hideBasemapOnewayArrows);
+
+	const PLACE_LAYER_IDS = [
+		'place-other',
+		'place-island',
+		'place-village',
+		'place-town',
+		'place-city',
+		'place-city-capital',
+		'place-state',
+		'place-country-other',
+		'place-country-3',
+		'place-country-2',
+		'place-country-1',
+		'place-continent',
+	];
+
+	const movePlaceLabelsToTop = () => {
+		for (const id of PLACE_LAYER_IDS) {
+			if (map.getLayer(id)) {
+				map.moveLayer(id);
+			}
+		}
+	};
+
+	movePlaceLabelsToTop();
+	map.on('styledata', movePlaceLabelsToTop);
 }
 
 /**

@@ -3219,8 +3219,8 @@
 				"text-size": {
 					"base": 1.2,
 					"stops": [
-						[10, 12],
-						[15, 22]
+						[10, 10],
+						[15, 17]
 					]
 				},
 				"visibility": "visible"
@@ -3247,8 +3247,8 @@
 				"text-size": {
 					"base": 1.2,
 					"stops": [
-						[10, 14],
-						[15, 24]
+						[10, 11],
+						[15, 19]
 					]
 				},
 				"visibility": "visible"
@@ -3275,8 +3275,8 @@
 				"text-size": {
 					"base": 1.2,
 					"stops": [
-						[7, 14],
-						[11, 24]
+						[7, 11],
+						[11, 19]
 					]
 				},
 				"visibility": "visible"
@@ -3307,8 +3307,8 @@
 				"text-size": {
 					"base": 1.2,
 					"stops": [
-						[7, 14],
-						[11, 24]
+						[7, 11],
+						[11, 19]
 					]
 				},
 				"visibility": "visible"
