@@ -12,6 +12,8 @@ const PRESERVED_PARAMS = [
 	'speedLimits',
 	'targetNetworkHorizons',
 	'projectVLStatuses',
+	'safety',
+	'safetyFilter',
 ] as const;
 
 export function buildCommuneHref(slug: string): string {

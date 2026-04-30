@@ -26,11 +26,18 @@
 		{ id: 'dsc', label: 'Double sens cyclable', render: 'arrow' },
 	];
 
+	type SafetyKey = 'safe' | 'unsafe';
+
 	let {
 		activeIds,
 		onToggle,
 		onHover,
 		lengthByLegendId,
+		safetyMode = false,
+		safetyLengths,
+		activeSafety,
+		onToggleSafety,
+		onHoverSafety,
 		position = 'bottom-right',
 		initiallyOpen = true,
 	}: {
@@ -38,6 +45,11 @@
 		onToggle?: (id: string) => void;
 		onHover?: (id: LegendId | null) => void;
 		lengthByLegendId?: Partial<Record<LegendId, number>>;
+		safetyMode?: boolean;
+		safetyLengths?: { safe: number; unsafe: number };
+		activeSafety?: SafetyKey | null;
+		onToggleSafety?: (key: SafetyKey) => void;
+		onHoverSafety?: (key: SafetyKey | null) => void;
 		position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 		initiallyOpen?: boolean;
 	} = $props();
@@ -74,6 +86,11 @@
 	});
 
 	const totalKm = $derived.by(() => {
+		if (safetyMode && safetyLengths) {
+			const total = safetyLengths.safe + safetyLengths.unsafe;
+			if (!total) return null;
+			return `${kmFormatter.format(total / 1000)}\u00a0km`;
+		}
 		if (!lengthByLegendId) return null;
 		let total = 0;
 		for (const item of visibleItems) {
@@ -83,12 +100,34 @@
 		if (!total) return null;
 		return `${kmFormatter.format(total / 1000)}\u00a0km`;
 	});
+
+	const safetyRows = $derived.by(() => {
+		if (!safetyMode || !safetyLengths) return null;
+		return [
+			{ key: 'safe' as const, label: 'S\u00e9curis\u00e9', color: '#2563eb', meters: safetyLengths.safe },
+			{
+				key: 'unsafe' as const,
+				label: 'Non s\u00e9curis\u00e9',
+				color: '#dc2626',
+				meters: safetyLengths.unsafe,
+			},
+		];
+	});
+
+	function isSafetyActive(key: SafetyKey): boolean {
+		if (!activeSafety) {
+			return true;
+		}
+
+		return activeSafety === key;
+	}
 </script>
 
-{#if visibleItems.length > 0}
+{#if visibleItems.length > 0 || safetyRows}
 	<CustomControl {position}>
 		<div
 			class="cycleway-legend-control rounded-lg bg-white/85 shadow-md ring-1 ring-black/5 backdrop-blur-sm"
+			data-open={open}
 		>
 			<div class="flex items-center gap-2 rounded-lg p-2 text-left">
 				<span class="text-xs font-semibold tracking-wide text-brand-navy uppercase">Légende</span>
@@ -105,6 +144,45 @@
 				</button>
 			</div>
 
+			{#if open && safetyRows}
+				<ul class="flex flex-col gap-0.5 border-b border-gray-200/70 px-3 pb-2">
+					{#each safetyRows as row (row.key)}
+						{@const active = isSafetyActive(row.key)}
+						<li>
+							<button
+								type="button"
+								onclick={() => onToggleSafety?.(row.key)}
+								onpointerenter={() => active && onHoverSafety?.(row.key)}
+								onpointerleave={() => onHoverSafety?.(null)}
+								onfocus={() => active && onHoverSafety?.(row.key)}
+								onblur={() => onHoverSafety?.(null)}
+								aria-pressed={active}
+								class="flex w-full items-center gap-2 rounded-md py-0.5 text-left text-xs whitespace-nowrap text-gray-700 transition-colors hover:text-brand-navy [&_svg]:shrink-0"
+								class:opacity-40={!active}
+							>
+								<svg viewBox="0 0 48 12" class="h-3 w-10 shrink-0" role="presentation" aria-hidden="true">
+									<line
+										x1="0"
+										y1="6"
+										x2="48"
+										y2="6"
+										stroke={row.color}
+										stroke-width="4"
+										stroke-linecap="round"
+									/>
+								</svg>
+								<span class="leading-tight">{row.label}</span>
+								{#if row.meters > 0}
+									<span class="ml-auto pl-1 text-gray-500 tabular-nums">
+										{kmFormatter.format(row.meters / 1000)}&nbsp;km
+									</span>
+								{/if}
+							</button>
+						</li>
+					{/each}
+				</ul>
+			{/if}
+
 			{#if open}
 				<ul
 					class="cycleway-legend-grid grid grid-cols-1 gap-x-4 gap-y-1 px-3 pb-2 sm:grid-flow-col sm:grid-cols-2"
@@ -118,9 +196,9 @@
 								<button
 									type="button"
 									onclick={() => onToggle?.(item.id)}
-									onpointerenter={() => onHover?.(item.id)}
+									onpointerenter={() => active && onHover?.(item.id)}
 									onpointerleave={() => onHover?.(null)}
-									onfocus={() => onHover?.(item.id)}
+									onfocus={() => active && onHover?.(item.id)}
 									onblur={() => onHover?.(null)}
 									aria-pressed={active}
 									class="flex w-full items-center gap-2 rounded-md py-0.5 text-left text-xs whitespace-nowrap text-gray-700 transition-colors hover:text-brand-navy [&_svg]:shrink-0"
@@ -332,7 +410,7 @@
 		max-width: calc(100vw - 16px);
 	}
 	@media (min-width: 640px) {
-		:global(.cycleway-legend-control) {
+		:global(.cycleway-legend-control[data-open='true']) {
 			min-width: 380px;
 		}
 		:global(.cycleway-legend-grid) {

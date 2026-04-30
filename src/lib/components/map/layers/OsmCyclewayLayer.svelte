@@ -31,6 +31,8 @@
 		map,
 		opacityScale = 1,
 		safetyMode = false,
+		safetyFilter = null,
+		hoveredSafety = null,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		boundary?: FeatureCollection;
@@ -39,6 +41,8 @@
 		map?: maplibregl.Map;
 		opacityScale?: number;
 		safetyMode?: boolean;
+		safetyFilter?: 'safe' | 'unsafe' | null;
+		hoveredSafety?: 'safe' | 'unsafe' | null;
 	} = $props();
 
 	const DSC_CAR_COLOR = '#000000';
@@ -57,6 +61,17 @@
 					: DIMMED_OPACITY;
 		return base * opacityScale;
 	}
+
+	const safetyOpacityExpr: any = $derived(
+		hoveredSafety
+			? [
+					'case',
+					['==', ['get', 'isSafe'], hoveredSafety === 'safe'],
+					1,
+					DIMMED_OPACITY / NORMAL_OPACITY,
+				]
+			: 1,
+	);
 
 	const opacityPisteBidir = $derived(opacityFor('piste-bidir'));
 	const opacityPisteUnidir = $derived(opacityFor('piste-unidir'));
@@ -131,6 +146,15 @@
 				}),
 			};
 		}
+		if (safetyFilter) {
+			const wantSafe = safetyFilter === 'safe';
+			result = {
+				...result,
+				features: result.features.filter(
+					(f) => Boolean((f.properties as any)?.isSafe) === wantSafe,
+				),
+			};
+		}
 		return result;
 	});
 
@@ -181,7 +205,7 @@
 		paint={{
 			'line-color': lineColor,
 			'line-width': PISTE_BIDIR_LINE_WIDTH,
-			'line-opacity': opacityPisteBidir,
+			'line-opacity': ['*', opacityPisteBidir, safetyOpacityExpr],
 			'line-offset': lineOffset,
 		}}
 		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
@@ -193,7 +217,7 @@
 		paint={{
 			'line-color': lineColor,
 			'line-width': PISTE_UNIDIR_LINE_WIDTH,
-			'line-opacity': opacityPisteUnidir,
+			'line-opacity': ['*', opacityPisteUnidir, safetyOpacityExpr],
 			'line-offset': zoomedOffset,
 		}}
 		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
@@ -205,7 +229,7 @@
 		paint={{
 			'line-color': lineColor,
 			'line-width': VOIE_VERTE_LINE_WIDTH,
-			'line-opacity': opacityVoieVerte,
+			'line-opacity': ['*', opacityVoieVerte, safetyOpacityExpr],
 			'line-dasharray': VOIE_VERTE_DASHARRAY,
 			'line-offset': lineOffset,
 		}}
@@ -218,7 +242,7 @@
 		paint={{
 			'line-color': lineColorNonPaved,
 			'line-width': VOIE_VERTE_LINE_WIDTH,
-			'line-opacity': opacityVoieVerte,
+			'line-opacity': ['*', opacityVoieVerte, safetyOpacityExpr],
 			'line-dasharray': VOIE_VERTE_DASHARRAY,
 			'line-offset': lineOffset,
 		}}
@@ -230,8 +254,8 @@
 		filter={filterBande}
 		paint={{
 			'line-color': lineColor,
-			'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.8, 14, 1.6, 17, 3],
-			'line-opacity': opacityBande,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.6, 11, 1.4, 14, 2.4, 17, 3.5],
+			'line-opacity': ['*', opacityBande, safetyOpacityExpr],
 			'line-dasharray': BANDE_DASHARRAY,
 			'line-offset': zoomedOffset,
 		}}
@@ -243,8 +267,8 @@
 		filter={filterBusVelo}
 		paint={{
 			'line-color': lineColor,
-			'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 1.6, 17, 2.5],
-			'line-opacity': opacityBusVelo,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.8, 11, 1.6, 14, 2.4, 17, 3.5],
+			'line-opacity': ['*', opacityBusVelo, safetyOpacityExpr],
 			'line-dasharray': BUS_VELO_DASHARRAY,
 			'line-offset': zoomedOffset,
 		}}
@@ -257,7 +281,7 @@
 		paint={{
 			'line-color': lineColor,
 			'line-width': 4,
-			'line-opacity': opacityVelorue,
+			'line-opacity': ['*', opacityVelorue, safetyOpacityExpr],
 			'line-dasharray': VELORUE_DASHARRAY,
 			'line-offset': lineOffset,
 		}}
@@ -267,9 +291,31 @@
 	<SymbolLayer
 		id="osm-cw-dsc-arrows"
 		filter={filterDsc}
+		minzoom={11}
 		layout={{
 			'symbol-placement': 'line',
-			'symbol-spacing': DSC_ARROW_SYMBOL_SPACING,
+			'symbol-spacing': [
+				'interpolate',
+				['linear'],
+				['zoom'],
+				11,
+				80,
+				14,
+				50,
+				17,
+				35,
+			],
+			'icon-size': [
+				'interpolate',
+				['exponential', 1.4],
+				['zoom'],
+				11,
+				0.4,
+				14,
+				0.8,
+				17,
+				1.2,
+			],
 			'icon-image': [
 				'case',
 				['==', ['get', 'oneway'], '-1'],
@@ -284,7 +330,7 @@
 			visibility,
 		}}
 		paint={{
-			'icon-opacity': opacityDsc,
+			'icon-opacity': ['*', opacityDsc, safetyOpacityExpr],
 		}}
 	/>
 

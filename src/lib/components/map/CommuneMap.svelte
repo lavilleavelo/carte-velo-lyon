@@ -176,6 +176,7 @@
 		speedLimits: type('string[]').default(() => []),
 		filterByYear: type('boolean').default(() => false),
 		safety: type('boolean').default(() => false),
+		safetyFilter: type.enumerated('safe', 'unsafe', '').default(() => ''),
 		sidebar: type.enumerated('open', 'closed').default(() => 'closed'),
 		zoom: type('number').default(() => 0),
 		lat: type('number').default(() => 0),
@@ -192,6 +193,25 @@
 	}
 
 	const safetyMode = $derived(params.safety);
+
+	const safetyFilter = $derived<'safe' | 'unsafe' | null>(
+		params.safetyFilter === 'safe' || params.safetyFilter === 'unsafe' ? params.safetyFilter : null,
+	);
+	let hoveredSafety = $state<'safe' | 'unsafe' | null>(null);
+
+	function toggleSafetyFilter(key: 'safe' | 'unsafe') {
+		params.safetyFilter = safetyFilter === key ? '' : key;
+	}
+
+	$effect(() => {
+		if (!safetyMode) {
+			if (params.safetyFilter !== '') {
+				params.safetyFilter = '';
+			}
+
+			hoveredSafety = null;
+		}
+	});
 
 	let visibleOptional = $state<Set<string>>(new Set());
 	$effect(() => {
@@ -285,6 +305,9 @@
 			for (const id of layerGroups.vl) next.add(id);
 			setLayers([...next]);
 			params.filterByYear = true;
+				if (params.safety) {
+					params.safety = false;
+				}
 		} else {
 			params.filterByYear = false;
 			if (layersBeforeYearFilter) {
@@ -474,7 +497,9 @@
 	const lengthByLegendId = $derived.by(() => {
 		const totals: Partial<Record<LegendId, number>> = {};
 		if (isLayerActive('osm-cycleways') && osmCyclewaysQuery.data) {
+			const wantSafe = safetyFilter === 'safe' ? true : safetyFilter === 'unsafe' ? false : null;
 			for (const f of osmInsideBoundary.features) {
+				if (wantSafe !== null && Boolean((f.properties as any)?.isSafe) !== wantSafe) continue;
 				const id = osmFeatureToLegendId(f.properties);
 				if (!id) continue;
 				totals[id] = (totals[id] ?? 0) + featureLineLengthMeters(f);
@@ -490,6 +515,26 @@
 			}
 		}
 		return totals;
+	});
+
+	const safetyLengths = $derived.by(() => {
+		let safe = 0;
+		let unsafe = 0;
+		if (isLayerActive('osm-cycleways') && osmCyclewaysQuery.data) {
+			for (const f of osmInsideBoundary.features) {
+				const id = osmFeatureToLegendId(f.properties);
+				if (!id) {
+					continue;
+				}
+
+				const len = featureLineLengthMeters(f);
+				if ((f.properties as any)?.isSafe) {
+					safe += len;
+				}
+				else unsafe += len;
+			}
+		}
+		return { safe, unsafe };
 	});
 
 	const outsideMask = $derived.by<FeatureCollection>(() => {
@@ -935,6 +980,8 @@
 					{hoveredLegendId}
 					{map}
 					{safetyMode}
+					{safetyFilter}
+					{hoveredSafety}
 				/>
 
 				<SpeedLimitsLayer
@@ -958,6 +1005,11 @@
 					onToggle={toggleCyclewayType}
 					onHover={(id) => (hoveredLegendId = id)}
 					{lengthByLegendId}
+					{safetyMode}
+					{safetyLengths}
+					activeSafety={safetyFilter}
+					onToggleSafety={toggleSafetyFilter}
+					onHoverSafety={(key) => (hoveredSafety = key)}
 					position="bottom-left"
 				/>
 
