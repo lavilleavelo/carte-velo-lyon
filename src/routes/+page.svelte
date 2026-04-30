@@ -21,6 +21,7 @@
 	import Ellipsis from '@lucide/svelte/icons/ellipsis';
 	import PanelRightClose from '@lucide/svelte/icons/panel-right-close';
 	import PanelRightOpen from '@lucide/svelte/icons/panel-right-open';
+	import ShieldCheck from '@lucide/svelte/icons/shield-check';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Select from '$lib/components/ui/select';
 	import { Checkbox } from '$lib/components/ui/checkbox';
@@ -131,6 +132,7 @@
 		cyclewayLocalisation: type('string[]').default(() => []),
 		targetNetworkHorizons: type('string[]').default(() => ['2030', '2035', '2040']),
 		projectVLStatuses: type('string[]').default(() => ['wip', 'planned', 'postponed']),
+		safety: type('boolean').default(() => false),
 	});
 
 	const params = useSearchParams(mapSearchParamsSchema, {
@@ -212,6 +214,7 @@
 	let showMobileFilters = $state(false);
 	let showDesktopSidebar = $state(true);
 	let cursor: string | undefined = $state();
+	const safetyMode = $derived(params.safety);
 
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
 		params.mapStyle = style;
@@ -952,6 +955,25 @@
 					visualizePitch={true}
 				/>
 				<GeolocateControl position="top-right" />
+				{#if isLayerVisible('osm-cycleways')}
+					<CustomControl position="top-right">
+						<button
+							onclick={() => (params.safety = !params.safety)}
+							class="rounded-lg pl-1! shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none {safetyMode
+								? 'bg-blue-600! text-white! hover:bg-blue-700!'
+								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
+							aria-pressed={safetyMode}
+							aria-label={safetyMode
+								? 'Désactiver le mode sécurité'
+								: 'Activer le mode sécurité'}
+							title={safetyMode
+								? 'Mode sécurité activé (bleu = sûr, rouge = non sûr)'
+								: 'Colorer par sécurité (sûr / non sûr)'}
+						>
+							<ShieldCheck size={20} />
+						</button>
+					</CustomControl>
+				{/if}
 				<CustomControl position="top-right">
 					<button
 						onclick={() => (showDesktopSidebar = !showDesktopSidebar)}
@@ -1051,7 +1073,7 @@
 
 			<SpeedLimitsLayer {isLayerVisible} enabledBuckets={enabledSpeedBuckets} />
 
-			<OsmCyclewayLayer {isLayerVisible} {map} />
+			<OsmCyclewayLayer {isLayerVisible} {map} {safetyMode} />
 
 			<VoiesLyonnaisesLayer
 				{isLayerVisible}

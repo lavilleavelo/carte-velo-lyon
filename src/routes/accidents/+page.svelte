@@ -6,6 +6,7 @@
 		FullScreenControl,
 		GeoJSONSource,
 		CircleLayer,
+		CustomControl,
 		Marker,
 		Popup,
 	} from 'svelte-maplibre-gl';
@@ -29,6 +30,7 @@
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Info from '@lucide/svelte/icons/info';
 	import SlidersHorizontal from '@lucide/svelte/icons/sliders-horizontal';
+	import ShieldCheck from '@lucide/svelte/icons/shield-check';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import accidentsUrl from '$lib/data/accidents-velo.json?url';
 	import communeIndex from '$lib/data/communes/_index.json';
@@ -84,6 +86,7 @@
 		showCycleways: type('boolean').default(() => true),
 		showVL: type('boolean').default(() => false),
 		dimOverlay: type('boolean').default(() => true),
+		safety: type('boolean').default(() => false),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'positron'),
 		zoom: type('number').default(() => 0),
 		lng: type('number').default(() => 0),
@@ -725,12 +728,34 @@
 						position="top-right"
 					/>
 
+					{#if params.showCycleways}
+						<CustomControl position="top-right">
+							<button
+								type="button"
+								onclick={() => (params.safety = !params.safety)}
+								class="rounded-lg pl-1! shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none {params.safety
+									? 'bg-blue-600! text-white! hover:bg-blue-700!'
+									: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
+								aria-pressed={params.safety}
+								aria-label={params.safety
+									? 'Désactiver le mode sécurité'
+									: 'Activer le mode sécurité'}
+								title={params.safety
+									? 'Mode sécurité activé (bleu = sûr, rouge = non sûr)'
+									: 'Colorer par sécurité (sûr / non sûr)'}
+							>
+								<ShieldCheck size={20} />
+							</button>
+						</CustomControl>
+					{/if}
+
 					{@const overlayOpacity = params.dimOverlay ? 0.4 : 1}
 					{#if params.showCycleways}
 						<OsmCyclewayLayer
 							isLayerVisible={(id) => id === 'osm-cycleways'}
 							{map}
 							opacityScale={overlayOpacity}
+							safetyMode={params.safety}
 						/>
 					{/if}
 					{#if params.showVL}

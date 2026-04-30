@@ -30,6 +30,7 @@
 		hoveredLegendId,
 		map,
 		opacityScale = 1,
+		safetyMode = false,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		boundary?: FeatureCollection;
@@ -37,6 +38,7 @@
 		hoveredLegendId?: string | null;
 		map?: maplibregl.Map;
 		opacityScale?: number;
+		safetyMode?: boolean;
 	} = $props();
 
 	const DSC_CAR_COLOR = '#000000';
@@ -66,6 +68,20 @@
 
 	const COLOR = '#0369a1';
 	const COLOR_NON_PAVED = '#03527d';
+	const SAFETY_COLOR_SAFE = '#2563eb';
+	const SAFETY_COLOR_UNSAFE = '#dc2626';
+
+	const lineColor: any = $derived(
+		safetyMode
+			? ['case', ['==', ['get', 'isSafe'], true], SAFETY_COLOR_SAFE, SAFETY_COLOR_UNSAFE]
+			: COLOR,
+	);
+
+	const lineColorNonPaved: any = $derived(
+		safetyMode
+			? ['case', ['==', ['get', 'isSafe'], true], SAFETY_COLOR_SAFE, SAFETY_COLOR_UNSAFE]
+			: COLOR_NON_PAVED,
+	);
 
 	function ensureDscIcons(m: maplibregl.Map) {
 		const register = (name: string, leftColor: string, rightColor: string) => {
@@ -163,7 +179,7 @@
 		id="osm-cw-piste-bidir"
 		filter={filterPisteBidir}
 		paint={{
-			'line-color': COLOR,
+			'line-color': lineColor,
 			'line-width': PISTE_BIDIR_LINE_WIDTH,
 			'line-opacity': opacityPisteBidir,
 			'line-offset': lineOffset,
@@ -175,7 +191,7 @@
 		id="osm-cw-piste-unidir"
 		filter={filterPisteUnidir}
 		paint={{
-			'line-color': COLOR,
+			'line-color': lineColor,
 			'line-width': PISTE_UNIDIR_LINE_WIDTH,
 			'line-opacity': opacityPisteUnidir,
 			'line-offset': zoomedOffset,
@@ -187,7 +203,7 @@
 		id="osm-cw-voie-verte"
 		filter={filterVoieVertePaved}
 		paint={{
-			'line-color': COLOR,
+			'line-color': lineColor,
 			'line-width': VOIE_VERTE_LINE_WIDTH,
 			'line-opacity': opacityVoieVerte,
 			'line-dasharray': VOIE_VERTE_DASHARRAY,
@@ -200,7 +216,7 @@
 		id="osm-cw-voie-verte-stabilise-base"
 		filter={filterVoieVerteStabilise}
 		paint={{
-			'line-color': COLOR_NON_PAVED,
+			'line-color': lineColorNonPaved,
 			'line-width': VOIE_VERTE_LINE_WIDTH,
 			'line-opacity': opacityVoieVerte,
 			'line-dasharray': VOIE_VERTE_DASHARRAY,
@@ -213,7 +229,7 @@
 		id="osm-cw-bande"
 		filter={filterBande}
 		paint={{
-			'line-color': COLOR,
+			'line-color': lineColor,
 			'line-width': ['interpolate', ['linear'], ['zoom'], 11, 0.8, 14, 1.6, 17, 3],
 			'line-opacity': opacityBande,
 			'line-dasharray': BANDE_DASHARRAY,
@@ -226,7 +242,7 @@
 		id="osm-cw-bus-velo"
 		filter={filterBusVelo}
 		paint={{
-			'line-color': COLOR,
+			'line-color': lineColor,
 			'line-width': ['interpolate', ['linear'], ['zoom'], 11, 1, 14, 1.6, 17, 2.5],
 			'line-opacity': opacityBusVelo,
 			'line-dasharray': BUS_VELO_DASHARRAY,
@@ -239,7 +255,7 @@
 		id="osm-cw-velorue"
 		filter={filterVelorue}
 		paint={{
-			'line-color': COLOR,
+			'line-color': lineColor,
 			'line-width': 4,
 			'line-opacity': opacityVelorue,
 			'line-dasharray': VELORUE_DASHARRAY,

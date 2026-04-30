@@ -45,6 +45,7 @@
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
 	import PanelRightOpen from '@lucide/svelte/icons/panel-right-open';
 	import PanelRightClose from '@lucide/svelte/icons/panel-right-close';
+	import ShieldCheck from '@lucide/svelte/icons/shield-check';
 	import Maximize2 from '@lucide/svelte/icons/maximize-2';
 	import Minimize2 from '@lucide/svelte/icons/minimize-2';
 	import { loadDefaultProvider } from '$lib/config/navigationProviders';
@@ -174,6 +175,7 @@
 		projectVLStatuses: type('string[]').default(() => ['wip', 'planned', 'postponed']),
 		speedLimits: type('string[]').default(() => []),
 		filterByYear: type('boolean').default(() => false),
+		safety: type('boolean').default(() => false),
 		sidebar: type.enumerated('open', 'closed').default(() => 'closed'),
 		zoom: type('number').default(() => 0),
 		lat: type('number').default(() => 0),
@@ -188,6 +190,8 @@
 	function toggleSidebar() {
 		params.sidebar = sidebarHidden ? 'open' : 'closed';
 	}
+
+	const safetyMode = $derived(params.safety);
 
 	let visibleOptional = $state<Set<string>>(new Set());
 	$effect(() => {
@@ -819,6 +823,28 @@
 					onSelect={mapStyleState.setMapStyle}
 					position="top-right"
 				/>
+
+				{#if isLayerActive('osm-cycleways')}
+					<CustomControl position="top-right">
+						<button
+							type="button"
+							onclick={() => (params.safety = !params.safety)}
+							class="rounded-lg pl-1! shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none {safetyMode
+								? 'bg-blue-600! text-white! hover:bg-blue-700!'
+								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
+							aria-pressed={safetyMode}
+							aria-label={safetyMode
+								? 'Désactiver le mode sécurité'
+								: 'Activer le mode sécurité'}
+							title={safetyMode
+								? 'Mode sécurité activé (bleu = sûr, rouge = non sûr)'
+								: 'Colorer par sécurité (sûr / non sûr)'}
+						>
+							<ShieldCheck size={20} />
+						</button>
+					</CustomControl>
+				{/if}
+
 				{#if isDesktop}
 					<CustomControl position="top-right">
 						<button
@@ -908,6 +934,7 @@
 					activeLegendIds={params.cyclewayTypes}
 					{hoveredLegendId}
 					{map}
+					{safetyMode}
 				/>
 
 				<SpeedLimitsLayer

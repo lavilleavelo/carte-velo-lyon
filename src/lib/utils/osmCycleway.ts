@@ -1,4 +1,5 @@
 import type { Feature, FeatureCollection } from 'geojson';
+import { isSafePath } from '$lib/utils/safePath';
 
 export const PAVED_SURFACES = new Set([
 	'asphalt',
@@ -44,6 +45,8 @@ export function overpassToGeoJSON(data: any): FeatureCollection {
 
 		const coordinates = element.geometry.map((p: { lon: number; lat: number }) => [p.lon, p.lat]);
 
+		const safety = isSafePath(tags);
+
 		for (const c of classifications) {
 			features.push({
 				type: 'Feature',
@@ -56,6 +59,8 @@ export function overpassToGeoJSON(data: any): FeatureCollection {
 					side: c.side,
 					bidirectional: c.bidirectional ?? false,
 					offset: sideOffset(c.side),
+					isSafe: safety.isSafe,
+					safetyReason: safety.reason,
 				},
 				geometry: {
 					type: 'LineString',
