@@ -2,10 +2,12 @@
 	let {
 		showCycleways = $bindable(),
 		showVL = $bindable(),
+		showCounters = $bindable(),
 		dimOverlay = $bindable(),
 	}: {
 		showCycleways: boolean;
 		showVL: boolean;
+		showCounters: boolean;
 		dimOverlay: boolean;
 	} = $props();
 
@@ -40,6 +42,19 @@
 	>
 		<span class="sm:hidden">VL</span>
 		<span class="hidden sm:inline">Voies Lyonnaises</span>
+	</button>
+	<button
+		type="button"
+		aria-pressed={showCounters}
+		onclick={() => (showCounters = !showCounters)}
+		title="Compteurs vélo"
+		class="pointer-events-auto cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-sm transition-all active:scale-95"
+		style="background-color: {showCounters ? '#2563eb' : 'white'}; color: {showCounters
+			? 'white'
+			: '#2563eb'}; border: 1.5px solid #2563eb;"
+	>
+		<span class="sm:hidden">Compteurs</span>
+		<span class="hidden sm:inline">Compteurs vélo</span>
 	</button>
 	{#if dimVisible}
 		<label

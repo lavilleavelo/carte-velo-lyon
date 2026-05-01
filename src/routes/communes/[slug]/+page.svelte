@@ -79,7 +79,9 @@
 				</div>
 			{/if}
 			<div>
-				<dt class="text-[10px] font-medium tracking-wider text-gray-400 uppercase">INSEE</dt>
+				<dt class="text-[10px] font-medium tracking-wider text-gray-400 uppercase">
+					INSEE&nbsp;·&nbsp;Code Postal
+				</dt>
 				<dd class="text-sm font-semibold text-gray-700">
 					{commune.insee}{#if commune.codePostal}
 						<span class="font-normal text-gray-400">&nbsp;·&nbsp;{commune.codePostal}</span>

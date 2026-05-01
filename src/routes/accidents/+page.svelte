@@ -22,6 +22,7 @@
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
 	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
+	import CountersLayer from '$lib/components/map/layers/CountersLayer.svelte';
 	import { getAllLayerConfigs } from '$lib/config/layers';
 	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
@@ -85,6 +86,7 @@
 		streets: type('string[]').default(() => []),
 		showCycleways: type('boolean').default(() => true),
 		showVL: type('boolean').default(() => false),
+		showCounters: type('boolean').default(() => false),
 		dimOverlay: type('boolean').default(() => true),
 		safety: type('boolean').default(() => false),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'positron'),
@@ -543,9 +545,9 @@
 
 	function handleMapClick(event: maplibregl.MapMouseEvent) {
 		if (!map) return;
-		const layerIds = GRAVITIES.map((g) => `accidents-${g.slug}-hitarea`).filter((id) =>
-			map?.getLayer(id),
-		);
+		const accidentLayerIds = GRAVITIES.map((g) => `accidents-${g.slug}-hitarea`);
+		const counterLayerIds = params.showCounters ? ['counters-velo-hitarea'] : [];
+		const layerIds = [...accidentLayerIds, ...counterLayerIds].filter((id) => map?.getLayer(id));
 		if (layerIds.length === 0) return;
 		const features = map.queryRenderedFeatures(event.point, { layers: layerIds });
 		if (features.length === 0) {
@@ -554,6 +556,20 @@
 			return;
 		}
 		const f = features[0];
+		const coords =
+			f.geometry.type === 'Point' ? (f.geometry.coordinates as [number, number]) : null;
+		selectedLngLat = coords ? { lng: coords[0], lat: coords[1] } : null;
+
+		if (f.layer.id === 'counters-velo-hitarea') {
+			selectedFeatures = [
+				{
+					type: 'counter',
+					properties: { ...(f.properties ?? {}), counterType: 'velo' },
+				},
+			];
+			return;
+		}
+
 		const props = (f.properties ?? {}) as AccidentProps & { other_vehicles?: string };
 		// Normalize other_vehicles back to array (it's serialized to string by maplibre)
 		let otherVehicles: string[] = [];
@@ -565,23 +581,19 @@
 			} catch {}
 		}
 
-		const coords =
-			f.geometry.type === 'Point' ? (f.geometry.coordinates as [number, number]) : null;
-
 		selectedFeatures = [
 			{
 				type: 'accident',
 				properties: { ...props, other_vehicles: otherVehicles },
 			},
 		];
-		selectedLngLat = coords ? { lng: coords[0], lat: coords[1] } : null;
 	}
 
 	const accidentLayerConfigs = $derived.by(() => {
 		const all = getAllLayerConfigs();
 		const m = new Map<string, ReturnType<typeof getAllLayerConfigs>[number]>();
 		for (const c of all) {
-			if (c.featureType === 'accident') {
+			if (c.featureType === 'accident' || c.featureType === 'counter') {
 				for (const layerId of c.interactableLayerIds) m.set(layerId, c);
 			}
 		}
@@ -597,9 +609,9 @@
 			return;
 		}
 
-		const layerIds = GRAVITIES.map((g) => `accidents-${g.slug}-hitarea`).filter((id) =>
-			map?.getLayer(id),
-		);
+		const accidentLayerIds = GRAVITIES.map((g) => `accidents-${g.slug}-hitarea`);
+		const counterLayerIds = params.showCounters ? ['counters-velo-hitarea'] : [];
+		const layerIds = [...accidentLayerIds, ...counterLayerIds].filter((id) => map?.getLayer(id));
 
 		if (layerIds.length === 0) {
 			cursor = '';
@@ -697,6 +709,7 @@
 				<MapPills
 					bind:showCycleways={params.showCycleways}
 					bind:showVL={params.showVL}
+					bind:showCounters={params.showCounters}
 					bind:dimOverlay={params.dimOverlay}
 				/>
 
@@ -765,6 +778,13 @@
 							isLayerVisible={(id) => id.startsWith('vl-')}
 							{map}
 							opacityScale={overlayOpacity}
+						/>
+					{/if}
+					{#if params.showCounters}
+						<CountersLayer
+							isLayerVisible={(id) => id === 'counters-velo'}
+							handleMouseEnter={() => {}}
+							handleMouseLeave={() => {}}
 						/>
 					{/if}
 
