@@ -110,35 +110,3 @@
 		{/if}
 	</div>
 </CustomControl>
-
-<style>
-	:global(.speed-limits-control) {
-		width: auto !important;
-		max-width: calc(100vw - 16px);
-	}
-	@media (min-width: 640px) {
-		:global(.speed-limits-control) {
-			min-width: 220px;
-		}
-	}
-	:global(.speed-limits-control button) {
-		width: auto !important;
-		height: auto !important;
-		display: flex !important;
-		padding: 0 !important;
-		background: transparent !important;
-		border: none !important;
-		box-shadow: none !important;
-		cursor: pointer !important;
-	}
-	:global(.speed-limits-control button:hover) {
-		background-color: transparent !important;
-	}
-	:global(.speed-limits-control > button) {
-		padding: 0.5rem 0.75rem !important;
-		width: 100% !important;
-	}
-	:global(.speed-limits-control li button.bg-gray-200) {
-		background-color: rgb(229 231 235) !important;
-	}
-</style>

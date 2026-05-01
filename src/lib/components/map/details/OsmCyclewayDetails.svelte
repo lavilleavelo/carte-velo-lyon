@@ -140,7 +140,7 @@
 						target="_blank"
 						rel="noopener"
 						onclick={(e) => e.stopPropagation()}
-						class="inline-flex items-center gap-1 text-gray-400 hover:text-brand-navy"
+						class="inline-flex items-center gap-1 text-sm text-gray-400 hover:text-brand-navy"
 					>
 						Voir sur OSM
 						<ExternalLink size={12} />

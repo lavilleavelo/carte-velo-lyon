@@ -413,35 +413,3 @@
 		</div>
 	</CustomControl>
 {/if}
-
-<style>
-	:global(.cycleway-legend-control) {
-		width: auto !important;
-		max-width: calc(100vw - 16px);
-	}
-	@media (min-width: 640px) {
-		:global(.cycleway-legend-control[data-open='true']) {
-			min-width: 380px;
-		}
-		:global(.cycleway-legend-grid) {
-			grid-template-rows: repeat(var(--legend-rows), minmax(0, auto));
-		}
-	}
-	:global(.cycleway-legend-control button) {
-		width: auto !important;
-		height: auto !important;
-		display: flex !important;
-		padding: 0 !important;
-		background: transparent !important;
-		border: none !important;
-		box-shadow: none !important;
-		cursor: pointer !important;
-	}
-	:global(.cycleway-legend-control button:hover) {
-		background-color: transparent !important;
-	}
-	:global(.cycleway-legend-control > button) {
-		padding: 0.5rem 0.75rem !important;
-		width: 100% !important;
-	}
-</style>

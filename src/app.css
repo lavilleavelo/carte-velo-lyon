@@ -210,3 +210,105 @@
 .navigation-progress {
 	animation: navigation-progress 2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
 }
+
+/* MapLibre overrides
+ * !important is required because maplibre-gl.css is imported lazily by
+ * svelte-maplibre-gl and ends up after this file in the cascade. */
+.maplibregl-popup-content {
+	padding: 8px 12px !important;
+	border-radius: 0.5rem !important;
+	max-width: 350px !important;
+}
+
+.maplibregl-popup-close-button {
+	font-size: 20px !important;
+	padding: 0 8px !important;
+}
+
+.maplibregl-ctrl-bottom-left,
+.maplibregl-ctrl-bottom-right {
+	bottom: max(16px, env(safe-area-inset-bottom)) !important;
+}
+
+@media (max-width: 767px) {
+	.maplibregl-ctrl-bottom-right .maplibregl-ctrl-geolocate {
+		width: 44px !important;
+		height: 44px !important;
+	}
+
+	.maplibregl-ctrl-bottom-right .maplibregl-ctrl-geolocate .maplibregl-ctrl-icon {
+		width: 44px !important;
+		height: 44px !important;
+	}
+
+	.maplibregl-ctrl-bottom-left .maplibregl-ctrl-attrib button {
+		padding: 0.5rem !important;
+	}
+
+	.maplibregl-ctrl-bottom-left .maplibregl-ctrl-attrib button svg {
+		width: 24px !important;
+		height: 24px !important;
+	}
+}
+
+/* Cycleway legend control */
+.maplibregl-ctrl .cycleway-legend-control {
+	width: auto !important;
+	max-width: calc(100vw - 16px);
+}
+@media (min-width: 640px) {
+	.maplibregl-ctrl .cycleway-legend-control[data-open='true'] {
+		min-width: 380px;
+	}
+	.maplibregl-ctrl .cycleway-legend-grid {
+		grid-template-rows: repeat(var(--legend-rows), minmax(0, auto));
+	}
+}
+.maplibregl-ctrl .cycleway-legend-control button {
+	width: auto !important;
+	height: auto !important;
+	display: flex !important;
+	padding: 0 !important;
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	cursor: pointer !important;
+}
+.maplibregl-ctrl .cycleway-legend-control button:hover {
+	background-color: transparent !important;
+}
+.maplibregl-ctrl .cycleway-legend-control > button {
+	padding: 0.5rem 0.75rem !important;
+	width: 100% !important;
+}
+
+/* Speed limits control */
+.maplibregl-ctrl .speed-limits-control {
+	width: auto !important;
+	max-width: calc(100vw - 16px);
+}
+@media (min-width: 640px) {
+	.maplibregl-ctrl .speed-limits-control {
+		min-width: 220px;
+	}
+}
+.maplibregl-ctrl .speed-limits-control button {
+	width: auto !important;
+	height: auto !important;
+	display: flex !important;
+	padding: 0 !important;
+	background: transparent !important;
+	border: none !important;
+	box-shadow: none !important;
+	cursor: pointer !important;
+}
+.maplibregl-ctrl .speed-limits-control button:hover {
+	background-color: transparent !important;
+}
+.maplibregl-ctrl .speed-limits-control > button {
+	padding: 0.5rem 0.75rem !important;
+	width: 100% !important;
+}
+.maplibregl-ctrl .speed-limits-control li button.bg-gray-200 {
+	background-color: rgb(229 231 235) !important;
+}

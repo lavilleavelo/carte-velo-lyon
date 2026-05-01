@@ -86,7 +86,7 @@
 </script>
 
 <div
-	class="flex w-full flex-col overflow-hidden bg-white/95 backdrop-blur-sm md:max-w-sm md:rounded-xl md:border md:border-gray-100 md:shadow-xl"
+	class="flex w-full flex-col overflow-hidden bg-white/95 backdrop-blur-sm md:w-80 md:rounded-xl md:border md:border-gray-100 md:shadow-xl"
 >
 	{#if panoramaxQuery.data}
 		<button
