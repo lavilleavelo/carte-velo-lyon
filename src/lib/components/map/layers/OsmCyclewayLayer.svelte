@@ -33,6 +33,7 @@
 		safetyMode = false,
 		safetyFilter = null,
 		hoveredSafety = null,
+		hoveredFeatureId = null,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		boundary?: FeatureCollection;
@@ -43,6 +44,7 @@
 		safetyMode?: boolean;
 		safetyFilter?: 'safe' | 'unsafe' | null;
 		hoveredSafety?: 'safe' | 'unsafe' | null;
+		hoveredFeatureId?: string | number | null;
 	} = $props();
 
 	const DSC_CAR_COLOR = '#000000';
@@ -191,13 +193,32 @@
 
 	const lineOffset: any = ['get', 'offset'];
 	const zoomedOffset: any = ['interpolate', ['linear'], ['zoom'], 12, 0, 15, ['get', 'offset']];
+
+	const HOVER_COLOR = '#facc15';
+	const hoverFilter: any = $derived(
+		hoveredFeatureId == null ? ['==', ['id'], -1] : ['==', ['id'], hoveredFeatureId],
+	);
 </script>
 
 <GeoJSONSource
 	maxzoom={13}
 	data={displayData ?? EMPTY_FEATURE_COLLECTION}
 	id="osm-cycleways-source"
+	generateId
 >
+	<LineLayer
+		id="osm-cw-hover"
+		filter={hoverFilter}
+		minzoom={14}
+		paint={{
+			'line-color': HOVER_COLOR,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 14, 5, 17, 9],
+			'line-opacity': 0.85,
+			'line-offset': zoomedOffset,
+		}}
+		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
+	/>
+
 	<LineLayer
 		id="osm-cw-piste-bidir"
 		filter={filterPisteBidir}

@@ -56,7 +56,7 @@ export const layerConfigs: LayerConfig[] = [
 					</div>
 				</div>`;
 		},
-		minZoomPopup: 15,
+		minZoomPopup: 14,
 	},
 
 	// Cycling infrastructure (OSM)
@@ -99,7 +99,7 @@ export const layerConfigs: LayerConfig[] = [
 					</div>
 				</div>`;
 		},
-		minZoomPopup: 15,
+		minZoomPopup: 14,
 	},
 
 	// Speed limits (GrandLyon pvochausseetrottoir)

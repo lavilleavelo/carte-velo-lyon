@@ -237,6 +237,8 @@
 	let hoveredPhotoLocation: { lng: number; lat: number } | null = $state(null);
 	let hoverPopupFeatures: { features: any[]; lngLat: { lng: number; lat: number } } | null =
 		$state(null);
+	let hoveredCyclewayId = $state<string | number | null>(null);
+	let hoveredOsmCyclewayId = $state<string | number | null>(null);
 	let innerWidth = $state(0);
 	let bearing = $state(0);
 	let pitch = $state(0);
@@ -606,6 +608,22 @@
 
 		const features = map.queryRenderedFeatures(e.point, { layers: interactableLayers });
 
+		const cyclewayHover = features.find((f: any) => f.layer.id === 'cycleways-layer-hitarea');
+		const osmCyclewayHover = features.find(
+			(f: any) => f.layer.id === 'osm-cycleways-layer-hitarea',
+		);
+
+		const nextCyclewayId = (cyclewayHover?.id as string | number | undefined) ?? null;
+		const nextOsmCyclewayId = (osmCyclewayHover?.id as string | number | undefined) ?? null;
+
+		if (nextCyclewayId !== hoveredCyclewayId) {
+			hoveredCyclewayId = nextCyclewayId;
+		}
+
+		if (nextOsmCyclewayId !== hoveredOsmCyclewayId) {
+			hoveredOsmCyclewayId = nextOsmCyclewayId;
+		}
+
 		if (features.length > 0) {
 			const uniqueFeatures = features
 				.filter(
@@ -669,6 +687,8 @@
 			hoverTimeout = null;
 		}
 		hoverPopupFeatures = null;
+		hoveredCyclewayId = null;
+		hoveredOsmCyclewayId = null;
 		cursor = undefined;
 	}
 
@@ -678,6 +698,8 @@
 			hoverTimeout = null;
 		}
 		hoverPopupFeatures = null;
+		hoveredCyclewayId = null;
+		hoveredOsmCyclewayId = null;
 		cursor = undefined;
 	}
 
@@ -1072,7 +1094,11 @@
 
 			<CommunesLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
-			<CyclewayLayer {isLayerVisible} voirieData={filteredVoirieData} />
+			<CyclewayLayer
+				{isLayerVisible}
+				voirieData={filteredVoirieData}
+				hoveredFeatureId={hoveredCyclewayId}
+			/>
 
 			<TargetNetworkLayer {isLayerVisible} targetNetworkHorizons={params.targetNetworkHorizons} />
 
@@ -1099,7 +1125,12 @@
 
 			<OverpassVLLayer {isLayerVisible} {map} />
 
-			<OsmCyclewayLayer {isLayerVisible} {map} {safetyMode} />
+			<OsmCyclewayLayer
+				{isLayerVisible}
+				{map}
+				{safetyMode}
+				hoveredFeatureId={hoveredOsmCyclewayId}
+			/>
 
 			<VoiesLyonnaisesShields {isLayerVisible} {map} />
 

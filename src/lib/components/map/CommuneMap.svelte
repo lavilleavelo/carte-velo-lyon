@@ -610,6 +610,8 @@
 	let hoverTimeout: ReturnType<typeof setTimeout> | null = null;
 	let hoverPopupFeatures: { features: any[]; lngLat: { lng: number; lat: number } } | null =
 		$state(null);
+	let hoveredCyclewayId = $state<string | number | null>(null);
+	let hoveredOsmCyclewayId = $state<string | number | null>(null);
 	let selectedFeatures: any[] = $state([]);
 	let selectedLngLat: { lng: number; lat: number } | null = $state(null);
 	let showPanoramax = $state(false);
@@ -637,6 +639,8 @@
 				pendingMouseMove = null;
 			}
 			hoverPopupFeatures = null;
+			hoveredCyclewayId = null;
+			hoveredOsmCyclewayId = null;
 			cursor = undefined;
 		};
 
@@ -705,10 +709,29 @@
 		const interactableLayers = getInteractables();
 		if (interactableLayers.length === 0) {
 			hoverPopupFeatures = null;
+			hoveredCyclewayId = null;
+			hoveredOsmCyclewayId = null;
 			cursor = undefined;
 			return;
 		}
 		const features = map.queryRenderedFeatures(point, { layers: interactableLayers });
+
+		const cyclewayHover = features.find((f: any) => f.layer.id === 'cycleways-layer-hitarea');
+		const osmCyclewayHover = features.find(
+			(f: any) => f.layer.id === 'osm-cycleways-layer-hitarea',
+		);
+
+		const nextCyclewayId = (cyclewayHover?.id as string | number | undefined) ?? null;
+		const nextOsmCyclewayId = (osmCyclewayHover?.id as string | number | undefined) ?? null;
+
+		if (nextCyclewayId !== hoveredCyclewayId) {
+			hoveredCyclewayId = nextCyclewayId;
+		}
+
+		if (nextOsmCyclewayId !== hoveredOsmCyclewayId) {
+			hoveredOsmCyclewayId = nextOsmCyclewayId;
+		}
+
 		if (features.length > 0) {
 			const zoom = map.getZoom();
 			const enriched = enrichFeatures(features).filter(
@@ -767,6 +790,8 @@
 			pendingMouseMove = null;
 		}
 		hoverPopupFeatures = null;
+		hoveredCyclewayId = null;
+		hoveredOsmCyclewayId = null;
 		cursor = undefined;
 	}
 
@@ -1014,6 +1039,7 @@
 				<CyclewayLayer
 					isLayerVisible={(id) => id === 'cycleways' && isLayerActive('cycleways')}
 					voirieData={voirieInside}
+					hoveredFeatureId={hoveredCyclewayId}
 				/>
 
 				<OsmCyclewayLayer
@@ -1025,6 +1051,7 @@
 					{safetyMode}
 					{safetyFilter}
 					{hoveredSafety}
+					hoveredFeatureId={hoveredOsmCyclewayId}
 				/>
 
 				<SpeedLimitsLayer

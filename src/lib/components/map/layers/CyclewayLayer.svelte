@@ -15,7 +15,15 @@
 		VOIE_VERTE_LINE_WIDTH,
 	} from './cyclewayStyles';
 
-	let { isLayerVisible, voirieData } = $props();
+	let {
+		isLayerVisible,
+		voirieData,
+		hoveredFeatureId = null,
+	}: {
+		isLayerVisible: (id: string) => boolean;
+		voirieData: any;
+		hoveredFeatureId?: string | number | null;
+	} = $props();
 
 	const COLOR = '#166534';
 
@@ -34,9 +42,31 @@
 	const filterDsc: any = ['==', ['get', 'typeamenagement'], 'Double sens cyclable'];
 
 	const visibility = $derived(isLayerVisible('cycleways') ? 'visible' : 'none');
+
+	const HOVER_COLOR = '#facc15';
+	const hoverFilter: any = $derived(
+		hoveredFeatureId == null ? ['==', ['id'], -1] : ['==', ['id'], hoveredFeatureId],
+	);
 </script>
 
-<GeoJSONSource maxzoom={13} data={voirieData ?? EMPTY_FEATURE_COLLECTION} id="cycleways-source">
+<GeoJSONSource
+	maxzoom={13}
+	data={voirieData ?? EMPTY_FEATURE_COLLECTION}
+	id="cycleways-source"
+	generateId
+>
+	<LineLayer
+		id="cw-hover"
+		filter={hoverFilter}
+		minzoom={14}
+		paint={{
+			'line-color': HOVER_COLOR,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 14, 5, 17, 9],
+			'line-opacity': 0.85,
+		}}
+		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
+	/>
+
 	<LineLayer
 		id="cw-piste-bidir"
 		filter={filterPisteBidir}
