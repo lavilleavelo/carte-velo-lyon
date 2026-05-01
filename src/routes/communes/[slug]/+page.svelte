@@ -4,6 +4,8 @@
 	import InfrastructureEvolutionChart from '$lib/components/charts/InfrastructureEvolutionChart.svelte';
 	import Ville30Indicator from '$lib/components/Ville30Indicator.svelte';
 	import CommuneStatsIndicators from '$lib/components/CommuneStatsIndicators.svelte';
+	import CommuneSafetyStats from '$lib/components/CommuneSafetyStats.svelte';
+	import CommuneSummary from '$lib/components/CommuneSummary.svelte';
 	import LavilleaveloCta from '$lib/components/LavilleaveloCta.svelte';
 	import { getVeloscoreUrl } from '$lib/utils';
 	import type { PageData } from './$types';
@@ -47,68 +49,77 @@
 			<h1 class="text-2xl font-bold text-brand-navy md:text-3xl">{commune.name}</h1>
 		</header>
 
-		<div class="flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-gray-500">
-			<span>
-				<span class="uppercase">INSEE</span>
-				<span class="font-semibold text-gray-700">{commune.insee}</span>
-			</span>
-			{#if commune.codePostal}
-				<span class="text-gray-300">·</span>
-				<span>
-					<span class="uppercase">Code postal</span>
-					<span class="font-semibold text-gray-700">{commune.codePostal}</span>
-				</span>
-			{/if}
+		<dl class="grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-3 lg:grid-cols-5">
 			{#if commune.surfaceKm2 !== null}
-				<span class="text-gray-300">·</span>
-				<span>
-					<span class="uppercase">Surface</span>
-					<span class="font-semibold text-gray-700">{commune.surfaceKm2}&nbsp;km²</span>
-				</span>
+				<div>
+					<dt class="text-[10px] font-medium tracking-wider text-gray-400 uppercase">Surface</dt>
+					<dd class="text-sm font-semibold text-gray-700">{commune.surfaceKm2}&nbsp;km²</dd>
+				</div>
 			{/if}
 			{#if population !== null}
-				<span class="text-gray-300">·</span>
-				<span>
-					<span class="uppercase">Population</span>
-					<span class="font-semibold text-gray-700">{populationFormatter.format(population)}</span>
-					{#if populationYear}
-						<span class="text-gray-400">({populationYear})</span>
-					{/if}
-				</span>
+				<div>
+					<dt class="text-[10px] font-medium tracking-wider text-gray-400 uppercase">
+						Population{#if populationYear}
+							<span class="text-gray-300">&nbsp;{populationYear}</span>
+						{/if}
+					</dt>
+					<dd class="text-sm font-semibold text-gray-700">
+						{populationFormatter.format(population)}
+					</dd>
+				</div>
 			{/if}
 			{#if density !== null}
-				<span class="text-gray-300">·</span>
-				<span>
-					<span class="uppercase">Densité</span>
-					<span class="font-semibold text-gray-700"
-						>{populationFormatter.format(density)}&nbsp;hab/km²</span
+				<div>
+					<dt class="text-[10px] font-medium tracking-wider text-gray-400 uppercase">Densité</dt>
+					<dd class="text-sm font-semibold text-gray-700">
+						{populationFormatter.format(density)}&nbsp;<span class="font-normal text-gray-500"
+							>hab/km²</span
+						>
+					</dd>
+				</div>
+			{/if}
+			<div>
+				<dt class="text-[10px] font-medium tracking-wider text-gray-400 uppercase">INSEE</dt>
+				<dd class="text-sm font-semibold text-gray-700">
+					{commune.insee}{#if commune.codePostal}
+						<span class="font-normal text-gray-400">&nbsp;·&nbsp;{commune.codePostal}</span>
+					{/if}
+				</dd>
+			</div>
+			<div>
+				<dt class="text-[10px] font-medium tracking-wider text-gray-400 uppercase">Liens</dt>
+				<dd class="flex flex-wrap items-baseline gap-x-3 gap-y-0.5 text-sm">
+					<a
+						href={veloscoreUrl}
+						target="_blank"
+						rel="noopener"
+						class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
 					>
-				</span>
-			{/if}
-			<span class="text-gray-300">·</span>
-			<a
-				href={veloscoreUrl}
-				target="_blank"
-				rel="noopener"
-				class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
-			>
-				Vélo-score 2026
-				<ExternalLink class="h-3 w-3" />
-			</a>
-			{#if metadata?.wikipediaUrl}
-				<span class="text-gray-300">·</span>
-				<a
-					href={metadata.wikipediaUrl}
-					target="_blank"
-					rel="noopener"
-					class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
-				>
-					Wikipédia
-					<ExternalLink class="h-3 w-3" />
-				</a>
-			{/if}
-		</div>
+						Vélo-score 2026
+						<ExternalLink class="h-3 w-3" />
+					</a>
+					{#if metadata?.wikipediaUrl}
+						<a
+							href={metadata.wikipediaUrl}
+							target="_blank"
+							rel="noopener"
+							class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
+						>
+							Wikipédia
+							<ExternalLink class="h-3 w-3" />
+						</a>
+					{/if}
+				</dd>
+			</div>
+		</dl>
 	</div>
+
+	<CommuneSummary
+		communeName={commune.name}
+		stats={data.communeStats}
+		ville30Stats={data.ville30Stats}
+		osmSafetyStats={data.osmSafetyStats}
+	/>
 
 	{#if metadata?.articles && metadata.articles.length > 0}
 		<section>
@@ -141,9 +152,15 @@
 		</section>
 	{/if}
 
-	<Ville30Indicator communeName={commune.name} ville30={data.ville30} stats={data.ville30Stats} />
+	<CommuneStatsIndicators
+		communeName={commune.name}
+		stats={data.communeStats}
+		osmSafetyStats={data.osmSafetyStats}
+	/>
 
-	<CommuneStatsIndicators communeName={commune.name} stats={data.communeStats} />
+	<CommuneSafetyStats stats={data.osmSafetyStats} communeName={commune.name} />
+
+	<Ville30Indicator communeName={commune.name} ville30={data.ville30} stats={data.ville30Stats} />
 
 	{#if data.communeStats}
 		<InfrastructureEvolutionChart

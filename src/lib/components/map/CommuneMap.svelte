@@ -165,7 +165,7 @@
 	});
 
 	const paramsSchema = type({
-		layers: type('string[]').default(() => ['osm-cycleways', 'vl']),
+		layers: type('string[]').default(() => ['osm-cycleways', 'vl', 'parking']),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),
 		yearFrom: type('number').default(() => MIN_YEAR),
 		yearTo: type('number').default(() => MAX_YEAR),
@@ -500,12 +500,28 @@
 		const totals: Partial<Record<LegendId, number>> = {};
 		if (isLayerActive('osm-cycleways') && osmCyclewaysQuery.data) {
 			const wantSafe = safetyFilter === 'safe' ? true : safetyFilter === 'unsafe' ? false : null;
+
+			// dedupe bike lanes/ shared bus bus paths
+			const seen = new Set<string>();
 			for (const f of osmInsideBoundary.features) {
-				if (wantSafe !== null && Boolean((f.properties as any)?.isSafe) !== wantSafe) continue;
-				const id = osmFeatureToLegendId(f.properties);
-				if (!id) continue;
+				const props = f.properties as any;
+				if (wantSafe !== null && Boolean(props?.isSafe) !== wantSafe) {
+					continue;
+				}
+
+				const id = osmFeatureToLegendId(props);
+				if (!id) {
+					continue;
+				}
+
+				const key = `${props?.osmId}:${props?.typeamenagement}`;
+				if (seen.has(key)) {
+					continue;
+				}
+				seen.add(key);
 				totals[id] = (totals[id] ?? 0) + featureLineLengthMeters(f);
 			}
+
 			return totals;
 		}
 		if (isLayerActive('cycleways') && voirieBoundaryYearFiltered) {
@@ -523,16 +539,25 @@
 		let safe = 0;
 		let unsafe = 0;
 		if (isLayerActive('osm-cycleways') && osmCyclewaysQuery.data) {
+			const seen = new Set<string>();
 			for (const f of osmInsideBoundary.features) {
-				const id = osmFeatureToLegendId(f.properties);
+				const props = f.properties as any;
+				const id = osmFeatureToLegendId(props);
 				if (!id) {
 					continue;
 				}
+				const key = `${props?.osmId}:${props?.typeamenagement}`;
+				if (seen.has(key)) {
+					continue;
+				}
+				seen.add(key);
 
 				const len = featureLineLengthMeters(f);
-				if ((f.properties as any)?.isSafe) {
+				if (props?.isSafe) {
 					safe += len;
-				} else unsafe += len;
+				} else {
+					unsafe += len;
+				}
 			}
 		}
 		return { safe, unsafe };
@@ -1074,10 +1099,10 @@
 				>
 					{#if expanded}
 						<Minimize2 size={13} />
-						<span>Réduire la carte</span>
+						<span class="hidden sm:inline">Réduire la carte</span>
 					{:else}
 						<Maximize2 size={13} />
-						<span>Agrandir la carte</span>
+						<span class="hidden sm:inline">Agrandir la carte</span>
 					{/if}
 				</button>
 			</div>

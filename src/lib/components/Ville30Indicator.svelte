@@ -71,9 +71,14 @@
 		>
 			<Check class="mt-0.5 h-4 w-4 shrink-0 text-brand-teal" aria-hidden="true" />
 			<p class="text-sm text-brand-navy">
-				<strong
-					>{communeName} est une Ville 30{adoptedLabel ? ` depuis ${adoptedLabel}` : ''}.</strong
-				>
+				<strong>
+					{communeName} est une
+					<a
+						href="/ville-30"
+						class="link-animated relative inline-block font-bold text-brand-navy after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-brand-navy after:transition-all after:duration-300 hover:after:w-full"
+						>Ville 30</a
+					>{adoptedLabel ? ` depuis ${adoptedLabel}` : ''}.
+				</strong>
 				La vitesse y est limitée à <strong>30 km/h par défaut</strong>, sauf indication contraire
 				(axes principaux, zones piétonnes, etc.).
 			</p>
@@ -82,7 +87,14 @@
 		<div class="flex items-start gap-2.5 rounded-lg border border-gray-200 bg-gray-50 p-3">
 			<CircleAlert class="mt-0.5 h-4 w-4 shrink-0 text-gray-500" aria-hidden="true" />
 			<p class="text-sm text-gray-700">
-				<strong>{communeName} n'a pas adopté le statut Ville 30.</strong>
+				<strong>
+					{communeName} n'a pas adopté le statut
+					<a
+						href="/ville-30"
+						class="link-animated relative inline-block font-bold text-brand-navy after:absolute after:bottom-0 after:left-0 after:h-[2px] after:w-0 after:bg-brand-navy after:transition-all after:duration-300 hover:after:w-full"
+						>Ville 30</a
+					>.
+				</strong>
 				La vitesse par défaut y reste de <strong>50 km/h</strong>, sauf indication contraire.
 			</p>
 		</div>
@@ -169,6 +181,8 @@
 				</div>
 				<p class="mt-3 text-xs text-gray-500">
 					{stats.totalStreets.toLocaleString('fr-FR')} tronçons de rue analysés
+					<span class="text-gray-400">·</span>
+					<span class="text-[11px] text-gray-400">source&nbsp;: data.grandlyon.com</span>
 				</p>
 			</details>
 		</div>

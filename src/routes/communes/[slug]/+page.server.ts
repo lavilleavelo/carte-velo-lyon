@@ -7,7 +7,7 @@ import communeMetadataJson from '$lib/data/communeMetadata.json';
 import { absoluteUrl } from '$lib/config/site';
 import { getVille30StatsForCommune } from '$lib/server/ville30Stats';
 import { getCommuneStatsForInsee } from '$lib/server/communeStats';
-import { getCommuneOsmCyclewaysKm } from '$lib/server/communeOsmStats';
+import { getCommuneOsmSafetyStats } from '$lib/server/communeOsmStats';
 import { buildBikeMapSeoDescription } from '$lib/server/communeSeo';
 
 export interface Commune {
@@ -71,11 +71,13 @@ export const load: PageServerLoad = async ({ params }) => {
 	};
 
 	const metadata = metadataByInsee[commune.insee] ?? null;
-	const [ville30Stats, communeStats, osmCyclewaysKm] = await Promise.all([
+	const [ville30Stats, communeStats, osmSafetyStats] = await Promise.all([
 		getVille30StatsForCommune(commune.insee),
 		getCommuneStatsForInsee(commune.insee),
-		getCommuneOsmCyclewaysKm(commune.insee),
+		getCommuneOsmSafetyStats(commune.insee),
 	]);
+
+	const osmCyclewaysKm = osmSafetyStats?.totalKm ?? null;
 
 	return {
 		commune: { ...commune, codePostal: metadata?.codePostal ?? null },
@@ -84,6 +86,7 @@ export const load: PageServerLoad = async ({ params }) => {
 		ville30: metadata?.ville30 ?? null,
 		ville30Stats,
 		communeStats,
+		osmSafetyStats,
 		seo: {
 			title: `Carte vélo ${commune.name}`,
 			description: buildBikeMapSeoDescription({

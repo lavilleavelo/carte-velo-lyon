@@ -191,8 +191,10 @@
 		layout={{
 			visibility: isLayerVisible('parking-velostation') ? 'visible' : 'none',
 			'icon-image': 'parking-velostation',
-			'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.3, 17, 0.7],
+			'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.2, 14, 0.4, 17, 0.7],
 			'icon-allow-overlap': true,
+			'icon-ignore-placement': true,
+			'icon-optional': true,
 			'text-field': ['step', ['zoom'], '', 14, ['to-string', ['get', 'capacite']]],
 			'text-offset': [0, 1.4],
 			'text-size': 11,
@@ -227,7 +229,7 @@
 		layout={{
 			visibility: isLayerVisible('parking-lpa') ? 'visible' : 'none',
 			'icon-image': 'parking-lpa',
-			'icon-size': ['interpolate', ['linear'], ['zoom'], 12, 0.3, 17, 0.6],
+			'icon-size': ['interpolate', ['linear'], ['zoom'], 11, 0.1, 12, 0.3, 17, 0.6],
 			'icon-allow-overlap': true,
 			'text-field': ['step', ['zoom'], '', 15, ['to-string', ['get', 'capacite']]],
 			'text-offset': [0, 1.2],

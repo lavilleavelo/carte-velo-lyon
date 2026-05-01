@@ -3,14 +3,30 @@
 	import Route from '@lucide/svelte/icons/route';
 	import TrendingUp from '@lucide/svelte/icons/trending-up';
 	import type { CommuneRanking, CommuneStats, RankingTier } from '$lib/server/communeStats';
+	import type { OsmSafetyStats } from '$lib/server/communeOsmStats';
 
 	let {
 		communeName,
 		stats = null,
+		osmSafetyStats = null,
 	}: {
 		communeName: string;
 		stats?: CommuneStats | null;
+		osmSafetyStats?: OsmSafetyStats | null;
 	} = $props();
+
+	const osmTotalBikeLanesKm = $derived<number | null>(osmSafetyStats?.totalKm ?? null);
+
+	const effectiveTotalBikeLanesKm = $derived<number | null>(
+		osmTotalBikeLanesKm ?? stats?.totalBikeLanesKm ?? null,
+	);
+	const effectiveBikeInfraRatio = $derived.by<number | null>(() => {
+		if (osmTotalBikeLanesKm !== null && stats?.eligibleRoadwayKm) {
+			return (osmTotalBikeLanesKm / stats.eligibleRoadwayKm) * 100;
+		}
+		return stats?.bikeInfraPer100kmRoadway ?? null;
+	});
+	const usingOsmTotal = $derived(osmTotalBikeLanesKm !== null);
 
 	const populationFormatter = new Intl.NumberFormat('fr-FR');
 	const decimalFormatter = new Intl.NumberFormat('fr-FR', {
@@ -87,28 +103,27 @@
 							<h3 class="text-sm font-semibold text-gray-700">Densité d'aménagements cyclables</h3>
 							{@render rankBadge(stats.rankings?.bikeInfraPer100kmRoadway ?? null)}
 						</div>
-						{#if stats.bikeInfraPer100kmRoadway !== null && stats.eligibleRoadwayKm !== null}
+						{#if effectiveBikeInfraRatio !== null && stats.eligibleRoadwayKm !== null && effectiveTotalBikeLanesKm !== null}
 							<div class="mt-1 flex items-baseline gap-1.5">
 								<span class="text-3xl font-bold text-brand-navy"
-									>{decimalFormatter.format(stats.bikeInfraPer100kmRoadway)}</span
+									>{decimalFormatter.format(effectiveBikeInfraRatio)}</span
 								>
 								<span class="text-sm font-medium text-gray-500">m / 100 m</span>
 							</div>
 							<p class="mt-1 text-xs text-gray-500">
-								{decimalFormatter.format(stats.totalBikeLanesKm)}&nbsp;km d'aménagements sur {decimalFormatter.format(
-									stats.eligibleRoadwayKm,
-								)}&nbsp;km de voirie, hors axes rapides (≥ 70 km/h) et zones piétonnes (≤ 5 km/h).
-								{#if stats.bikeInfraPer100kmRoadway > 100}
-									Le ratio dépasse 100&nbsp;% car certaines rues sont équipées des deux côtés
-									(bandes ou pistes bilatérales comptées séparément).
-								{/if}
+								{decimalFormatter.format(effectiveTotalBikeLanesKm)}&nbsp;km d'aménagements{#if usingOsmTotal}<sup
+										>*</sup
+									>{/if} sur {decimalFormatter.format(stats.eligibleRoadwayKm)}&nbsp;km de voirie,
+								hors axes rapides (≥ 70 km/h) et zones piétonnes (≤ 5 km/h).
 							</p>
 						{:else}
 							<p class="mt-2 text-sm text-gray-500 italic">
 								Données voirie indisponibles pour calculer ce ratio.
 							</p>
 							<p class="mt-1 text-xs text-gray-500">
-								{decimalFormatter.format(stats.totalBikeLanesKm)}&nbsp;km d'aménagements au total
+								{decimalFormatter.format(
+									effectiveTotalBikeLanesKm ?? stats.totalBikeLanesKm,
+								)}&nbsp;km d'aménagements{#if usingOsmTotal}<sup>*</sup>{/if} au total
 							</p>
 						{/if}
 					</div>
@@ -257,7 +272,16 @@
 					class="underline hover:text-brand-navy"
 				>
 					data.grandlyon.com
-				</a>
+				</a>{#if usingOsmTotal}
+					&nbsp;/&nbsp;<a
+						href="https://www.openstreetmap.org/"
+						target="_blank"
+						rel="noopener"
+						class="underline hover:text-brand-navy"
+					>
+						OpenStreetMap<sup>*</sup>
+					</a>
+				{/if}
 			</span>
 		</p>
 	</section>

@@ -45,7 +45,7 @@ export function isSafePath(tags: Record<string, string>, typeamenagement?: strin
 			reason: 'Voie verte dédiée',
 			relevantTags: [],
 			condition: 'typeamenagement=Voie verte',
-			caveat: 'Conflits piétons/cyclistes possibles',
+			caveat: 'Conflits piétons/cyclistes possibles, parfois inutilisable par mauvais temps',
 		};
 	}
 
