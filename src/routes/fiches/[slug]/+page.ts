@@ -1,11 +1,23 @@
 import { error } from '@sveltejs/kit';
 import { getAllFiches, getFiche } from '$lib/content/fiches';
-import { SITE } from '$lib/config/site';
+import { absoluteUrl, SITE } from '$lib/config/site';
 import type { EntryGenerator, PageLoad } from './$types';
 
 export const entries: EntryGenerator = () => {
 	return getAllFiches().map((f) => ({ slug: f.slug }));
 };
+
+function toAbsolute(url: string | undefined): string | undefined {
+	if (!url) {
+		return undefined;
+	}
+
+	if (url.startsWith('http://') || url.startsWith('https://')) {
+		return url;
+	}
+
+	return absoluteUrl(url);
+}
 
 export const load: PageLoad = ({ params }) => {
 	const fiche = getFiche(params.slug);
@@ -15,7 +27,7 @@ export const load: PageLoad = ({ params }) => {
 
 	const description = fiche.summary ?? fiche.subtitle ?? `${fiche.title} – ${SITE.name}`;
 	const cover = fiche.photos?.[0];
-	const image = fiche.ogImage ?? cover?.url;
+	const image = toAbsolute(fiche.ogImage ?? cover?.url);
 	const imageAlt = fiche.ogImageAlt ?? cover?.alt ?? fiche.title;
 
 	return {

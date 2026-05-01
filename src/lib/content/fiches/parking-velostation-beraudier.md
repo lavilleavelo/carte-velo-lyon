@@ -9,13 +9,15 @@ lat: 45.76056377
 osmId: node/12836650011
 panoramax: 'https://api.panoramax.xyz/?focus=pic&map=19.43/45.7603526/4.8585&pic=9f7c6ff1-e0af-4280-ae06-5a60d19dafeb&seq=f590603b-7880-4d6f-862c-bfbc071b2a68&speed=250&theme=default&users=default&xyz=51.78/-2.04/30'
 parkingGid: 158736
+ogImage: /fiches/parking-velostation-beraudier/og.jpg
+ogImageAlt: Entrée de la vélostation Béraudier
 photos:
-  - url: 'https://upload.wikimedia.org/wikipedia/commons/f/f3/Parc_V%C3%A9lo_B%C3%A9raudier_-_Lyon_III_%28FR69%29_-_2025-08-20_-_2.jpg'
+  - url: /fiches/parking-velostation-beraudier/photo-1.jpg
     alt: Intérieur de la vélostation Béraudier
-    caption: Intérieur de la vélostation
+    caption: Entrée de la vélostation
     credit: Wikimedia Commons
     creditUrl: 'https://commons.wikimedia.org/wiki/File:Parc_V%C3%A9lo_B%C3%A9raudier_-_Lyon_III_(FR69)_-_2025-08-20_-_2.jpg'
-  - url: 'https://upload.wikimedia.org/wikipedia/commons/thumb/e/e3/Rampe_Acc%C3%A8s_Parc_V%C3%A9lo_B%C3%A9raudier_-_Lyon_III_%28FR69%29_-_2025-08-20_-_1.jpg/1280px-Rampe_Acc%C3%A8s_Parc_V%C3%A9lo_B%C3%A9raudier_-_Lyon_III_%28FR69%29_-_2025-08-20_-_1.jpg'
+  - url: /fiches/parking-velostation-beraudier/photo-2.jpg
     alt: Rampe d'accès vélo de la vélostation Béraudier
     caption: Rampe d'accès depuis la place Béraudier
     credit: Wikimedia Commons

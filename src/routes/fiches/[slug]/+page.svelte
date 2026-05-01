@@ -4,6 +4,7 @@
 	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import MousePointerClick from '@lucide/svelte/icons/mouse-pointer-click';
 	import FicheMap from '$lib/components/FicheMap.svelte';
+	import LavilleaveloCta from '$lib/components/LavilleaveloCta.svelte';
 	import { getFiche } from '$lib/content/fiches';
 	import { error } from '@sveltejs/kit';
 
@@ -231,5 +232,7 @@
 		{#if updatedLabel}
 			<p class="text-xs text-gray-400">Dernière mise à jour : {updatedLabel}</p>
 		{/if}
+
+		<LavilleaveloCta class="mt-4" />
 	</div>
 </div>
