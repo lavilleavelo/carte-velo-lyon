@@ -17,7 +17,8 @@
 	type Commune = { slug: string; name: string; insee: string };
 	const communes = communesIndex as Commune[];
 
-	let open = $state(false);
+	let { open = $bindable(false), showTrigger = true }: { open?: boolean; showTrigger?: boolean } =
+		$props();
 	let searchValue = $state('');
 	let isTouchDevice = $state(false);
 
@@ -67,9 +68,10 @@
 	title="Rechercher"
 	description="Accédez à une page ou une commune"
 	{isTouchDevice}
+	contentClass="top-[15%] translate-y-0"
 >
 	<Command.Input placeholder="Rechercher par nom, code INSEE, page..." />
-	<Command.List>
+	<Command.List class="max-h-[60vh]">
 		<Command.Empty>Aucun résultat.</Command.Empty>
 		<Command.Group heading="Navigation">
 			<Command.Item value="Carte|Accueil|/" onSelect={() => go('/')}>
@@ -115,17 +117,19 @@
 	</Command.List>
 </Command.Dialog>
 
-<button
-	type="button"
-	onpointerdown={handleOpenWithTouch}
-	class="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-brand-teal"
-	aria-label="Rechercher (Cmd+K)"
->
-	<SearchIcon class="h-4 w-4" />
-	<span class="hidden sm:inline">Rechercher</span>
-	<kbd
-		class="pointer-events-none ml-2 hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex"
+{#if showTrigger}
+	<button
+		type="button"
+		onpointerdown={handleOpenWithTouch}
+		class="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-brand-teal"
+		aria-label="Rechercher (Cmd+K)"
 	>
-		<span class="text-xs">⌘</span>K
-	</kbd>
-</button>
+		<SearchIcon class="h-4 w-4" />
+		<span class="hidden sm:inline">Rechercher</span>
+		<kbd
+			class="pointer-events-none ml-2 hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex"
+		>
+			<span class="text-xs">⌘</span>K
+		</kbd>
+	</button>
+{/if}

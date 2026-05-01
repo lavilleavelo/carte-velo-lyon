@@ -28,7 +28,8 @@
 	import { Label } from '$lib/components/ui/label';
 	import Plus from '@lucide/svelte/icons/plus';
 	import X from '@lucide/svelte/icons/x';
-	import Building2 from '@lucide/svelte/icons/building-2';
+	import Menu from '@lucide/svelte/icons/menu';
+	import CommandPalette from '$lib/components/CommandPalette.svelte';
 	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
 	import FilterPanel from '$lib/components/map/FilterPanel.svelte';
 	import FeatureInfo from '$lib/components/map/FeatureInfo.svelte';
@@ -239,6 +240,7 @@
 		$state(null);
 	let hoveredCyclewayId = $state<string | number | null>(null);
 	let hoveredOsmCyclewayId = $state<string | number | null>(null);
+	let menuOpen = $state(false);
 	let innerWidth = $state(0);
 	let bearing = $state(0);
 	let pitch = $state(0);
@@ -855,14 +857,18 @@
 	style="margin-left: calc(50% - 50vw); width: 100vw;"
 >
 	<div class="relative h-full flex-1">
-		<a
-			href="/communes"
-			class="absolute top-3 left-3 z-20 hidden items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-md ring-1 ring-gray-200 transition-all hover:bg-gray-50 active:scale-95 lg:inline-flex"
-			title="Voir la liste de toutes les communes"
+		<button
+			type="button"
+			onclick={() => (menuOpen = true)}
+			class="absolute top-3 left-3 z-20 hidden items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-md ring-1 ring-gray-200 transition-all hover:bg-gray-50 active:scale-95 md:inline-flex"
+			title="Ouvrir le menu"
+			aria-label="Ouvrir le menu"
 		>
-			<Building2 size={14} />
-			Communes
-		</a>
+			<Menu size={16} />
+			<span class="hidden lg:inline">Menu</span>
+		</button>
+
+		<CommandPalette bind:open={menuOpen} showTrigger={false} />
 
 		<div
 			class="absolute top-3 left-1/2 z-20 flex w-full max-w-xs -translate-x-1/2 flex-col gap-2 px-4 sm:max-w-sm md:max-w-md"
@@ -1016,16 +1022,28 @@
 					position="top-right"
 				/>
 			{:else}
+				<CustomControl position="bottom-left">
+					<button
+						type="button"
+						onclick={() => (menuOpen = true)}
+						class="m-1! rounded-lg bg-white p-1! text-gray-700 hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+						aria-label="Ouvrir le menu"
+						title="Ouvrir le menu"
+					>
+						<Menu size={20} />
+					</button>
+				</CustomControl>
 				<MapStyleToggle
 					currentStyle={mapStyleState.mapStyle}
 					onSelect={mapStyleState.setMapStyle}
 					position="bottom-left"
+					buttonClass="p-1! m-1!"
 				/>
 				{#if isLayerVisible('osm-cycleways')}
 					<CustomControl position="bottom-left">
 						<button
 							onclick={() => (params.safety = !params.safety)}
-							class="rounded-lg pl-1! shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none {safetyMode
+							class="m-1! rounded-lg p-1! focus:ring-2 focus:ring-blue-500 focus:outline-none {safetyMode
 								? 'bg-blue-600! text-white! hover:bg-blue-700!'
 								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
 							aria-pressed={safetyMode}
@@ -1538,6 +1556,15 @@
 		:global(.maplibregl-ctrl-bottom-right .maplibregl-ctrl-geolocate .maplibregl-ctrl-icon) {
 			width: 44px;
 			height: 44px;
+		}
+
+		:global(.maplibregl-ctrl-bottom-left .maplibregl-ctrl button) {
+			padding: 0.5rem !important;
+		}
+
+		:global(.maplibregl-ctrl-bottom-left .maplibregl-ctrl button svg) {
+			width: 24px;
+			height: 24px;
 		}
 	}
 </style>

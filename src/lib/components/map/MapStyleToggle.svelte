@@ -12,9 +12,10 @@
 		currentStyle: MapStyle;
 		onSelect: (style: MapStyle) => void;
 		position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
+		buttonClass?: string;
 	}
 
-	let { currentStyle, onSelect, position = 'top-right' }: Props = $props();
+	let { currentStyle, onSelect, position = 'top-right', buttonClass = 'pl-1!' }: Props = $props();
 
 	let open = $state(false);
 	let innerWidth = $state(0);
@@ -46,7 +47,7 @@
 <CustomControl {position}>
 	<button
 		onclick={() => (open = true)}
-		class="bg-whitetext-gray-700 rounded-lg pl-1! shadow-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+		class="rounded-lg bg-white text-gray-700 shadow-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none {buttonClass}"
 		aria-label="Changer le style de carte"
 		title="Changer le style de carte"
 	>
