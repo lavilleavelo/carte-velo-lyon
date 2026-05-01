@@ -1,7 +1,11 @@
 import { error } from '@sveltejs/kit';
-import { getFiche } from '$lib/content/fiches';
+import { getAllFiches, getFiche } from '$lib/content/fiches';
 import { SITE } from '$lib/config/site';
-import type { PageLoad } from './$types';
+import type { EntryGenerator, PageLoad } from './$types';
+
+export const entries: EntryGenerator = () => {
+	return getAllFiches().map((f) => ({ slug: f.slug }));
+};
 
 export const load: PageLoad = ({ params }) => {
 	const fiche = getFiche(params.slug);
