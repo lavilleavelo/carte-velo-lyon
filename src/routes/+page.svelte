@@ -1037,7 +1037,7 @@
 					currentStyle={mapStyleState.mapStyle}
 					onSelect={mapStyleState.setMapStyle}
 					position="bottom-left"
-					buttonClass="p-1! m-1!"
+					buttonClass="p-1! m-1! shadow-none"
 				/>
 				{#if isLayerVisible('osm-cycleways')}
 					<CustomControl position="bottom-left">

@@ -13,6 +13,7 @@
 		description = 'Search for a command to run',
 		portalProps,
 		contentClass,
+		onOpenAutoFocus,
 		children,
 		...restProps
 	}: WithoutChildrenOrChild<DialogPrimitive.RootProps> &
@@ -22,6 +23,7 @@
 			title?: string;
 			description?: string;
 			contentClass?: string;
+			onOpenAutoFocus?: (e: Event) => void;
 		} = $props();
 </script>
 
@@ -30,7 +32,7 @@
 		<Dialog.Title>{title}</Dialog.Title>
 		<Dialog.Description>{description}</Dialog.Description>
 	</Dialog.Header>
-	<Dialog.Content class={['overflow-hidden p-0', contentClass]} {portalProps}>
+	<Dialog.Content class={['overflow-hidden p-0', contentClass]} {portalProps} {onOpenAutoFocus}>
 		<Command
 			class="**:data-[slot=command-input-wrapper]:h-12 [&_[data-command-group]]:px-2 [&_[data-command-group]:not([hidden])_~[data-command-group]]:pt-0 [&_[data-command-input-wrapper]_svg]:h-5 [&_[data-command-input-wrapper]_svg]:w-5 [&_[data-command-input]]:h-12 [&_[data-command-item]]:px-2 [&_[data-command-item]]:py-3 [&_[data-command-item]_svg]:h-5 [&_[data-command-item]_svg]:w-5"
 			{...restProps}

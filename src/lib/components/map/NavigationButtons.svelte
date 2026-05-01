@@ -5,6 +5,7 @@
 		navigationProviders,
 		getProvider,
 		getProviderUrl,
+		type PoiContext,
 	} from '$lib/config/navigationProviders';
 
 	let {
@@ -14,6 +15,7 @@
 		onOpenSettings,
 		extraLinks = [],
 		primaryOverride,
+		poiContext,
 	}: {
 		lat: number;
 		lng: number;
@@ -21,6 +23,7 @@
 		onOpenSettings?: () => void;
 		extraLinks?: { label: string; url: string }[];
 		primaryOverride?: { label: string; shortLabel: string; url: string };
+		poiContext?: PoiContext;
 	} = $props();
 
 	let showAll = $state(false);
@@ -32,11 +35,17 @@
 			: navigationProviders.filter((p) => p.id !== defaultProviderId),
 	);
 	const primaryHref = $derived(
-		primaryOverride ? primaryOverride.url : getProviderUrl(defaultProvider, lat, lng),
+		primaryOverride ? primaryOverride.url : getProviderUrl(defaultProvider, lat, lng, poiContext),
 	);
 	const defaultLabel = $derived.by(() => {
-		if (primaryOverride) return `Ouvrir dans ${primaryOverride.shortLabel}`;
-		if (defaultProvider.id === 'geo') return 'Ouvrir...';
+		if (primaryOverride) {
+			return `Ouvrir dans ${primaryOverride.shortLabel}`;
+		}
+
+		if (defaultProvider.id === 'geo') {
+			return 'Ouvrir...';
+		}
+
 		return `Ouvrir dans ${defaultProvider.shortLabel}`;
 	});
 </script>
@@ -91,7 +100,7 @@
 				{/if}
 				{#each otherProviders as provider}
 					<a
-						href={getProviderUrl(provider, lat, lng)}
+						href={getProviderUrl(provider, lat, lng, poiContext)}
 						target="_blank"
 						rel="noopener"
 						class="flex w-full items-center rounded-md px-3 py-1.5 text-sm text-gray-700 transition-colors hover:bg-gray-50"

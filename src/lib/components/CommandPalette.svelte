@@ -9,18 +9,24 @@
 	import Info from '@lucide/svelte/icons/info';
 	import Gauge from '@lucide/svelte/icons/gauge';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
+	import FileText from '@lucide/svelte/icons/file-text';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import { onMount } from 'svelte';
 	import { computeCommandScore } from 'bits-ui';
 	import communesIndex from '$lib/data/communes/_index.json';
+	import { getAllFiches } from '$lib/content/fiches';
 
 	type Commune = { slug: string; name: string; insee: string };
 	const communes = communesIndex as Commune[];
+	const fiches = getAllFiches();
 
 	let { open = $bindable(false), showTrigger = true }: { open?: boolean; showTrigger?: boolean } =
 		$props();
 	let searchValue = $state('');
+	let inputValue = $state('');
 	let isTouchDevice = $state(false);
+
+	const hasSearch = $derived(inputValue.trim().length > 0);
 
 	function handleOpenWithTouch(e: MouseEvent | PointerEvent) {
 		isTouchDevice = e instanceof PointerEvent && e.pointerType === 'touch';
@@ -28,9 +34,14 @@
 		open = true;
 	}
 
+	function handleOpenAutoFocus(e: Event) {
+		if (isTouchDevice) e.preventDefault();
+	}
+
 	function go(path: string) {
 		open = false;
 		searchValue = '';
+		inputValue = '';
 		goto(path);
 	}
 
@@ -68,9 +79,10 @@
 	title="Rechercher"
 	description="Accédez à une page ou une commune"
 	{isTouchDevice}
+	onOpenAutoFocus={handleOpenAutoFocus}
 	contentClass="top-[15%] translate-y-0"
 >
-	<Command.Input placeholder="Rechercher par nom, code INSEE, page..." />
+	<Command.Input bind:value={inputValue} placeholder="Rechercher par nom, code INSEE, page..." />
 	<Command.List class="max-h-[60vh]">
 		<Command.Empty>Aucun résultat.</Command.Empty>
 		<Command.Group heading="Navigation">
@@ -114,6 +126,23 @@
 				</Command.Item>
 			{/each}
 		</Command.Group>
+		{#if hasSearch && fiches.length > 0}
+			<Command.Separator />
+			<Command.Group heading="Fiches">
+				{#each fiches as fiche (fiche.slug)}
+					<Command.Item
+						value={`${fiche.title}|${fiche.subtitle ?? ''}|${fiche.address ?? ''}|${fiche.slug}`}
+						onSelect={() => go(`/fiches/${fiche.slug}`)}
+					>
+						<FileText class="mr-2 h-4 w-4" />
+						<span>{fiche.title}</span>
+						{#if fiche.subtitle}
+							<span class="ml-auto text-xs text-muted-foreground">{fiche.subtitle}</span>
+						{/if}
+					</Command.Item>
+				{/each}
+			</Command.Group>
+		{/if}
 	</Command.List>
 </Command.Dialog>
 

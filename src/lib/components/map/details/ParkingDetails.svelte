@@ -1,8 +1,12 @@
 <script lang="ts">
 	import SquareP from '@lucide/svelte/icons/square-parking';
-	import Info from '@lucide/svelte/icons/info';
+	import BookOpen from '@lucide/svelte/icons/book-open';
+	import { findParkingFicheByGid } from '$lib/content/fiches';
+	import FeatureIdChip from './FeatureIdChip.svelte';
 
 	let { properties } = $props();
+
+	const fiche = $derived(findParkingFicheByGid(properties.gid));
 </script>
 
 <div class="flex flex-col gap-3">
@@ -29,7 +33,17 @@
 		{/if}
 	</div>
 
-	<div class="mt-1 grid grid-cols-2 gap-2">
+	{#if fiche}
+		<a
+			href="/fiches/{fiche.slug}"
+			class="inline-flex items-center gap-2 rounded-lg border border-brand-navy/15 bg-brand-navy/5 px-3 py-2 text-sm font-semibold text-brand-navy transition-colors hover:bg-brand-navy/10"
+		>
+			<BookOpen size={16} />
+			<span>En savoir plus</span>
+		</a>
+	{/if}
+
+	<div class="grid grid-cols-2 gap-2">
 		{#if properties.capacite}
 			<div class="flex flex-col rounded-lg bg-gray-50 p-2">
 				<span class="text-[10px] font-bold text-gray-400 uppercase">Capacité</span>
@@ -55,4 +69,6 @@
 			</div>
 		{/if}
 	</div>
+
+	<FeatureIdChip label="gid" value={properties.gid} />
 </div>

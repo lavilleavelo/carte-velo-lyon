@@ -10,11 +10,13 @@
 	import Gauge from '@lucide/svelte/icons/gauge';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
 	import Info from '@lucide/svelte/icons/info';
+	import FileText from '@lucide/svelte/icons/file-text';
 	import { cn } from '$lib/utils';
 	import * as Command from '$lib/components/ui/command';
 	import communesIndex from '$lib/data/communes/_index.json';
 	import communeMetadata from '$lib/data/communeMetadata.json';
 	import { LYON_INSEE, LYON_SLUG } from '$lib/config/lyon';
+	import { getAllFiches } from '$lib/content/fiches';
 
 	function normalize(s: string): string {
 		return s
@@ -123,6 +125,22 @@
 
 		const nq = normalize(q);
 		return allCommunes.filter((c) => normalize(c.name).includes(nq)).slice(0, 5);
+	});
+
+	const allFiches = getAllFiches();
+	const ficheMatches = $derived.by(() => {
+		const q = inputValue.trim();
+		if (q.length < 2) {
+			return [];
+		}
+
+		const nq = normalize(q);
+		return allFiches
+			.filter((f) => {
+				const haystack = normalize([f.title, f.subtitle ?? '', f.address ?? '', f.slug].join(' '));
+				return haystack.includes(nq);
+			})
+			.slice(0, 5);
 	});
 
 	type NavEntry = {
@@ -279,6 +297,12 @@
 		goto(entry.href);
 	}
 
+	function handleFicheSelect(slug: string, title: string) {
+		inputValue = title;
+		open = false;
+		goto(`/fiches/${slug}`);
+	}
+
 	function handleClickOutside(event: MouseEvent) {
 		if (wrapperRef && !wrapperRef.contains(event.target as Node)) {
 			open = false;
@@ -323,7 +347,7 @@
 			class="flex h-11 w-full rounded-md bg-transparent py-3 text-sm outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
 		/>
 
-		{#if open && (results.length > 0 || communeMatches.length > 0 || navMatches.length > 0 || inputValue.length >= 2)}
+		{#if open && (results.length > 0 || communeMatches.length > 0 || navMatches.length > 0 || ficheMatches.length > 0 || inputValue.length >= 2)}
 			<div
 				class="absolute top-[calc(100%+4px)] left-0 w-full animate-in rounded-md border bg-popover text-popover-foreground shadow-md fade-in-0 outline-none zoom-in-95"
 			>
@@ -374,12 +398,37 @@
 						</Command.Group>
 					{/if}
 
+					{#if ficheMatches.length > 0}
+						<Command.Group>
+							<div
+								class="px-2 pt-1 pb-0.5 text-[11px] font-semibold tracking-wider text-muted-foreground uppercase"
+							>
+								Fiches
+							</div>
+							{#each ficheMatches as fiche (fiche.slug)}
+								<Command.Item
+									value={`fiche-${fiche.slug}`}
+									onSelect={() => handleFicheSelect(fiche.slug, fiche.title)}
+									class="relative flex cursor-default items-center rounded-sm px-2 py-1.5 text-sm outline-none select-none aria-selected:bg-accent aria-selected:text-accent-foreground"
+								>
+									<FileText class="mr-2 h-4 w-4 shrink-0 text-brand-navy" />
+									<div class="flex flex-col">
+										<span class="font-medium">{fiche.title}</span>
+										{#if fiche.subtitle}
+											<span class="text-xs text-muted-foreground">{fiche.subtitle}</span>
+										{/if}
+									</div>
+								</Command.Item>
+							{/each}
+						</Command.Group>
+					{/if}
+
 					{#if isSearching}
 						<div class="flex items-center justify-center py-6 text-sm text-muted-foreground">
 							<Loader2 class="mr-2 h-4 w-4 animate-spin" />
 							Recherche en cours...
 						</div>
-					{:else if results.length === 0 && communeMatches.length === 0 && navMatches.length === 0}
+					{:else if results.length === 0 && communeMatches.length === 0 && navMatches.length === 0 && ficheMatches.length === 0}
 						<Command.Empty class="py-6 text-center text-sm">Aucun résultat trouvé.</Command.Empty>
 					{/if}
 

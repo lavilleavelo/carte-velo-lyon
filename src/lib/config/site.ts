@@ -34,6 +34,7 @@ export type Seo = {
 	description?: string;
 	robots?: string;
 	image?: string;
+	imageAlt?: string;
 };
 
 export function absoluteUrl(pathname: string): string {
