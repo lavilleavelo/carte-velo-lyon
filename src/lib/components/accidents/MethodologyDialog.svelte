@@ -89,17 +89,18 @@
 					Évolution de la pratique cyclable
 				</h3>
 				<p>
-					La courbe bleue sur l'histogramme par année montre l'indice métropolitain de la pratique
-					vélo (base 100 en 2019), publié par la Métropole de Lyon en janvier 2025 d'après l'EDGT
-					2015 et les Enquêtes Mobilité Annuelles 2023-2024. Comparer la hauteur des barres à cette
-					courbe donne une idée de l'évolution du risque par usager, à l'échelle de la métropole.
-					<br />
-					Voir aussi le rapport
+					La courbe bleue sur l'histogramme annuel montre l'indice métropolitain de la pratique du
+					vélo (base 100 en 2019) consultable sur Cyclopolis. Il est calculé d'après les compteurs
+					présents dans la métropole. Comparer la hauteur des barres à cette courbe donne une idée
+					de l'évolution du risque par usager, à l'échelle de la métropole.
+				</p>
+				<p class="mt-2">
+					Pour plus de détails, vous pouvez consulter
 					<a
-						href="https://www.cerema.fr/fr/system/files?file=documents/2025/06/rmd2025_1_lyon.pdf"
+						href="https://cyclopolis.fr/compteurs/velo"
 						target="_blank"
 						rel="noopener"
-						class="underline hover:text-brand-navy">CEREMA / Modely 2025 (PDF)</a
+						class="underline hover:text-brand-navy">la page des compteurs sur cyclopolis.fr</a
 					>.
 				</p>
 			</div>

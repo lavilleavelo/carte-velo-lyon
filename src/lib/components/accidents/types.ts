@@ -61,13 +61,15 @@ export const AGE_BUCKETS = [
 	{ key: '65+', min: 65, max: 200 },
 ] as const;
 
+// https://cyclopolis.fr/compteurs/velo
 export const VELO_INTENSITY: Record<number, number> = {
 	2019: 100.0,
-	2020: 107.3,
-	2021: 129.8,
-	2022: 141.6,
-	2023: 153.8,
-	2024: 158.5,
+	2020: 104.6,
+	2021: 130.3,
+	2022: 147.5,
+	2023: 160.8,
+	2024: 167.0,
+	// 2025: 180.2,
 };
 export const VELO_INTENSITY_AXIS_MAX = 180;
 
