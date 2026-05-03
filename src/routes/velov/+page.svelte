@@ -11,6 +11,7 @@
 	import { useSearchParams } from 'runed/kit';
 	import { type } from 'arktype';
 	import { untrack } from 'svelte';
+	import { MediaQuery } from 'svelte/reactivity';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import Search from '@lucide/svelte/icons/search';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
@@ -23,6 +24,7 @@
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import NavigationButtons from '$lib/components/map/NavigationButtons.svelte';
 	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
+	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
@@ -60,6 +62,7 @@
 	let selectedStation: Station | null = $state(null);
 	let panoramaxOpenCoords: [number, number] | null = $state(null);
 	let defaultNavProvider = $state('cartes');
+	const isMobile = new MediaQuery('(max-width: 767px)');
 
 	let contextMenuVisible = $state(false);
 	let contextMenuX = $state(0);
@@ -365,6 +368,58 @@
 	const noopHandler = () => {};
 </script>
 
+{#snippet stationDetails(station: Station, panoramaxRoundedTop: boolean)}
+	{#if stationPanoramaxQuery.data}
+		<button
+			type="button"
+			onclick={() => {
+				panoramaxOpenCoords = [station.lng, station.lat];
+			}}
+			class="group relative -mx-3 -mt-2 block h-28 overflow-hidden bg-gray-100 {panoramaxRoundedTop
+				? 'rounded-t-lg'
+				: ''}"
+			aria-label="Voir la photo Panoramax"
+		>
+			<img
+				src={stationPanoramaxQuery.data.thumbPicture}
+				alt="Aperçu Panoramax de la station"
+				class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+			/>
+			<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-70"></div>
+			<div class="absolute bottom-2 left-3 flex items-center gap-1.5 text-white/95">
+				<span class="text-[11px] font-bold tracking-wider uppercase">Panoramax</span>
+				<ExternalLink size={11} />
+			</div>
+		</button>
+	{/if}
+
+	<VelovDetails
+		properties={{
+			idstation: station.idstation,
+			nom: station.nom,
+			commune: station.commune,
+			adresse1: station.adresse,
+			status: station.status,
+			available_bikes: station.bikes,
+			available_stands: station.stands,
+			mechanical_bikes: station.mech,
+			electrical_bikes: station.elec,
+			capacity: station.capacity,
+		}}
+	/>
+
+	<NavigationButtons
+		lat={station.lat}
+		lng={station.lng}
+		defaultProviderId={defaultNavProvider}
+		primaryOverride={{
+			label: "Vélo'v",
+			shortLabel: "Vélo'v",
+			url: velovStationUrl(station.idstation),
+		}}
+	/>
+{/snippet}
+
 <div
 	class={infoExpanded
 		? 'flex flex-col gap-6 pb-6'
@@ -428,68 +483,20 @@
 						offset={[0, -22]}
 						content={selectedHalo}
 					/>
-					<Popup
-						lnglat={[selectedStation.lng, selectedStation.lat]}
-						closeButton={true}
-						closeOnClick={false}
-						offset={14}
-						maxWidth="320px"
-						onclose={() => (selectedStation = null)}
-					>
-						<div class="flex w-[260px] flex-col gap-3 sm:w-[280px]">
-							{#if stationPanoramaxQuery.data}
-								<button
-									type="button"
-									onclick={() => {
-										if (selectedStation) {
-											panoramaxOpenCoords = [selectedStation.lng, selectedStation.lat];
-										}
-									}}
-									class="group relative -mx-3 -mt-2 block h-28 overflow-hidden rounded-t-lg bg-gray-100"
-									aria-label="Voir la photo Panoramax"
-								>
-									<img
-										src={stationPanoramaxQuery.data.thumbPicture}
-										alt="Aperçu Panoramax de la station"
-										class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-									/>
-									<div
-										class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-70"
-									></div>
-									<div class="absolute bottom-2 left-3 flex items-center gap-1.5 text-white/95">
-										<span class="text-[11px] font-bold tracking-wider uppercase"> Panoramax </span>
-										<ExternalLink size={11} />
-									</div>
-								</button>
-							{/if}
-
-							<VelovDetails
-								properties={{
-									idstation: selectedStation.idstation,
-									nom: selectedStation.nom,
-									commune: selectedStation.commune,
-									adresse1: selectedStation.adresse,
-									status: selectedStation.status,
-									available_bikes: selectedStation.bikes,
-									available_stands: selectedStation.stands,
-									mechanical_bikes: selectedStation.mech,
-									electrical_bikes: selectedStation.elec,
-									capacity: selectedStation.capacity,
-								}}
-							/>
-
-							<NavigationButtons
-								lat={selectedStation.lat}
-								lng={selectedStation.lng}
-								defaultProviderId={defaultNavProvider}
-								primaryOverride={{
-									label: "Vélo'v",
-									shortLabel: "Vélo'v",
-									url: velovStationUrl(selectedStation.idstation),
-								}}
-							/>
-						</div>
-					</Popup>
+					{#if !isMobile.current}
+						<Popup
+							lnglat={[selectedStation.lng, selectedStation.lat]}
+							closeButton={true}
+							closeOnClick={false}
+							offset={14}
+							maxWidth="320px"
+							onclose={() => (selectedStation = null)}
+						>
+							<div class="flex w-[260px] flex-col gap-3 sm:w-[280px]">
+								{@render stationDetails(selectedStation, true)}
+							</div>
+						</Popup>
+					{/if}
 				{/if}
 			</MapLibre>
 
@@ -585,6 +592,20 @@
 
 {#if panoramaxOpenCoords}
 	<PanoramaxViewer coordinates={panoramaxOpenCoords} onClose={() => (panoramaxOpenCoords = null)} />
+{/if}
+
+{#if isMobile.current && selectedStation}
+	<MobileDrawer
+		open={true}
+		snapPoints={[0.5, 0.9]}
+		initialSnapPoint={0}
+		class=""
+		onClose={() => (selectedStation = null)}
+	>
+		<div class="flex flex-col gap-3 px-3 pt-1">
+			{@render stationDetails(selectedStation, false)}
+		</div>
+	</MobileDrawer>
 {/if}
 
 <MapContextMenu

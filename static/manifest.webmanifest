@@ -27,5 +27,25 @@
 			"type": "image/png",
 			"purpose": "maskable"
 		}
+	],
+	"shortcuts": [
+		{
+			"name": "Stations Vélo'v",
+			"short_name": "Vélo'v",
+			"description": "Trouver une station Vélo'v et voir les vélos disponibles en temps réel",
+			"url": "/velov",
+			"icons": [
+				{
+					"src": "/velov-shortcut.svg",
+					"sizes": "any",
+					"type": "image/svg+xml"
+				},
+				{
+					"src": "/icon-192.png",
+					"sizes": "192x192",
+					"type": "image/png"
+				}
+			]
+		}
 	]
 }
