@@ -15,6 +15,7 @@
 	import { computeCommandScore } from 'bits-ui';
 	import communesIndex from '$lib/data/communes/_index.json';
 	import { getAllFiches } from '$lib/content/fiches';
+	import { isMacPlatform } from '$lib/utils/platform';
 
 	type Commune = { slug: string; name: string; insee: string };
 	const communes = communesIndex as Commune[];
@@ -25,6 +26,7 @@
 	let searchValue = $state('');
 	let inputValue = $state('');
 	let isTouchDevice = $state(false);
+	let isMac = $state(false);
 
 	const hasSearch = $derived(inputValue.trim().length > 0);
 
@@ -46,7 +48,12 @@
 	}
 
 	onMount(() => {
-		if (!browser) return;
+		if (!browser) {
+			return;
+		}
+
+		isMac = isMacPlatform();
+
 		function handleKeydown(e: KeyboardEvent) {
 			if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
 				e.preventDefault();
@@ -151,14 +158,18 @@
 		type="button"
 		onpointerdown={handleOpenWithTouch}
 		class="flex items-center gap-2 rounded-md border border-gray-300 bg-white px-3 py-1.5 text-sm text-gray-600 transition-colors hover:bg-gray-50 hover:text-brand-teal"
-		aria-label="Rechercher (Cmd+K)"
+		aria-label={isMac ? 'Rechercher (Cmd+K)' : 'Rechercher (Ctrl+K)'}
 	>
 		<SearchIcon class="h-4 w-4" />
 		<span class="hidden sm:inline">Rechercher</span>
 		<kbd
 			class="pointer-events-none ml-2 hidden h-5 items-center gap-1 rounded border bg-muted px-1.5 font-mono text-[10px] font-medium opacity-100 select-none sm:flex"
 		>
-			<span class="text-xs">⌘</span>K
+			{#if isMac}
+				<span class="text-xs">⌘</span>K
+			{:else}
+				<span>Ctrl</span>+<span>K</span>
+			{/if}
 		</kbd>
 	</button>
 {/if}
