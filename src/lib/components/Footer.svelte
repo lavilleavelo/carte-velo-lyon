@@ -4,12 +4,19 @@
 
 <footer class="border-t pt-8 pb-12">
 	<div class="flex flex-col items-center gap-6 md:flex-row md:justify-between">
-		<a
-			href="https://lavilleavelo.org"
-			class="text-base font-medium text-gray-600 hover:text-brand-navy"
-		>
-			La Ville à Vélo
-		</a>
+		<div class="flex flex-col items-center gap-2 md:flex-row md:gap-5">
+			<a
+				href="https://lavilleavelo.org"
+				class="text-base font-medium text-gray-600 hover:text-brand-navy"
+			>
+				La Ville à Vélo
+			</a>
+			<nav class="flex items-center gap-4 text-sm text-gray-500">
+				<a href="/communes" class="hover:text-brand-navy">Communes</a>
+				<a href="/a-propos" class="hover:text-brand-navy">À propos</a>
+				<a href="/mentions-legales" class="hover:text-brand-navy">Mentions légales</a>
+			</nav>
+		</div>
 		<div class="flex items-center gap-4">
 			<a
 				href="https://bsky.app/profile/lavilleavelo.bsky.social"

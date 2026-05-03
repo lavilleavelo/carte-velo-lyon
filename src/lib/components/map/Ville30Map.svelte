@@ -40,8 +40,8 @@
 	} = $props();
 
 	const bounds: [[number, number], [number, number]] = [
-		[4.65, 45.62],
-		[5.0, 45.9],
+		[4.6, 45.55],
+		[5.05, 45.95],
 	];
 
 	const slugByInsee = $derived.by(() => {
@@ -130,9 +130,10 @@
 		class="h-full w-full"
 		style={mapStyleState.getMapStyleUrl()}
 		{bounds}
-		fitBoundsOptions={{ padding: 24 }}
+		fitBoundsOptions={{ padding: 48 }}
 		attributionControl={false}
 		maxZoom={14}
+		cooperativeGestures={true}
 		{cursor}
 		onclick={handleClick}
 		onmousemove={handleMouseMove}

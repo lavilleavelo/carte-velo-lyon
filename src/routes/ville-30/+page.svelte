@@ -1,5 +1,4 @@
 <script lang="ts">
-	import ArrowLeft from '@lucide/svelte/icons/arrow-left';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import Ville30Map from '$lib/components/map/Ville30Map.svelte';
 	import { buildCommuneHref } from '$lib/utils/communeNavigation';
@@ -27,6 +26,17 @@
 </script>
 
 <div class="space-y-8 pb-4">
+	<header class="flex flex-col gap-3 px-4 pt-4 sm:px-6 lg:px-0">
+		<h1 class="text-lg font-bold text-brand-navy md:text-2xl lg:text-3xl">
+			Ville 30 dans la Métropole
+		</h1>
+		<p class="max-w-3xl text-gray-600">
+			{data.ville30.length} communes sur {data.totalCommunes} ont adopté le statut
+			<strong>Ville 30</strong> : la vitesse y est limitée à 30 km/h par défaut sur l'essentiel des rues,
+			à l'exception des grands axes et des zones piétonnes.
+		</p>
+	</header>
+
 	<div class="mx-[calc(50%-50vw)]">
 		<Ville30Map
 			ville30Communes={data.ville30}
@@ -37,22 +47,6 @@
 	</div>
 
 	<div class="space-y-8 px-4 sm:px-6 lg:px-0">
-		<header class="flex flex-col gap-3">
-			<a
-				href="/"
-				class="inline-flex items-center gap-2 text-sm text-gray-500 hover:text-brand-navy"
-			>
-				<ArrowLeft class="h-4 w-4" />
-				Retour à la carte
-			</a>
-			<h1 class="text-3xl font-bold text-brand-navy md:text-4xl">Ville 30 dans la Métropole</h1>
-			<p class="max-w-3xl text-gray-600">
-				{data.ville30.length} communes sur {data.totalCommunes} ont adopté le statut
-				<strong>Ville 30</strong> : la vitesse y est limitée à 30 km/h par défaut sur l'essentiel des
-				rues, à l'exception des grands axes et des zones piétonnes.
-			</p>
-		</header>
-
 		<section class="prose prose-sm max-w-3xl text-gray-700">
 			<h2 class="text-xl font-bold text-brand-navy">Qu'est-ce qu'une Ville 30 ?</h2>
 			<p>
