@@ -9,6 +9,7 @@
 	import Info from '@lucide/svelte/icons/info';
 	import Gauge from '@lucide/svelte/icons/gauge';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
+	import Bike from '@lucide/svelte/icons/bike';
 	import FileText from '@lucide/svelte/icons/file-text';
 	import * as Command from '$lib/components/ui/command/index.js';
 	import { onMount } from 'svelte';
@@ -114,6 +115,13 @@
 			>
 				<AlertTriangle class="mr-2 h-4 w-4" />
 				<span>Accidents vélo</span>
+			</Command.Item>
+			<Command.Item
+				value="Vélo'v|velov|stations|disponibilité|/velov"
+				onSelect={() => go('/velov')}
+			>
+				<Bike class="mr-2 h-4 w-4" />
+				<span>Vélo’v</span>
 			</Command.Item>
 			<Command.Item value="À propos|/a-propos" onSelect={() => go('/a-propos')}>
 				<Info class="mr-2 h-4 w-4" />

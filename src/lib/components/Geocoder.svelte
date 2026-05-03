@@ -9,6 +9,7 @@
 	import MapIcon from '@lucide/svelte/icons/map';
 	import Gauge from '@lucide/svelte/icons/gauge';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
+	import Bike from '@lucide/svelte/icons/bike';
 	import Info from '@lucide/svelte/icons/info';
 	import FileText from '@lucide/svelte/icons/file-text';
 	import { cn } from '$lib/utils';
@@ -171,6 +172,13 @@
 			hint: 'Communes ayant adopté le 30 km/h',
 			icon: Gauge,
 			keywords: ['ville 30', 'vitesse', 'limitation', '30 km/h'],
+		},
+		{
+			href: '/velov',
+			label: 'Vélo’v',
+			hint: 'Stations Vélo’v et disponibilités en temps réel',
+			icon: Bike,
+			keywords: ['velov', "vélo'v", 'stations'],
 		},
 		{
 			href: '/a-propos',

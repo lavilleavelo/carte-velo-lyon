@@ -14,6 +14,7 @@ export const GET: RequestHandler = async () => {
 		{ path: '/communes/lyon', priority: '0.9' },
 		{ path: '/ville-30', priority: '0.8' },
 		{ path: '/accidents', priority: '0.7' },
+		{ path: '/velov', priority: '0.7' },
 		{ path: '/compteurs', priority: '0.7' },
 		{ path: '/a-propos', priority: '0.6' },
 		{ path: '/mentions-legales', priority: '0.3' },

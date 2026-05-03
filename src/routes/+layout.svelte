@@ -119,7 +119,8 @@
 			<Navbar currentPath={page.url.pathname} />
 		{/if}
 		<main
-			class="mx-auto w-full flex-1 px-4 sm:px-6 lg:px-8 {page.url.pathname === '/accidents'
+			class="mx-auto w-full flex-1 px-4 sm:px-6 lg:px-8 {page.url.pathname === '/accidents' ||
+			page.url.pathname === '/velov'
 				? 'max-w-none'
 				: 'max-w-7xl'}"
 		>

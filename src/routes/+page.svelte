@@ -1166,7 +1166,7 @@
 
 			<AdditionalPOILayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
-			<VelovLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
+			<VelovLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
 			<AccidentsVeloLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 		</MapLibre>

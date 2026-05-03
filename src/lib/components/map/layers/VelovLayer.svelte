@@ -1,20 +1,28 @@
 <script lang="ts">
-	import { GeoJSONSource, SymbolLayer, CircleLayer, ImageLoader } from 'svelte-maplibre-gl';
+	import { GeoJSONSource, SymbolLayer, CircleLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import velovDataUrl from '$lib/data/velov-data-grand-lyon.json?url';
 	import { fetchVelovAvailability } from '$lib/utils/velovUtils';
 	import { filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
+	import {
+		ensureVelovPinIcon,
+		velovPinIconKey,
+		VELOV_DEFAULT_PIN_ICON,
+	} from '$lib/utils/velovPinIcon';
 	import type { FeatureCollection, Point } from 'geojson';
+	import type maplibregl from 'maplibre-gl';
 
 	let {
 		isLayerVisible,
 		handleMouseEnter,
 		handleMouseLeave,
+		map,
 		boundary,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		handleMouseEnter: () => void;
 		handleMouseLeave: () => void;
+		map?: maplibregl.Map;
 		boundary?: FeatureCollection;
 	} = $props();
 
@@ -55,69 +63,115 @@
 		},
 		enabled: isLayerVisible('velov'),
 		refetchOnWindowFocus: false,
-		staleTime: Infinity, // until reload
+		staleTime: Infinity,
 		meta: { loadingLabel: 'Stations Vélo’v' },
 	}));
 
 	const EMPTY_FC: FeatureCollection<Point> = { type: 'FeatureCollection', features: [] };
 
+	const enrichedData = $derived.by<FeatureCollection<Point> | undefined>(() => {
+		const raw = velovQuery.data;
+		if (!raw) {
+			return undefined;
+		}
+
+		const features = raw.features.map((feature) => {
+			const p = feature.properties as Record<string, unknown> | null;
+			const cap = Number(p?.capacity ?? p?.nbbornettes ?? 0);
+			const mech = Number(p?.mechanical_bikes ?? 0);
+			const elec = Number(p?.electrical_bikes ?? 0);
+			const closed = p?.status === 'CLOSED';
+			const key = cap > 0 ? velovPinIconKey(mech, elec, cap, closed) : VELOV_DEFAULT_PIN_ICON;
+			return {
+				...feature,
+				properties: { ...(p ?? {}), icon: key },
+			};
+		});
+
+		return { ...raw, features } as FeatureCollection<Point>;
+	});
+
+	$effect(() => {
+		if (!map) {
+			return;
+		}
+
+		ensureVelovPinIcon(map, VELOV_DEFAULT_PIN_ICON, 0, 0, 15, false);
+
+		const data = enrichedData;
+		if (!data) {
+			return;
+		}
+
+		for (const f of data.features) {
+			const p = f.properties as Record<string, unknown>;
+			const cap = Number(p.capacity ?? p.nbbornettes ?? 0);
+			const mech = Number(p.mechanical_bikes ?? 0);
+			const elec = Number(p.electrical_bikes ?? 0);
+			const closed = p.status === 'CLOSED';
+			const key = (p.icon as string) ?? VELOV_DEFAULT_PIN_ICON;
+			ensureVelovPinIcon(map, key, mech, elec, cap || 15, closed);
+		}
+	});
+
 	const velovSourceData = $derived.by<FeatureCollection<Point> | string>(() => {
 		if (boundary) {
-			if (!velovQuery.data) {
+			if (!enrichedData) {
 				return EMPTY_FC;
 			}
-
-			return filterFeaturesInsideBoundary(velovQuery.data, boundary) as FeatureCollection<Point>;
+			return filterFeaturesInsideBoundary(enrichedData, boundary) as FeatureCollection<Point>;
 		}
-		return velovQuery.data ?? velovDataUrl;
-	});
-</script>
 
-<ImageLoader images={{ velov: '/velov-station.png' }} />
+		return enrichedData ?? velovDataUrl;
+	});
+
+	const visibility = $derived(isLayerVisible('velov') ? 'visible' : 'none');
+</script>
 
 <GeoJSONSource maxzoom={14} id="velov-stations-source" data={velovSourceData}>
 	<SymbolLayer
 		id="velov-stations-layer"
 		layout={{
-			visibility: isLayerVisible('velov') ? 'visible' : 'none',
-			'icon-image': 'velov',
-			'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.2, 14, 0.7, 18, 1, 22, 1.1],
+			visibility,
+			'icon-image': ['coalesce', ['get', 'icon'], VELOV_DEFAULT_PIN_ICON],
+			'icon-anchor': 'bottom',
 			'icon-allow-overlap': true,
 			'icon-ignore-placement': true,
-			'text-allow-overlap': true,
-			'text-ignore-placement': true,
-			'symbol-sort-key': 0,
+			'text-allow-overlap': false,
+			'text-ignore-placement': false,
+			'symbol-sort-key': [
+				'*',
+				-1,
+				['to-number', ['coalesce', ['get', 'capacity'], ['get', 'nbbornettes'], 0]],
+			],
+			'icon-size': ['interpolate', ['linear'], ['zoom'], 10, 0.32, 14, 0.6, 18, 0.95, 22, 1.1],
 			'text-field': [
 				'step',
 				['zoom'],
 				'',
 				15,
 				[
-					'format',
-					[
-						'concat',
-						['to-string', ['get', 'available_bikes']],
-						' / ',
-						['to-string', ['get', 'capacity']],
-					],
-					{ 'font-scale': 1, 'text-color': '#ffffff' },
+					'concat',
+					['to-string', ['coalesce', ['get', 'available_bikes'], '?']],
+					' / ',
+					['to-string', ['coalesce', ['get', 'capacity'], ['get', 'nbbornettes'], '?']],
 				],
 			],
-			'text-offset': [0, 1.2],
+			'text-font': ['Noto Sans Bold'],
+			'text-size': ['interpolate', ['linear'], ['zoom'], 15, 11, 18, 13],
+			'text-offset': [0, 0.5],
 			'text-anchor': 'top',
-			'text-size': ['interpolate', ['linear'], ['zoom'], 15, 12, 18, 14],
 		}}
 		paint={{
-			'text-halo-color': '#d61016',
-			'text-halo-width': 2,
+			'text-color': '#111827',
+			'text-halo-color': '#ffffff',
+			'text-halo-width': 1.6,
 		}}
 	/>
 
 	<CircleLayer
 		id="velov-stations-layer-hitarea"
-		layout={{
-			visibility: isLayerVisible('velov') ? 'visible' : 'none',
-		}}
+		layout={{ visibility }}
 		paint={{
 			'circle-opacity': 0,
 			'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 10, 14, 20, 18, 28, 22, 32],

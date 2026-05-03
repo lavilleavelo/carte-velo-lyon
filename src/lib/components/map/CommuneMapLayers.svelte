@@ -55,7 +55,7 @@
 <VoiesLyonnaisesShields {isLayerVisible} {map} {boundary} {yearRange} />
 <OverpassVLShields {isLayerVisible} {map} {boundary} />
 <OverpassOnewayArrowsLayer {boundary} {map} />
-<VelovLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {boundary} />
+<VelovLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {map} {boundary} />
 {#if visible.has('metro')}
 	<MetroLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {map} {boundary} />
 {/if}
