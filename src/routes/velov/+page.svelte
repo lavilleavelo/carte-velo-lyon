@@ -10,6 +10,7 @@
 	import { createQuery } from '@tanstack/svelte-query';
 	import { useSearchParams } from 'runed/kit';
 	import { type } from 'arktype';
+	import { untrack } from 'svelte';
 	import RefreshCw from '@lucide/svelte/icons/refresh-cw';
 	import Search from '@lucide/svelte/icons/search';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
@@ -21,6 +22,7 @@
 	import type { Station } from '$lib/components/velov/types';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import NavigationButtons from '$lib/components/map/NavigationButtons.svelte';
+	import MapContextMenu from '$lib/components/map/MapContextMenu.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
@@ -42,6 +44,10 @@
 			.enumerated('bikes', 'elec', 'mech', 'stands', 'capacity', 'name')
 			.default(() => 'bikes'),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),
+		zoom: type('number').default(() => 0),
+		lat: type('number').default(() => 0),
+		lng: type('number').default(() => 0),
+		station: type('number').default(() => 0),
 	});
 
 	const params = useSearchParams(paramsSchema, { pushHistory: false, noScroll: true });
@@ -55,8 +61,138 @@
 	let panoramaxOpenCoords: [number, number] | null = $state(null);
 	let defaultNavProvider = $state('cartes');
 
+	let contextMenuVisible = $state(false);
+	let contextMenuX = $state(0);
+	let contextMenuY = $state(0);
+	let contextMenuLngLat: { lng: number; lat: number } | null = $state(null);
+	let touchTimeout: ReturnType<typeof setTimeout> | null = null;
+	let touchStartPoint: { x: number; y: number } | null = null;
+
+	function handleMapContextMenu(event: maplibregl.MapMouseEvent) {
+		event.preventDefault();
+		const e = event.originalEvent as MouseEvent;
+		contextMenuVisible = true;
+		contextMenuX = e.clientX;
+		contextMenuY = e.clientY;
+		contextMenuLngLat = { lng: event.lngLat.lng, lat: event.lngLat.lat };
+	}
+
+	function closeContextMenu() {
+		contextMenuVisible = false;
+		contextMenuLngLat = null;
+	}
+
+	function handleTouchStart(e: maplibregl.MapTouchEvent) {
+		if (e.points.length !== 1) {
+			return;
+		}
+
+		const point = e.point;
+		const lngLat = e.lngLat;
+		touchStartPoint = { x: point.x, y: point.y };
+		touchTimeout = setTimeout(() => {
+			contextMenuVisible = true;
+			contextMenuX = e.originalEvent.touches[0].clientX;
+			contextMenuY = e.originalEvent.touches[0].clientY;
+			contextMenuLngLat = { lng: lngLat.lng, lat: lngLat.lat };
+		}, 500);
+	}
+
+	function handleTouchMove(e: maplibregl.MapTouchEvent) {
+		if (!touchStartPoint) {
+			return;
+		}
+
+		const point = e.point;
+		const dist = Math.sqrt((point.x - touchStartPoint.x) ** 2 + (point.y - touchStartPoint.y) ** 2);
+		if (dist > 10) {
+			if (touchTimeout) {
+				clearTimeout(touchTimeout);
+			}
+			touchTimeout = null;
+			touchStartPoint = null;
+		}
+	}
+
+	function handleTouchEnd() {
+		if (touchTimeout) {
+			clearTimeout(touchTimeout);
+			touchTimeout = null;
+		}
+		touchStartPoint = null;
+	}
+
 	$effect(() => {
 		defaultNavProvider = loadDefaultProvider();
+	});
+
+	let mapInitialized = false;
+	$effect(() => {
+		if (!map) {
+			return;
+		}
+
+		if (mapInitialized) {
+			return;
+		}
+		mapInitialized = true;
+
+		untrack(() => {
+			if (params.zoom > 0 && params.lat !== 0 && params.lng !== 0) {
+				map!.jumpTo({ center: [params.lng, params.lat], zoom: params.zoom });
+			}
+		});
+
+		const m = map;
+		const onMoveEnd = () => {
+			const c = m.getCenter();
+			params.lng = Number(c.lng.toFixed(5));
+			params.lat = Number(c.lat.toFixed(5));
+			params.zoom = Number(m.getZoom().toFixed(2));
+		};
+
+		m.on('moveend', onMoveEnd);
+
+		return () => {
+			m.off('moveend', onMoveEnd);
+		};
+	});
+
+	let stationRestored = $state(false);
+	$effect(() => {
+		if (untrack(() => stationRestored)) {
+			return;
+		}
+
+		if (stations.length === 0) {
+			return;
+		}
+
+		untrack(() => {
+			const id = params.station;
+			if (id) {
+				const s = stations.find((st) => st.idstation === id);
+				if (s) {
+					selectedStation = s;
+				}
+			}
+			stationRestored = true;
+		});
+	});
+
+	$effect(() => {
+		const id = selectedStation?.idstation ?? 0;
+		if (!untrack(() => stationRestored)) {
+			return;
+		}
+
+		if (untrack(() => params.station) === id) {
+			return;
+		}
+
+		untrack(() => {
+			params.station = id;
+		});
 	});
 
 	const stationPanoramaxQuery = createQuery(() => ({
@@ -236,7 +372,7 @@
 >
 	<section class={infoExpanded ? '-mx-4 sm:-mx-6 lg:-mx-8' : ''}>
 		<div
-			class="relative overflow-hidden shadow transition-[height] duration-300 ease-out"
+			class="relative overflow-hidden bg-gray-100 shadow transition-[height] duration-300 ease-out"
 			style="height: {infoExpanded ? '55svh' : 'calc(100svh - 64px)'}; min-height: 360px;"
 		>
 			{#if liveQuery.isLoading || staticQuery.isLoading}
@@ -258,6 +394,10 @@
 				{cursor}
 				onclick={handleMapClick}
 				onmousemove={handleMouseMove}
+				oncontextmenu={handleMapContextMenu}
+				ontouchstart={handleTouchStart}
+				ontouchmove={handleTouchMove}
+				ontouchend={handleTouchEnd}
 			>
 				<AttributionControl compact={true} position="bottom-left" />
 				<NavigationControl position="top-right" showCompass={false} />
@@ -446,6 +586,15 @@
 {#if panoramaxOpenCoords}
 	<PanoramaxViewer coordinates={panoramaxOpenCoords} onClose={() => (panoramaxOpenCoords = null)} />
 {/if}
+
+<MapContextMenu
+	visible={contextMenuVisible}
+	x={contextMenuX}
+	y={contextMenuY}
+	lngLat={contextMenuLngLat}
+	{defaultNavProvider}
+	onClose={closeContextMenu}
+/>
 
 <style>
 	:global(.velov-selected-halo) {
