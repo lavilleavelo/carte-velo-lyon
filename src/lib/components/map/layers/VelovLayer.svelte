@@ -174,7 +174,7 @@
 		layout={{ visibility }}
 		paint={{
 			'circle-opacity': 0,
-			'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 10, 14, 20, 18, 28, 22, 32],
+			'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 16, 14, 26, 18, 34, 22, 40],
 			'circle-color': 'transparent',
 		}}
 		onmouseenter={handleMouseEnter}

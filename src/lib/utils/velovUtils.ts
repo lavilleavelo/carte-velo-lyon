@@ -26,6 +26,10 @@ export interface VelovAPIResponse {
 
 export const VELOV_API_URL = '/api/grandlyon/velov';
 
+export function velovStationUrl(idstation: number | string): string {
+	return `https://velov.grandlyon.com/fr/mapping?stationid=${idstation}`;
+}
+
 export async function fetchVelovAvailability(): Promise<Map<number, VelovStationAvailability>> {
 	try {
 		const response = await fetch(VELOV_API_URL);

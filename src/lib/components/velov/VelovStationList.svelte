@@ -3,6 +3,7 @@
 	import CircleCheck from '@lucide/svelte/icons/circle-check';
 	import CircleX from '@lucide/svelte/icons/circle-x';
 	import type { Station, StationStatusFilter, StationSortKey } from './types';
+	import { matchesAllTokens, tokenize } from '$lib/utils/textSearch';
 
 	let {
 		stations,
@@ -33,7 +34,7 @@
 	});
 
 	const filteredStations = $derived.by(() => {
-		const q = query.trim().toLowerCase();
+		const tokens = tokenize(query);
 		const filtered = stations.filter((s) => {
 			if (status === 'open' && s.status === 'CLOSED') {
 				return false;
@@ -44,9 +45,10 @@
 			if (commune && s.commune !== commune) {
 				return false;
 			}
-			if (q) {
-				const hay = `${s.nom} ${s.adresse} ${s.commune} ${s.idstation}`.toLowerCase();
-				if (!hay.includes(q)) {
+
+			if (tokens.length > 0) {
+				const hay = `${s.nom} ${s.adresse} ${s.commune} ${s.idstation}`;
+				if (!matchesAllTokens(hay, tokens)) {
 					return false;
 				}
 			}

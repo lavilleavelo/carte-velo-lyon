@@ -20,8 +20,14 @@
 	import VelovStats from '$lib/components/velov/VelovStats.svelte';
 	import type { Station } from '$lib/components/velov/types';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
+	import NavigationButtons from '$lib/components/map/NavigationButtons.svelte';
+	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
+	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
-	import { fetchVelovAvailability } from '$lib/utils/velovUtils';
+	import { fetchVelovAvailability, velovStationUrl } from '$lib/utils/velovUtils';
+	import { matchesAllTokens, tokenize } from '$lib/utils/textSearch';
+	import { searchPanoramaxPhoto } from '$lib/utils/panoramax';
+	import { loadDefaultProvider } from '$lib/config/navigationProviders';
 	import velovStaticUrl from '$lib/data/velov-data-grand-lyon.json?url';
 	import type { FeatureCollection, Point } from 'geojson';
 	import type maplibregl from 'maplibre-gl';
@@ -46,6 +52,30 @@
 
 	let map: maplibregl.Map | undefined = $state();
 	let selectedStation: Station | null = $state(null);
+	let panoramaxOpenCoords: [number, number] | null = $state(null);
+	let defaultNavProvider = $state('cartes');
+
+	$effect(() => {
+		defaultNavProvider = loadDefaultProvider();
+	});
+
+	const stationPanoramaxQuery = createQuery(() => ({
+		queryKey: ['velov-panoramax', selectedStation?.idstation],
+		queryFn: async () => {
+			if (!selectedStation) {
+				return null;
+			}
+
+			try {
+				return await searchPanoramaxPhoto([selectedStation.lng, selectedStation.lat]);
+			} catch {
+				return null;
+			}
+		},
+		enabled: !!selectedStation,
+		retry: false,
+		staleTime: 5 * 60_000,
+	}));
 
 	const staticQuery = createQuery(() => ({
 		queryKey: ['velov-static'],
@@ -147,15 +177,15 @@
 	}
 
 	const mapSearchResults = $derived.by<Station[]>(() => {
-		const q = mapSearch.trim().toLowerCase();
-		if (!q) {
+		const tokens = tokenize(mapSearch);
+		if (tokens.length === 0) {
 			return [];
 		}
 
 		const out: Station[] = [];
 		for (const s of stations) {
-			const hay = `${s.nom} ${s.adresse} ${s.commune} ${s.idstation}`.toLowerCase();
-			if (hay.includes(q)) {
+			const hay = `${s.nom} ${s.adresse} ${s.commune} ${s.idstation}`;
+			if (matchesAllTokens(hay, tokens)) {
 				out.push(s);
 				if (out.length >= 8) {
 					break;
@@ -263,9 +293,36 @@
 						closeButton={true}
 						closeOnClick={false}
 						offset={14}
+						maxWidth="320px"
 						onclose={() => (selectedStation = null)}
 					>
-						<div class="min-w-[220px]">
+						<div class="flex w-[260px] flex-col gap-3 sm:w-[280px]">
+							{#if stationPanoramaxQuery.data}
+								<button
+									type="button"
+									onclick={() => {
+										if (selectedStation) {
+											panoramaxOpenCoords = [selectedStation.lng, selectedStation.lat];
+										}
+									}}
+									class="group relative -mx-3 -mt-2 block h-28 overflow-hidden rounded-t-lg bg-gray-100"
+									aria-label="Voir la photo Panoramax"
+								>
+									<img
+										src={stationPanoramaxQuery.data.thumbPicture}
+										alt="Aperçu Panoramax de la station"
+										class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+									/>
+									<div
+										class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-70"
+									></div>
+									<div class="absolute bottom-2 left-3 flex items-center gap-1.5 text-white/95">
+										<span class="text-[11px] font-bold tracking-wider uppercase"> Panoramax </span>
+										<ExternalLink size={11} />
+									</div>
+								</button>
+							{/if}
+
 							<VelovDetails
 								properties={{
 									idstation: selectedStation.idstation,
@@ -278,6 +335,17 @@
 									mechanical_bikes: selectedStation.mech,
 									electrical_bikes: selectedStation.elec,
 									capacity: selectedStation.capacity,
+								}}
+							/>
+
+							<NavigationButtons
+								lat={selectedStation.lat}
+								lng={selectedStation.lng}
+								defaultProviderId={defaultNavProvider}
+								primaryOverride={{
+									label: "Vélo'v",
+									shortLabel: "Vélo'v",
+									url: velovStationUrl(selectedStation.idstation),
 								}}
 							/>
 						</div>
@@ -374,6 +442,10 @@
 		/>
 	{/if}
 </div>
+
+{#if panoramaxOpenCoords}
+	<PanoramaxViewer coordinates={panoramaxOpenCoords} onClose={() => (panoramaxOpenCoords = null)} />
+{/if}
 
 <style>
 	:global(.velov-selected-halo) {

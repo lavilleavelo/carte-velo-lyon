@@ -18,13 +18,7 @@
 	import communeMetadata from '$lib/data/communeMetadata.json';
 	import { LYON_INSEE, LYON_SLUG } from '$lib/config/lyon';
 	import { getAllFiches } from '$lib/content/fiches';
-
-	function normalize(s: string): string {
-		return s
-			.normalize('NFD')
-			.replace(/\p{Diacritic}/gu, '')
-			.toLowerCase();
-	}
+	import { normalizeForSearch as normalize } from '$lib/utils/textSearch';
 
 	interface GeocoderResult {
 		properties: {

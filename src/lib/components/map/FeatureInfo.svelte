@@ -16,6 +16,7 @@
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import NavigationButtons from './NavigationButtons.svelte';
 	import { searchPanoramaxPhoto } from '$lib/utils/panoramax';
+	import { velovStationUrl } from '$lib/utils/velovUtils';
 	import { createQuery } from '@tanstack/svelte-query';
 
 	let {
@@ -36,6 +37,13 @@
 				label: 'Cyclopolis',
 				shortLabel: 'Cyclopolis',
 				url: selectedFeature.properties.cyclopolisUrl as string,
+			};
+		}
+		if (selectedFeature?.type === 'velov' && selectedFeature.properties?.idstation) {
+			return {
+				label: "Vélo'v",
+				shortLabel: "Vélo'v",
+				url: velovStationUrl(selectedFeature.properties.idstation as number | string),
 			};
 		}
 		return undefined;

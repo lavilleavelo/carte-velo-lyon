@@ -17,6 +17,7 @@
 	import communesIndex from '$lib/data/communes/_index.json';
 	import { getAllFiches } from '$lib/content/fiches';
 	import { isMacPlatform } from '$lib/utils/platform';
+	import { normalizeForSearch as normalize } from '$lib/utils/textSearch';
 
 	type Commune = { slug: string; name: string; insee: string };
 	const communes = communesIndex as Commune[];
@@ -64,13 +65,6 @@
 		document.addEventListener('keydown', handleKeydown);
 		return () => document.removeEventListener('keydown', handleKeydown);
 	});
-
-	function normalize(s: string): string {
-		return s
-			.normalize('NFD')
-			.replace(/[\u0300-\u036f]/g, '')
-			.toLowerCase();
-	}
 
 	function customFilter(value: string, search: string, keywords?: string[]): number {
 		const ns = normalize(search);
