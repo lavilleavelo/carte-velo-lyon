@@ -335,6 +335,7 @@
 
 	let mapSearch = $state('');
 	let mapSearchOpen = $state(false);
+	let mapSearchHighlight = $state(0);
 	let infoExpanded = $state(false);
 
 	function toggleInfo() {
@@ -365,7 +366,44 @@
 	function pickMapSearch(s: Station) {
 		mapSearch = '';
 		mapSearchOpen = false;
+		mapSearchHighlight = 0;
+		const active = document.activeElement as HTMLElement | null;
+		if (active && typeof active.blur === 'function') {
+			active.blur();
+		}
 		flyToStation(s);
+	}
+
+	$effect(() => {
+		mapSearch;
+		mapSearchHighlight = 0;
+	});
+
+	function handleMapSearchKeydown(e: KeyboardEvent) {
+		if (!mapSearchOpen || mapSearchResults.length === 0) {
+			if (e.key === 'ArrowDown' && mapSearchResults.length > 0) {
+				mapSearchOpen = true;
+				e.preventDefault();
+			}
+			return;
+		}
+
+		if (e.key === 'ArrowDown') {
+			e.preventDefault();
+			mapSearchHighlight = (mapSearchHighlight + 1) % mapSearchResults.length;
+		} else if (e.key === 'ArrowUp') {
+			e.preventDefault();
+			mapSearchHighlight =
+				(mapSearchHighlight - 1 + mapSearchResults.length) % mapSearchResults.length;
+		} else if (e.key === 'Enter') {
+			const pick = mapSearchResults[mapSearchHighlight];
+			if (pick) {
+				e.preventDefault();
+				pickMapSearch(pick);
+			}
+		} else if (e.key === 'Escape') {
+			mapSearchOpen = false;
+		}
 	}
 
 	let cursor = $state('');
@@ -397,7 +435,14 @@
 
 {#snippet stationDetails(station: Station, panoramaxRoundedTop: boolean)}
 	{@const showPanoramax = !isMobile.current || showPanoramaxOnMobile}
-	{#if stationPanoramaxQuery.data && showPanoramax}
+	{#if showPanoramax && !stationPanoramaxQuery.data && (stationPanoramaxQuery.isLoading || stationPanoramaxQuery.isFetching)}
+		<div
+			class="relative -mx-3 -mt-2 h-28 animate-pulse bg-gray-100 {panoramaxRoundedTop
+				? 'rounded-t-lg'
+				: ''}"
+			aria-hidden="true"
+		></div>
+	{:else if stationPanoramaxQuery.data && showPanoramax}
 		<div
 			class="relative -mx-3 -mt-2 h-28 overflow-hidden bg-gray-100 {panoramaxRoundedTop
 				? 'rounded-t-lg'
@@ -602,22 +647,38 @@
 						bind:value={mapSearch}
 						onfocus={() => (mapSearchOpen = true)}
 						onblur={() => setTimeout(() => (mapSearchOpen = false), 150)}
+						onkeydown={handleMapSearchKeydown}
+						aria-autocomplete="list"
+						aria-controls="velov-map-search-results"
+						aria-expanded={mapSearchOpen && mapSearchResults.length > 0}
+						aria-activedescendant={mapSearchOpen && mapSearchResults.length > 0
+							? `velov-search-opt-${mapSearchResults[mapSearchHighlight]?.idstation}`
+							: undefined}
 						placeholder="Rechercher une station…"
 						class="w-full rounded-md border border-gray-200 bg-white py-1.5 pr-2 pl-8 text-sm shadow-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy focus:outline-none"
 					/>
 					{#if mapSearchOpen && mapSearchResults.length > 0}
 						<ul
+							id="velov-map-search-results"
+							role="listbox"
 							class="absolute top-full right-0 left-0 z-10 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
 						>
-							{#each mapSearchResults as s (s.idstation)}
-								<li>
+							{#each mapSearchResults as s, i (s.idstation)}
+								<li role="presentation">
 									<button
+										id={`velov-search-opt-${s.idstation}`}
 										type="button"
+										role="option"
+										aria-selected={i === mapSearchHighlight}
 										onmousedown={(e) => {
 											e.preventDefault();
 											pickMapSearch(s);
 										}}
-										class="flex w-full flex-col gap-0.5 px-2 py-1.5 text-left text-xs hover:bg-gray-50"
+										onmouseenter={() => (mapSearchHighlight = i)}
+										class="flex w-full flex-col gap-0.5 px-2 py-1.5 text-left text-xs hover:bg-gray-50 {i ===
+										mapSearchHighlight
+											? 'bg-gray-100'
+											: ''}"
 									>
 										<span class="block w-full truncate font-medium text-gray-900">{s.nom}</span>
 										<span class="block w-full truncate text-[10px] text-gray-500">
