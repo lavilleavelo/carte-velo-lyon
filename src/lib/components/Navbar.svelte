@@ -23,7 +23,7 @@
 </script>
 
 <nav
-	class="relative z-40 border-b border-gray-100 bg-white/95 text-brand-navy backdrop-blur-sm"
+	class="sticky top-0 z-40 border-b border-gray-100 bg-white/95 text-brand-navy backdrop-blur-sm"
 	style="view-transition-name: navbar;"
 >
 	<div
