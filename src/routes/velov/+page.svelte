@@ -634,14 +634,16 @@
 			<button
 				type="button"
 				onclick={toggleInfo}
-				class="absolute bottom-14 left-4 z-20 inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-2 text-xs font-semibold text-white shadow-lg ring-1 ring-black/10 transition-colors hover:bg-brand-navy/90 md:right-4 md:bottom-6 md:left-auto"
+				aria-label={infoExpanded ? 'Carte plein écran' : "Plus d'informations"}
+				title={infoExpanded ? 'Carte plein écran' : "Plus d'informations"}
+				class="absolute right-2.5 bottom-[80px] z-20 inline-flex h-9 w-9 items-center justify-center rounded-md bg-white text-brand-navy shadow-md ring-1 ring-black/10 transition-colors hover:bg-gray-50 md:right-4 md:bottom-6 md:h-auto md:w-auto md:gap-1.5 md:rounded-lg md:bg-brand-navy md:px-3 md:py-2 md:text-xs md:font-semibold md:text-white md:hover:bg-brand-navy/90"
 			>
 				{#if infoExpanded}
-					<Maximize2 class="h-3.5 w-3.5" />
-					Carte plein écran
+					<Maximize2 class="h-4 w-4 md:h-3.5 md:w-3.5" />
+					<span class="hidden md:inline">Carte plein écran</span>
 				{:else}
-					Plus d'informations
-					<ChevronDown class="h-3.5 w-3.5" />
+					<span class="hidden md:inline">Plus d'informations</span>
+					<ChevronDown class="h-5 w-5 md:h-3.5 md:w-3.5" />
 				{/if}
 			</button>
 		</div>

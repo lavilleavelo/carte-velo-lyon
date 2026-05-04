@@ -4,68 +4,12 @@ export const PIN = { width: 48, height: 62, cx: 24, cy: 22, r: 19, tip: 56 };
 const RATIO_STEPS = 20;
 const PIN_PIXEL_RATIO = 2;
 
-// Precompute the pin's cumulative area function so we can fill the gauge
-// proportionally to AREA (not height).
-const AREA_TABLE = (() => {
-	const { cy, r, tip } = PIN;
-	const d = tip - cy;
-	const gamma = Math.acos(r / d);
-	const yTangent = cy + r * Math.cos(gamma);
-	const tangentHalfW = r * Math.sin(gamma);
+const PIN_TOP = PIN.cy - PIN.r;
+const PIN_HEIGHT_PX = PIN.tip - PIN_TOP;
 
-	function widthAt(y: number): number {
-		if (y > tip || y < cy - r) {
-			return 0;
-		}
-
-		if (y >= yTangent) {
-			return (2 * tangentHalfW * (tip - y)) / (tip - yTangent);
-		}
-
-		const dyy = y - cy;
-		const inside = r * r - dyy * dyy;
-		return inside > 0 ? 2 * Math.sqrt(inside) : 0;
-	}
-
-	const yMin = cy - r;
-	const dy = 0.05;
-	const N = Math.ceil((tip - yMin) / dy);
-	const areaBelow = new Float64Array(N + 1);
-	areaBelow[N] = 0;
-
-	let cum = 0;
-
-	for (let i = N - 1; i >= 0; i--) {
-		const yMid = yMin + (i + 0.5) * dy;
-		cum += widthAt(yMid) * dy;
-		areaBelow[i] = cum;
-	}
-
-	return { areaBelow, total: cum, yMin, dy, N };
-})();
-
-function findYForArea(target: number): number {
-	const { areaBelow, yMin, dy, N } = AREA_TABLE;
-	let lo = 0;
-	let hi = N;
-
-	while (lo < hi) {
-		const mid = (lo + hi) >> 1;
-		if (areaBelow[mid] > target) {
-			lo = mid + 1;
-		} else {
-			hi = mid;
-		}
-	}
-
-	if (lo === 0) {
-		return yMin;
-	}
-
-	const a1 = areaBelow[lo - 1];
-	const a2 = areaBelow[lo];
-	const t = a1 === a2 ? 0 : (a1 - target) / (a1 - a2);
-	return yMin + (lo - 1 + t) * dy;
+function findYForRatio(ratio: number): number {
+	const r = Math.min(Math.max(ratio, 0), 1);
+	return PIN.tip - r * PIN_HEIGHT_PX;
 }
 
 function bucketRatio(value: number, total: number): number {
@@ -134,11 +78,8 @@ function buildPinIcon(mechRatio: number, elecRatio: number, closed: boolean): Im
 
 		const elecRClamped = Math.min(Math.max(elecRatio, 0), 1);
 		const mechRClamped = Math.min(Math.max(mechRatio, 0), 1);
-		const totalArea = AREA_TABLE.total;
-		const elecArea = totalArea * elecRClamped;
-		const mechArea = totalArea * mechRClamped;
-		const yElec = findYForArea(elecArea);
-		const yEm = findYForArea(elecArea + mechArea);
+		const yElec = findYForRatio(elecRClamped);
+		const yEm = findYForRatio(elecRClamped + mechRClamped);
 		const fillX = cx - r - 2;
 		const fillW = 2 * r + 4;
 
