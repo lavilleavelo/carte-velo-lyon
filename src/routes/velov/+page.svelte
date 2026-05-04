@@ -17,6 +17,7 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import Maximize2 from '@lucide/svelte/icons/maximize-2';
 	import VelovLayer from '$lib/components/map/layers/VelovLayer.svelte';
+	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
 	import VelovDetails from '$lib/components/map/details/VelovDetails.svelte';
 	import VelovStationList from '$lib/components/velov/VelovStationList.svelte';
 	import VelovStats from '$lib/components/velov/VelovStats.svelte';
@@ -27,6 +28,8 @@
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import Image from '@lucide/svelte/icons/image';
+	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
 	import { fetchVelovAvailability, velovStationUrl } from '$lib/utils/velovUtils';
 	import { matchesAllTokens, tokenize } from '$lib/utils/textSearch';
@@ -63,6 +66,30 @@
 	let panoramaxOpenCoords: [number, number] | null = $state(null);
 	let defaultNavProvider = $state('cartes');
 	const isMobile = new MediaQuery('(max-width: 767px)');
+
+	const PANORAMAX_MOBILE_KEY = 'velov-show-panoramax-mobile';
+	function loadShowPanoramaxOnMobile(): boolean {
+		if (typeof globalThis.localStorage === 'undefined') {
+			return false;
+		}
+		try {
+			return localStorage.getItem(PANORAMAX_MOBILE_KEY) === 'true';
+		} catch {
+			return false;
+		}
+	}
+
+	let showPanoramaxOnMobile = $state(loadShowPanoramaxOnMobile());
+
+	function setShowPanoramaxOnMobile(value: boolean) {
+		showPanoramaxOnMobile = value;
+		if (typeof globalThis.localStorage === 'undefined') {
+			return;
+		}
+		try {
+			localStorage.setItem(PANORAMAX_MOBILE_KEY, value ? 'true' : 'false');
+		} catch {}
+	}
 
 	let contextMenuVisible = $state(false);
 	let contextMenuX = $state(0);
@@ -369,27 +396,54 @@
 </script>
 
 {#snippet stationDetails(station: Station, panoramaxRoundedTop: boolean)}
-	{#if stationPanoramaxQuery.data}
-		<button
-			type="button"
-			onclick={() => {
-				panoramaxOpenCoords = [station.lng, station.lat];
-			}}
-			class="group relative -mx-3 -mt-2 block h-28 overflow-hidden bg-gray-100 {panoramaxRoundedTop
+	{@const showPanoramax = !isMobile.current || showPanoramaxOnMobile}
+	{#if stationPanoramaxQuery.data && showPanoramax}
+		<div
+			class="relative -mx-3 -mt-2 h-28 overflow-hidden bg-gray-100 {panoramaxRoundedTop
 				? 'rounded-t-lg'
 				: ''}"
-			aria-label="Voir la photo Panoramax"
 		>
-			<img
-				src={stationPanoramaxQuery.data.thumbPicture}
-				alt="Aperçu Panoramax de la station"
-				class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
-			/>
-			<div class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-70"></div>
-			<div class="absolute bottom-2 left-3 flex items-center gap-1.5 text-white/95">
-				<span class="text-[11px] font-bold tracking-wider uppercase">Panoramax</span>
-				<ExternalLink size={11} />
-			</div>
+			<button
+				type="button"
+				onclick={() => {
+					panoramaxOpenCoords = [station.lng, station.lat];
+				}}
+				class="group block h-full w-full"
+				aria-label="Voir la photo Panoramax"
+			>
+				<img
+					src={stationPanoramaxQuery.data.thumbPicture}
+					alt="Aperçu Panoramax de la station"
+					class="h-full w-full object-cover transition-transform duration-500 group-hover:scale-105"
+				/>
+				<div
+					class="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-70"
+				></div>
+				<div class="absolute bottom-2 left-3 flex items-center gap-1.5 text-white/95">
+					<span class="text-[11px] font-bold tracking-wider uppercase">Panoramax</span>
+					<ExternalLink size={11} />
+				</div>
+			</button>
+			{#if isMobile.current}
+				<button
+					type="button"
+					onclick={() => setShowPanoramaxOnMobile(false)}
+					class="absolute top-2 right-2 inline-flex items-center justify-center rounded-full bg-black/40 p-1.5 text-white shadow ring-1 ring-white/20 hover:bg-black/60 focus:ring-2 focus:ring-white focus:outline-none"
+					aria-label="Masquer les photos Panoramax"
+					title="Masquer les photos Panoramax"
+				>
+					<EyeOff size={14} />
+				</button>
+			{/if}
+		</div>
+	{:else if stationPanoramaxQuery.data && isMobile.current && !showPanoramaxOnMobile}
+		<button
+			type="button"
+			onclick={() => setShowPanoramaxOnMobile(true)}
+			class="inline-flex w-fit items-center gap-1.5 self-start rounded-md border border-gray-200 bg-white px-2 py-1 text-[11px] font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
+		>
+			<Image size={12} />
+			Afficher la photo Panoramax
 		</button>
 	{/if}
 
@@ -456,15 +510,30 @@
 			>
 				<AttributionControl compact={true} position="bottom-left" />
 				<NavigationControl position="top-right" showCompass={false} />
-				<GeolocateControl
-					position="top-right"
-					positionOptions={{ enableHighAccuracy: true }}
-					trackUserLocation={true}
-				/>
+				{#if isMobile.current}
+					<GeolocateControl
+						position="bottom-right"
+						positionOptions={{ enableHighAccuracy: true }}
+						trackUserLocation={true}
+						showAccuracyCircle={true}
+					/>
+				{:else}
+					<GeolocateControl
+						position="top-right"
+						positionOptions={{ enableHighAccuracy: true }}
+						trackUserLocation={true}
+					/>
+				{/if}
 				<MapStyleToggle
 					currentStyle={mapStyleState.mapStyle}
 					onSelect={mapStyleState.setMapStyle}
 					position="top-right"
+				/>
+
+				<OsmCyclewayLayer
+					isLayerVisible={(id) => id === 'osm-cycleways'}
+					{map}
+					opacityScale={0.4}
 				/>
 
 				<VelovLayer
@@ -514,17 +583,19 @@
 							onclick={refresh}
 							title="Rafraîchir"
 							aria-label="Rafraîchir les données"
-							class="rounded p-0.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-navy disabled:opacity-50"
+							class="rounded p-1.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-navy disabled:opacity-50 md:p-0.5"
 							disabled={liveQuery.isFetching}
 						>
-							<RefreshCw class="h-3 w-3 {liveQuery.isFetching ? 'animate-spin' : ''}" />
+							<RefreshCw
+								class="h-4 w-4 md:h-3 md:w-3 {liveQuery.isFetching ? 'animate-spin' : ''}"
+							/>
 						</button>
 					</div>
 				</div>
 
 				<div class="relative mt-2">
 					<Search
-						class="pointer-events-none absolute top-1/2 left-2 h-3.5 w-3.5 -translate-y-1/2 text-gray-400"
+						class="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-gray-400"
 					/>
 					<input
 						type="search"
@@ -532,7 +603,7 @@
 						onfocus={() => (mapSearchOpen = true)}
 						onblur={() => setTimeout(() => (mapSearchOpen = false), 150)}
 						placeholder="Rechercher une station…"
-						class="w-full rounded-md border border-gray-200 bg-white py-1 pr-2 pl-7 text-xs shadow-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy focus:outline-none"
+						class="w-full rounded-md border border-gray-200 bg-white py-1.5 pr-2 pl-8 text-sm shadow-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy focus:outline-none"
 					/>
 					{#if mapSearchOpen && mapSearchResults.length > 0}
 						<ul
@@ -563,7 +634,7 @@
 			<button
 				type="button"
 				onclick={toggleInfo}
-				class="absolute right-4 bottom-6 z-20 inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-2 text-xs font-semibold text-white shadow-lg ring-1 ring-black/10 transition-colors hover:bg-brand-navy/90"
+				class="absolute bottom-14 left-4 z-20 inline-flex items-center gap-1.5 rounded-lg bg-brand-navy px-3 py-2 text-xs font-semibold text-white shadow-lg ring-1 ring-black/10 transition-colors hover:bg-brand-navy/90 md:right-4 md:bottom-6 md:left-auto"
 			>
 				{#if infoExpanded}
 					<Maximize2 class="h-3.5 w-3.5" />
@@ -597,7 +668,7 @@
 {#if isMobile.current && selectedStation}
 	<MobileDrawer
 		open={true}
-		snapPoints={[0.5, 0.9]}
+		snapPoints={[0.4, 0.85]}
 		initialSnapPoint={0}
 		class=""
 		onClose={() => (selectedStation = null)}

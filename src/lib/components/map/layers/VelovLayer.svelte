@@ -151,10 +151,17 @@
 				'',
 				15,
 				[
-					'concat',
+					'format',
 					['to-string', ['coalesce', ['get', 'available_bikes'], '?']],
-					' / ',
-					['to-string', ['coalesce', ['get', 'capacity'], ['get', 'nbbornettes'], '?']],
+					{ 'font-scale': 1 },
+					'V',
+					{ 'font-scale': 0.75, 'text-color': '#b91c1c' },
+					' | ',
+					{ 'font-scale': 0.7, 'text-color': '#9ca3af' },
+					['to-string', ['coalesce', ['get', 'available_stands'], '?']],
+					{ 'font-scale': 1 },
+					'P',
+					{ 'font-scale': 0.75, 'text-color': '#1d4ed8' },
 				],
 			],
 			'text-font': ['Noto Sans Bold'],
@@ -174,7 +181,21 @@
 		layout={{ visibility }}
 		paint={{
 			'circle-opacity': 0,
-			'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 16, 14, 26, 18, 34, 22, 40],
+			'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 22, 14, 38, 18, 54, 22, 64],
+			'circle-translate': [
+				'interpolate',
+				['linear'],
+				['zoom'],
+				10,
+				['literal', [0, -8]],
+				14,
+				['literal', [0, -18]],
+				18,
+				['literal', [0, -28]],
+				22,
+				['literal', [0, -34]],
+			],
+			'circle-translate-anchor': 'viewport',
 			'circle-color': 'transparent',
 		}}
 		onmouseenter={handleMouseEnter}
