@@ -76,7 +76,7 @@ export const availableLayers: readonly LayerCatalogEntry[] = [
 		id: 'velov',
 		label: 'Stations Velov',
 		color: '#EA2127FF',
-		icon: '/velov-station.png',
+		icon: '/velov-pin.svg',
 		category: 'Vélov',
 	},
 	...Array.from({ length: 12 }, (_, i) => ({

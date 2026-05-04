@@ -319,6 +319,17 @@
 	});
 
 	$effect(() => {
+		showDesktopSidebar;
+		if (!map) {
+			return;
+		}
+
+		const m = map;
+		const id = requestAnimationFrame(() => m.resize());
+		return () => cancelAnimationFrame(id);
+	});
+
+	$effect(() => {
 		let changed = false;
 		for (const category of categoriesNeededByUrl) {
 			if (!visibleOptionalCategories.has(category)) {
@@ -855,21 +866,9 @@
 <svelte:window bind:innerWidth />
 
 <div
-	class="relative flex h-[100dvh] w-[100vw] flex-row overflow-hidden"
-	style="margin-left: calc(50% - 50vw); width: 100vw;"
+	class="relative flex h-[calc(100dvh-2.75rem)] w-full flex-row overflow-hidden md:h-[calc(100dvh-4rem)]"
 >
 	<div class="relative h-full flex-1">
-		<button
-			type="button"
-			onclick={() => (menuOpen = true)}
-			class="absolute top-3 left-3 z-20 hidden items-center gap-1.5 rounded-full bg-white px-3 py-1.5 text-xs font-semibold text-brand-navy shadow-md ring-1 ring-gray-200 transition-all hover:bg-gray-50 active:scale-95 md:inline-flex"
-			title="Ouvrir le menu"
-			aria-label="Ouvrir le menu"
-		>
-			<Menu size={16} />
-			<span class="hidden lg:inline">Menu</span>
-		</button>
-
 		<CommandPalette bind:open={menuOpen} showTrigger={false} />
 
 		<div
@@ -878,7 +877,7 @@
 			<div class="rounded-lg shadow-md">
 				<Geocoder onSelect={handleGeocoderSelect} bbox={LYON_BOUNDS} />
 			</div>
-			<div class="flex flex-wrap items-center justify-center gap-1.5" data-settings-dependent>
+			<div class="flex flex-wrap items-center justify-center gap-1" data-settings-dependent>
 				{#each qf.activeFilters as qfItem}
 					<button
 						onclick={() => qf.toggle(qfItem)}
@@ -1176,23 +1175,11 @@
 
 			<AccidentsVeloLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 		</MapLibre>
-
-		<a
-			href="/a-propos"
-			class="absolute right-0 bottom-0 z-10 hidden transition-opacity hover:opacity-80 md:block"
-			title="À propos - La Ville à Vélo"
-		>
-			<img
-				src="https://cyclopolis.lavilleavelo.org/logo-lvv-carte.png"
-				alt="La Ville à Vélo"
-				class="h-16 w-auto drop-shadow-md"
-			/>
-		</a>
 	</div>
 
 	{#if showDesktopSidebar}
 		<div class="hidden h-full w-80 border-l bg-white shadow-xl md:flex md:flex-col">
-			<div class="flex items-center justify-between border-b p-4">
+			<div class="flex items-center justify-between border-b p-3">
 				<h2 class="flex items-center gap-2 text-lg font-bold">
 					<Filter size={20} />
 					Filtres
@@ -1214,7 +1201,7 @@
 					</button>
 				</div>
 			</div>
-			<div class="flex-1 overflow-y-auto p-4">
+			<div class="flex-1 overflow-y-auto p-3">
 				<FilterPanel
 					layersByCategory={filteredLayersByCategory}
 					{isCategoryVisible}
@@ -1223,6 +1210,7 @@
 					{toggleCategoryCollapse}
 					{toggleLayer}
 					{isLayerVisible}
+					compact
 				>
 					{#snippet layerSubFilters(layerId: string)}
 						{#if layerId === 'cycleways'}

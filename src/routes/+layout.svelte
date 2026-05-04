@@ -17,7 +17,7 @@
 	const ogImage = $derived(page.data.seo?.image ?? `${SITE.url}${SITE.ogImagePath}`);
 	const ogImageAlt = $derived(page.data.seo?.imageAlt ?? SITE.ogImageAlt);
 
-	const showNavbar = $derived(page.url.pathname !== '/');
+	const showFooter = $derived(page.url.pathname !== '/');
 
 	const queryClient = new QueryClient();
 
@@ -115,18 +115,17 @@
 	{/if}
 
 	<div class="flex min-h-screen flex-col">
-		{#if showNavbar}
-			<Navbar currentPath={page.url.pathname} />
-		{/if}
+		<Navbar currentPath={page.url.pathname} compact={page.url.pathname === '/'} />
 		<main
 			class="mx-auto w-full flex-1 px-4 sm:px-6 lg:px-8 {page.url.pathname === '/accidents' ||
-			page.url.pathname === '/velov'
-				? 'max-w-none'
+			page.url.pathname === '/velov' ||
+			page.url.pathname === '/'
+				? 'max-w-none px-0! sm:px-0! lg:px-0!'
 				: 'max-w-7xl'}"
 		>
 			{@render children()}
 		</main>
-		{#if showNavbar}
+		{#if showFooter}
 			<div class="mx-auto w-full max-w-7xl px-4 sm:px-6 lg:px-8">
 				<Footer />
 			</div>

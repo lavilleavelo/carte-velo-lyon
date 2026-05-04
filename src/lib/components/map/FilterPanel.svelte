@@ -43,25 +43,38 @@
 	const infoData = $derived(infoDialogCategory ? layerInfo[infoDialogCategory] : null);
 </script>
 
-<div class="flex flex-col" class:gap-4={compact} class:gap-6={!compact}>
+<div class="flex flex-col" class:gap-2={compact} class:gap-6={!compact}>
 	{#each [...layersByCategory.entries()] as [category, layers]}
 		{@const allVisible = layers.every((l) => isLayerVisible(l.id))}
 		{@const info = layerInfo[category]}
 		<div
 			class="flex flex-col rounded-xl border border-gray-100 bg-gray-50/50 transition-all hover:bg-gray-50"
-			class:gap-2={compact}
+			class:gap-1.5={compact}
 			class:gap-3={!compact}
 			class:px-2={compact}
-			class:py-2={compact}
+			class:py-1.5={compact}
 			class:p-3={!compact}
 		>
-			<div class="flex items-center justify-between">
+			<div
+				class="group/header flex cursor-pointer items-center justify-between"
+				role="button"
+				tabindex="0"
+				aria-expanded={!isCategoryCollapsed(category)}
+				onclick={() => toggleCategoryCollapse(category)}
+				onkeydown={(e) => {
+					if (e.key === 'Enter' || e.key === ' ') {
+						e.preventDefault();
+						toggleCategoryCollapse(category);
+					}
+				}}
+			>
 				<div class="flex items-center gap-1">
-					<button
-						onclick={() => toggleCategoryCollapse(category)}
-						class="group flex items-center gap-2 text-[10px] font-bold tracking-wide whitespace-nowrap text-gray-500 uppercase transition-colors hover:text-brand-navy"
+					<div
+						class="flex items-center gap-2 text-[10px] font-bold tracking-wide whitespace-nowrap text-gray-500 uppercase transition-colors group-hover/header:text-brand-navy"
 					>
-						<div class="rounded-full bg-gray-200 p-1 transition-colors group-hover:bg-gray-300">
+						<div
+							class="rounded-full bg-gray-200 p-1 transition-colors group-hover/header:bg-gray-300"
+						>
 							<svg
 								class="h-3 w-3 transition-transform duration-200"
 								class:rotate-180={!isCategoryCollapsed(category)}
@@ -78,10 +91,13 @@
 							</svg>
 						</div>
 						<span>{category}</span>
-					</button>
+					</div>
 					{#if info}
 						<button
-							onclick={(e) => openInfo(category, e)}
+							onclick={(e) => {
+								e.stopPropagation();
+								openInfo(category, e);
+							}}
 							class="rounded-full p-0.5 text-gray-300 transition-colors hover:text-gray-500"
 							title="Informations"
 						>
@@ -90,7 +106,10 @@
 					{/if}
 				</div>
 				<button
-					onclick={() => toggleCategory(category)}
+					onclick={(e) => {
+						e.stopPropagation();
+						toggleCategory(category);
+					}}
 					class="rounded-full p-1.5 transition-colors hover:bg-gray-200"
 					class:text-brand-navy={allVisible}
 					class:text-gray-400={!allVisible}
@@ -132,7 +151,7 @@
 							{/each}
 						</div>
 					{:else}
-						<div class="flex flex-col gap-2.5">
+						<div class="flex flex-col" class:gap-1={compact} class:gap-2.5={!compact}>
 							{#each layers as layer}
 								<div
 									class="flex items-center gap-3 rounded-lg p-1 transition-colors hover:bg-white/60"

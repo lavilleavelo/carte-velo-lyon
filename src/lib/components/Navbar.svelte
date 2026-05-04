@@ -4,12 +4,13 @@
 	import CommandPalette from './CommandPalette.svelte';
 	import CommuneSearch from './CommuneSearch.svelte';
 
-	let { currentPath = '/' }: { currentPath?: string } = $props();
+	let { currentPath = '/', compact = false }: { currentPath?: string; compact?: boolean } =
+		$props();
 
 	const links: { href: string; label: string; match: (p: string) => boolean }[] = [
 		{ href: '/', label: 'Aménagements', match: (p) => p === '/' },
 		{ href: '/velov', label: "Vélo'v", match: (p) => p.startsWith('/velov') },
-		{ href: '/ville-30', label: 'Ville 30', match: (p) => p.startsWith('/ville-30') },
+		{ href: '/ville-30', label: 'Ville 30', match: (p) => p.startsWith('/ville-30') },
 		{ href: '/accidents', label: 'Accidents', match: (p) => p.startsWith('/accidents') },
 	];
 
@@ -22,10 +23,16 @@
 </script>
 
 <nav class="relative z-40 border-b border-gray-100 bg-white/95 text-brand-navy backdrop-blur-sm">
-	<div class="mx-auto flex h-16 max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8">
+	<div
+		class="mx-auto flex max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8 {compact
+			? 'h-11 md:h-16'
+			: 'h-16'}"
+	>
 		<a
 			href="/"
-			class="shrink-0 text-base font-bold tracking-tight transition-colors hover:text-brand-teal lg:text-lg"
+			class="shrink-0 font-bold tracking-tight transition-colors hover:text-brand-teal lg:text-lg {compact
+				? 'text-sm md:text-base'
+				: 'text-base'}"
 			aria-label="Retour à la carte"
 		>
 			Carte Velo Lyon

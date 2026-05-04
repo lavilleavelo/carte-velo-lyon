@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 60" width="48" height="60" aria-hidden="true">
+  <defs>
+    <clipPath id="velov-pin-clip">
+      <path d="M 24 56 L 8.245 32.620 A 19 19 0 1 1 39.755 32.620 Z"/>
+    </clipPath>
+  </defs>
+  <path
+    d="M 24 56 L 8.245 32.620 A 19 19 0 1 1 39.755 32.620 Z"
+    fill="white"
+  />
+  <rect
+    x="3"
+    y="29.5"
+    width="42"
+    height="28"
+    fill="#dc2626"
+    clip-path="url(#velov-pin-clip)"
+  />
+  <path
+    d="M 24 56 L 8.245 32.620 A 19 19 0 1 1 39.755 32.620 Z"
+    fill="none"
+    stroke="#4b5563"
+    stroke-width="1.6"
+    stroke-linejoin="round"
+  />
+</svg>
