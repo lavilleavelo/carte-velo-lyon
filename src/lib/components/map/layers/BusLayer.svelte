@@ -51,10 +51,11 @@
 	});
 </script>
 
-<GeoJSONSource maxzoom={13} id="bus-data" data={visibleData}>
+<GeoJSONSource maxzoom={12} tolerance={1.2} buffer={64} id="bus-data" data={visibleData}>
 	<!-- Other bus lines (Bottom) -->
 	<LineLayer
 		id="bus-layer-other-contour"
+		minzoom={11}
 		filter={['==', ['get', 'type'], 'bus-other']}
 		layout={{
 			'line-join': 'round',
@@ -69,6 +70,7 @@
 	/>
 	<LineLayer
 		id="bus-layer-other"
+		minzoom={11}
 		filter={['==', ['get', 'type'], 'bus-other']}
 		layout={{
 			'line-join': 'round',
@@ -84,6 +86,7 @@
 
 	<LineLayer
 		id="bus-layer-other-hitarea"
+		minzoom={12}
 		filter={['==', ['get', 'type'], 'bus-other']}
 		layout={{
 			'line-join': 'round',
@@ -131,6 +134,7 @@
 
 	<LineLayer
 		id="bus-layer-main-hitarea"
+		minzoom={11}
 		filter={['==', ['get', 'type'], 'bus-main']}
 		layout={{
 			'line-join': 'round',
@@ -148,14 +152,16 @@
 
 	<SymbolLayer
 		id="bus-main-labels"
+		minzoom={11}
 		filter={['==', ['get', 'type'], 'bus-main']}
 		layout={{
 			'icon-image': ['concat', 'bus-main-shield-', ['get', 'ligne']],
 			'icon-size': 0.35,
-			'symbol-spacing': 250,
+			'symbol-spacing': 350,
 			'symbol-placement': 'line-center',
 			'icon-rotation-alignment': 'viewport',
 			'icon-pitch-alignment': 'viewport',
+			'icon-allow-overlap': false,
 			visibility: isLayerVisible('bus-main') ? 'visible' : 'none',
 		}}
 		paint={{
@@ -195,6 +201,7 @@
 
 	<LineLayer
 		id="bus-layer-tb-hitarea"
+		minzoom={11}
 		filter={['==', ['get', 'type'], 'bus-tb']}
 		layout={{
 			'line-join': 'round',
@@ -212,14 +219,16 @@
 
 	<SymbolLayer
 		id="bus-tb-labels"
+		minzoom={11}
 		filter={['==', ['get', 'type'], 'bus-tb']}
 		layout={{
 			'icon-image': ['concat', 'bus-tb-shield-', ['get', 'ligne']],
 			'icon-size': 0.35,
-			'symbol-spacing': 250,
+			'symbol-spacing': 350,
 			'symbol-placement': 'line-center',
 			'icon-rotation-alignment': 'viewport',
 			'icon-pitch-alignment': 'viewport',
+			'icon-allow-overlap': false,
 			visibility: isLayerVisible('bus-tb') ? 'visible' : 'none',
 		}}
 		paint={{

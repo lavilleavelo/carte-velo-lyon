@@ -113,7 +113,7 @@
 	source="osm-vector"
 	source-layer="poi"
 	filter={['all', ['==', 'class', 'railway'], ['==', 'subclass', 'tram_stop']]}
-	minzoom={13}
+	minzoom={12}
 	layout={{
 		visibility: isLayerVisible('tram') ? 'visible' : 'none',
 	}}
@@ -122,5 +122,27 @@
 		'circle-radius': 4.5,
 		'circle-stroke-width': 2,
 		'circle-stroke-color': '#933591',
+	}}
+/>
+
+<SymbolLayer
+	id="tram-stop-labels"
+	source="osm-vector"
+	source-layer="poi"
+	filter={['all', ['==', 'class', 'railway'], ['==', 'subclass', 'tram_stop']]}
+	minzoom={14}
+	layout={{
+		'text-field': ['get', 'name'],
+		'text-size': 12,
+		'text-offset': [0, 1.4],
+		'text-anchor': 'top',
+		'text-optional': true,
+		'text-allow-overlap': false,
+		visibility: isLayerVisible('tram') ? 'visible' : 'none',
+	}}
+	paint={{
+		'text-color': '#333333',
+		'text-halo-color': '#FFFFFF',
+		'text-halo-width': 1.5,
 	}}
 />

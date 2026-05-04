@@ -88,6 +88,7 @@ function bboxesOverlap(
 type BoundaryCache = {
 	geoms: Geometry[];
 	bboxes: [number, number, number, number][];
+	overall: [number, number, number, number];
 };
 
 const boundaryCache = new WeakMap<FeatureCollection, BoundaryCache>();
@@ -97,17 +98,58 @@ function getBoundaryCache(boundary: FeatureCollection): BoundaryCache {
 	if (!cached) {
 		const geoms = boundary.features.map((f) => f.geometry);
 		const bboxes = geoms.map(bboxOfGeom);
-		cached = { geoms, bboxes };
+		const overall: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
+
+		for (const b of bboxes) {
+			if (b[0] < overall[0]) overall[0] = b[0];
+			if (b[1] < overall[1]) overall[1] = b[1];
+			if (b[2] > overall[2]) overall[2] = b[2];
+			if (b[3] > overall[3]) overall[3] = b[3];
+		}
+
+		cached = { geoms, bboxes, overall };
 		boundaryCache.set(boundary, cached);
 	}
 	return cached;
 }
 
+const featureBboxCache = new WeakMap<Feature, [number, number, number, number]>();
+
+function getFeatureBbox(feature: Feature): [number, number, number, number] | null {
+	let bbox = featureBboxCache.get(feature);
+	if (bbox) {
+		return bbox;
+	}
+
+	const geom = feature.geometry as Geometry | null;
+	if (!geom) {
+		return null;
+	}
+
+	bbox = bboxOfGeom(geom);
+	featureBboxCache.set(feature, bbox);
+	return bbox;
+}
+
+const filteredCache = new WeakMap<
+	FeatureCollection,
+	WeakMap<FeatureCollection, FeatureCollection>
+>();
+
 export function filterFeaturesInsideBoundary(
 	data: FeatureCollection,
 	boundary: FeatureCollection,
 ): FeatureCollection {
-	const { geoms: boundaryGeoms, bboxes: boundaryBboxes } = getBoundaryCache(boundary);
+	let inner = filteredCache.get(data);
+	if (inner) {
+		const hit = inner.get(boundary);
+		if (hit) return hit;
+	} else {
+		inner = new WeakMap();
+		filteredCache.set(data, inner);
+	}
+
+	const { geoms: boundaryGeoms, bboxes: boundaryBboxes, overall } = getBoundaryCache(boundary);
 
 	const kept = data.features.filter((feature) => {
 		const fGeom = feature.geometry as Geometry | null;
@@ -115,7 +157,15 @@ export function filterFeaturesInsideBoundary(
 			return false;
 		}
 
-		const fBbox = bboxOfGeom(fGeom);
+		const fBbox = getFeatureBbox(feature);
+		if (!fBbox) {
+			return false;
+		}
+
+		if (!bboxesOverlap(fBbox, overall)) {
+			return false;
+		}
+
 		let boxHit = false;
 		for (const b of boundaryBboxes) {
 			if (bboxesOverlap(fBbox, b)) {
@@ -134,7 +184,9 @@ export function filterFeaturesInsideBoundary(
 		});
 	}) as Feature[];
 
-	return { type: 'FeatureCollection', features: kept };
+	const result: FeatureCollection = { type: 'FeatureCollection', features: kept };
+	inner.set(boundary, result);
+	return result;
 }
 
 type YearGetter = (feature: Feature) => number | null | undefined;
