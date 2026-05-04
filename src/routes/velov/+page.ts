@@ -8,8 +8,8 @@ export const load: PageLoad = () => {
 		seo: {
 			title: 'Stations Vélo’v à Lyon. Carte vélo Lyon',
 			description: 'Carte des stations Vélo’v de la Métropole de Lyon.',
-			image: `${SITE.url}/og/og-image.png`,
-			imageAlt: 'Carte des stations Vélo’v à Lyon avec leurs disponibilités',
+			image: `${SITE.url}/og/velov.jpg`,
+			imageAlt: 'Carte des stations Vélo’v à Lyon avec leurs disponibilités en temps réel',
 		},
 	};
 };
