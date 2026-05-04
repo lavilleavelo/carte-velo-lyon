@@ -13,30 +13,55 @@ export interface FichePhoto {
 	creditUrl?: string;
 }
 
-export interface FicheMeta {
+export interface FicheGeometryRef {
+	osmRelation?: number;
+}
+
+interface FicheCommon {
 	slug: string;
 	title: string;
 	subtitle?: string;
-	type: string;
 	summary?: string;
 	cover?: string;
-	address?: string;
-	lng?: number;
-	lat?: number;
-	zoom?: number;
-	osmId?: string;
-	panoramax?: string;
 	ogImage?: string;
 	ogImageAlt?: string;
 	photos?: FichePhoto[];
 	links?: FicheLink[];
-	parkingGid?: number | number[];
 	updated?: string | Date;
+	address?: string;
+	panoramax?: string;
 }
 
-export interface Fiche extends FicheMeta {
-	body: Component;
+export interface ParkingFicheMeta extends FicheCommon {
+	type: 'parking';
+	lng?: number;
+	lat?: number;
+	zoom?: number;
+	osmId?: string;
+	parkingGid?: number | number[];
 }
+
+export interface ItineraireFicheMeta extends FicheCommon {
+	type: 'itineraire';
+	ref?: string;
+	color?: string;
+	geometry?: FicheGeometryRef;
+	endpoints?: string;
+	totalLengthKm?: number;
+}
+
+export type FicheMeta = ParkingFicheMeta | ItineraireFicheMeta;
+export type FicheType = FicheMeta['type'];
+
+interface FicheRuntime {
+	body: Component;
+	basename: string;
+	hasGeometry: boolean;
+}
+
+export type Fiche = FicheMeta & FicheRuntime;
+export type ParkingFiche = ParkingFicheMeta & FicheRuntime;
+export type ItineraireFiche = ItineraireFicheMeta & FicheRuntime;
 
 interface MdsvexModule {
 	default: Component;
@@ -44,6 +69,16 @@ interface MdsvexModule {
 }
 
 const rawModules = import.meta.glob<MdsvexModule>('./fiches/*.md', { eager: true });
+
+const geojsonPaths = import.meta.glob('./fiches/*.geojson');
+const geojsonBasenames = new Set(
+	Object.keys(geojsonPaths).map((p) =>
+		p
+			.split('/')
+			.pop()!
+			.replace(/\.geojson$/, ''),
+	),
+);
 
 interface BuiltIndex {
 	bySlug: Map<string, Fiche>;
@@ -55,16 +90,22 @@ function buildIndex(): BuiltIndex {
 	const parkingByGid = new Map<number, Fiche>();
 
 	for (const [path, mod] of Object.entries(rawModules)) {
-		const fileSlug = path.split('/').pop()!.replace(/\.md$/, '');
+		const basename = path.split('/').pop()!.replace(/\.md$/, '');
 		const meta = mod.metadata ?? {};
-		const slug = (meta.slug as string) ?? fileSlug;
+		const slug = (meta.slug as string) ?? basename;
 
 		if (!meta.title || !meta.type) {
-			console.warn(`[fiches] ${fileSlug}: missing required title or type`);
+			console.warn(`[fiches] ${basename}: missing required title or type`);
 			continue;
 		}
 
-		const fiche: Fiche = { ...(meta as FicheMeta), slug, body: mod.default };
+		const fiche = {
+			...(meta as FicheMeta),
+			slug,
+			body: mod.default,
+			basename,
+			hasGeometry: geojsonBasenames.has(basename),
+		} as Fiche;
 		bySlug.set(slug, fiche);
 
 		if (fiche.type === 'parking' && fiche.parkingGid !== undefined) {
@@ -102,4 +143,16 @@ export function findParkingFicheByGid(gid: number | string | undefined | null): 
 	}
 
 	return index.parkingByGid.get(n);
+}
+
+export function getFichesByType<T extends FicheType>(type: T): Extract<Fiche, { type: T }>[] {
+	const out: Extract<Fiche, { type: T }>[] = [];
+
+	for (const f of index.bySlug.values()) {
+		if (f.type === type) {
+			out.push(f as Extract<Fiche, { type: T }>);
+		}
+	}
+
+	return out;
 }

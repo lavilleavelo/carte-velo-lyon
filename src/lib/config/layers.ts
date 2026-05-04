@@ -2,6 +2,12 @@ import { Icons } from './icons';
 import { vlColors } from '$lib/utils/mapUtils';
 import { isPavedSurface } from '$lib/utils/osmCycleway';
 import { SPEED_BUCKET_COLORS, bucketForSpeed } from '$lib/utils/speedLimits';
+import {
+	getItineraires,
+	getItineraireColor,
+	getItineraireLabel,
+	itineraireLayerId,
+} from './itineraires';
 
 export interface PopupContext {
 	isLayerVisible?: (id: string) => boolean;
@@ -24,7 +30,8 @@ export interface LayerConfig {
 		| 'local'
 		| 'comfort'
 		| 'safety'
-		| 'voirie';
+		| 'voirie'
+		| 'itineraires';
 	interactableLayerIds: string[];
 	featureType: string;
 	defaultEnabled?: boolean;
@@ -866,12 +873,46 @@ function accidentsLayerConfigs(): LayerConfig[] {
 	});
 }
 
+function itinerairesLayerConfigs(): LayerConfig[] {
+	return getItineraires().map((fiche) => {
+		const color = getItineraireColor(fiche);
+		const refBadge = fiche.ref
+			? `<span class="rounded bg-gray-100 px-1.5 py-0.5 text-[10px] font-mono text-gray-700">${fiche.ref}</span>`
+			: '';
+
+		const dot = `<span class="inline-block h-2.5 w-2.5 flex-shrink-0 rounded-full" style="background-color:${color}"></span>`;
+		const subtitle = fiche.subtitle
+			? `<span class="text-xs text-gray-600">${fiche.subtitle}</span>`
+			: '';
+
+		const hoverHtml = `
+			<div class="flex flex-col gap-1 max-w-[280px]">
+				<div class="flex items-center gap-1.5">
+					${dot}
+					<span class="text-sm font-bold">${fiche.title}</span>
+					${refBadge}
+				</div>
+				${subtitle}
+			</div>`;
+
+		return {
+			id: itineraireLayerId(fiche.slug),
+			label: getItineraireLabel(fiche),
+			category: 'itineraires' as const,
+			interactableLayerIds: [`itineraire-${fiche.slug}-hitarea`],
+			featureType: 'itineraire',
+			formatPopup: () => hoverHtml,
+		};
+	});
+}
+
 export function getAllLayerConfigs(): LayerConfig[] {
 	return [
 		...layerConfigs,
 		...getVoiesLyonnaisesConfigs(),
 		...getOsmVLConfigs(),
 		...accidentsLayerConfigs(),
+		...itinerairesLayerConfigs(),
 	];
 }
 

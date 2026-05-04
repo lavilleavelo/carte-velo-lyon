@@ -1,4 +1,11 @@
 import { vlColors } from '$lib/utils/mapUtils';
+import {
+	getItineraires,
+	getItineraireColor,
+	getItineraireLabel,
+	itineraireLayerId,
+	ITINERAIRES_CATEGORY,
+} from './itineraires';
 
 import parkingCoveredIcon from '$lib/assets/icons/arceau_couvert.png';
 import parkingVelostationIcon from '$lib/assets/icons/parking-velostation.png';
@@ -83,6 +90,12 @@ export const availableLayers: readonly LayerCatalogEntry[] = [
 		label: `${i + 1}`,
 		color: vlColors[i],
 		category: 'Voies Lyonnaises (OSM)',
+	})),
+	...getItineraires().map((i) => ({
+		id: itineraireLayerId(i.slug),
+		label: getItineraireLabel(i),
+		color: getItineraireColor(i),
+		category: ITINERAIRES_CATEGORY,
 	})),
 	{
 		id: 'local-veloecole',

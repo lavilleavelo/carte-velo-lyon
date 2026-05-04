@@ -81,6 +81,8 @@
 	import AdditionalPOILayer from '$lib/components/map/layers/AdditionalPOILayer.svelte';
 	import CyclewayFilters from '$lib/components/map/filters/CyclewayFilters.svelte';
 	import TargetNetworkLayer from '$lib/components/map/layers/TargetNetworkLayer.svelte';
+	import ItinerairesLayer from '$lib/components/map/layers/ItinerairesLayer.svelte';
+	import ItinerairesLabels from '$lib/components/map/layers/ItinerairesLabels.svelte';
 	import TargetNetworkFilters from '$lib/components/map/filters/TargetNetworkFilters.svelte';
 	import ProjectVLFilters from '$lib/components/map/filters/ProjectVLFilters.svelte';
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
@@ -1112,6 +1114,8 @@
 
 			<CommunesLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
+			<ItinerairesLayer {isLayerVisible} />
+
 			<CyclewayLayer
 				{isLayerVisible}
 				voirieData={filteredVoirieData}
@@ -1153,6 +1157,8 @@
 			<VoiesLyonnaisesShields {isLayerVisible} {map} />
 
 			<OverpassVLShields {isLayerVisible} {map} />
+
+			<ItinerairesLabels {isLayerVisible} />
 
 			<CountersLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
@@ -1358,7 +1364,7 @@
 {/if}
 
 <Dialog.Root bind:open={showConfigDialog}>
-	<Dialog.Content>
+	<Dialog.Content class="flex max-h-[85dvh] flex-col gap-4 overflow-hidden">
 		<Dialog.Header>
 			<Dialog.Title>Configuration</Dialog.Title>
 			<Dialog.Description>
@@ -1367,7 +1373,7 @@
 			</Dialog.Description>
 		</Dialog.Header>
 
-		<div class="flex flex-col gap-5 py-2">
+		<div class="-mr-2 flex flex-1 flex-col gap-5 overflow-y-auto py-2 pr-2">
 			<div>
 				<div class="mb-2 flex items-center justify-between">
 					<h3 class="text-sm font-semibold text-gray-900">Raccourcis rapides</h3>

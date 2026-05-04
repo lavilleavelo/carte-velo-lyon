@@ -55,6 +55,13 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 		source: 'La Ville à Vélo / Cyclopolis',
 		sourceUrl: 'https://github.com/lavilleavelo/cyclopolis',
 	},
+	Itinéraires: {
+		description:
+			"Itinéraires cyclables (EuroVelo, véloroutes, voies vertes, boucles locales) qui passent par la Métropole de Lyon ou s'y connectent.",
+		source: 'Sources disponibles sur chaque fiche',
+		sourceUrl: '/itineraires',
+		links: [],
+	},
 	'Infrastructures Cyclables (OSM)': {
 		description:
 			'Aménagements cyclables issus d’OpenStreetMap (highway=cycleway, cycleway:lane/track, bicycle_road, etc.). © les contributeurs OpenStreetMap, licence ODbL.',
