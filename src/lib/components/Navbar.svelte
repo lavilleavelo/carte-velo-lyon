@@ -22,7 +22,10 @@
 	});
 </script>
 
-<nav class="relative z-40 border-b border-gray-100 bg-white/95 text-brand-navy backdrop-blur-sm">
+<nav
+	class="relative z-40 border-b border-gray-100 bg-white/95 text-brand-navy backdrop-blur-sm"
+	style="view-transition-name: navbar;"
+>
 	<div
 		class="mx-auto flex max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8 {compact
 			? 'h-11 md:h-16'

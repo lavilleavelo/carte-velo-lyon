@@ -114,7 +114,7 @@
 		</div>
 	{/if}
 
-	<div class="flex min-h-screen flex-col">
+	<div class="flex min-h-screen flex-col overflow-x-clip">
 		<Navbar currentPath={page.url.pathname} compact={page.url.pathname === '/'} />
 		<main
 			class="mx-auto w-full flex-1 px-4 sm:px-6 lg:px-8 {page.url.pathname === '/accidents' ||
