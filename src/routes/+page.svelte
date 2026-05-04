@@ -1125,13 +1125,7 @@
 
 			<ParkingLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
-			<BusLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
-
 			<VectorTileSource id="osm-vector" url="https://tiles.openfreemap.org/planet" />
-
-			<MetroLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
-
-			<TramLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
 			<OverpassOnewayArrowsLayer {map} />
 
@@ -1152,6 +1146,12 @@
 				{safetyMode}
 				hoveredFeatureId={hoveredOsmCyclewayId}
 			/>
+
+			<BusLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
+
+			<MetroLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
+
+			<TramLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
 			<VoiesLyonnaisesShields {isLayerVisible} {map} />
 
