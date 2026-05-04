@@ -70,7 +70,7 @@ interface MdsvexModule {
 
 const rawModules = import.meta.glob<MdsvexModule>('./fiches/*.md', { eager: true });
 
-const geojsonPaths = import.meta.glob('./fiches/*.geojson');
+const geojsonPaths = import.meta.glob('./fiches/*.geojson', { query: '?url' });
 const geojsonBasenames = new Set(
 	Object.keys(geojsonPaths).map((p) =>
 		p
