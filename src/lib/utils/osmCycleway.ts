@@ -130,6 +130,18 @@ export function classifyOsmCycleway(tags: Record<string, any>): Classification[]
 	}
 
 	if (
+		tags.highway === 'footway' &&
+		(bikeDesignated || tags.bicycle === 'yes' || tags.bicycle === 'permissive')
+	) {
+		results.push({
+			typeamenagement: 'Voie piétonne (vélos autorisés)',
+			side: 'center',
+			bidirectional: true,
+		});
+		return results;
+	}
+
+	if (
 		(tags.highway === 'service' || tags.highway === 'track' || tags.highway === 'unclassified') &&
 		bikeDesignated &&
 		(motorRestricted || tags.foot === 'designated')

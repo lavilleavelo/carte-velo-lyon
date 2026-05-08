@@ -154,6 +154,8 @@
 					href="https://data.grandlyon.com">data.grandlyon.com</a
 				>
 				·
+				<a href="/legende" class="underline hover:text-brand-navy">Légende</a>
+				·
 				<a href="/mentions-legales" class="underline hover:text-brand-navy">Mentions légales</a>
 			</p>
 		</div>

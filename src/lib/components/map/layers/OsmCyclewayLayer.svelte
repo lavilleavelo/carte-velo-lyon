@@ -16,6 +16,8 @@
 		DSC_ARROW_TEXT_SIZE,
 		PISTE_BIDIR_LINE_WIDTH,
 		PISTE_UNIDIR_LINE_WIDTH,
+		TROTTOIR_DASHARRAY,
+		TROTTOIR_LINE_CAP,
 		VELORUE_DASHARRAY,
 		VELORUE_LINE_CAP,
 		VOIE_VERTE_DASHARRAY,
@@ -81,6 +83,7 @@
 	const opacityBusVelo = $derived(opacityFor('bus-velo'));
 	const opacityVelorue = $derived(opacityFor('velorue'));
 	const opacityDsc = $derived(opacityFor('dsc'));
+	const opacityTrottoir = $derived(opacityFor('trottoir'));
 
 	const COLOR = '#0369a1';
 	const COLOR_NON_PAVED = '#03527d';
@@ -190,6 +193,7 @@
 	const filterBusVelo: any = ['==', ['get', 'typeamenagement'], 'Couloir bus vélo'];
 	const filterDsc: any = ['==', ['get', 'typeamenagement'], 'Double sens cyclable'];
 	const filterVelorue: any = ['==', ['get', 'typeamenagement'], 'Vélorue'];
+	const filterTrottoir: any = ['==', ['get', 'typeamenagement'], 'Voie piétonne (vélos autorisés)'];
 
 	const lineOffset: any = ['get', 'offset'];
 	const zoomedOffset: any = ['interpolate', ['linear'], ['zoom'], 12, 0, 15, ['get', 'offset']];
@@ -306,6 +310,19 @@
 			'line-offset': lineOffset,
 		}}
 		layout={{ 'line-cap': VELORUE_LINE_CAP, visibility }}
+	/>
+
+	<LineLayer
+		id="osm-cw-trottoir"
+		filter={filterTrottoir}
+		paint={{
+			'line-color': lineColor,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.4, 11, 0.9, 14, 1.6, 17, 2.4],
+			'line-opacity': ['*', opacityTrottoir, safetyOpacityExpr],
+			'line-dasharray': TROTTOIR_DASHARRAY,
+			'line-offset': lineOffset,
+		}}
+		layout={{ 'line-cap': TROTTOIR_LINE_CAP, visibility }}
 	/>
 
 	<SymbolLayer

@@ -96,11 +96,13 @@ export async function getCommuneOsmSafetyStats(insee: string): Promise<OsmSafety
 			const len = featureLineLengthMeters(f);
 			const isSafe = Boolean(props?.isSafe);
 			const isVoieVerte = props?.typeamenagement === 'Voie verte';
+			const isPedestrianShared =
+				isVoieVerte || props?.typeamenagement === 'Voie piétonne (vélos autorisés)';
 			total += len;
 
 			if (isSafe) {
 				safe += len;
-				if (!isVoieVerte) safeNoVoieVerte += len;
+				if (!isPedestrianShared) safeNoVoieVerte += len;
 			}
 
 			if (isVoieVerte) {

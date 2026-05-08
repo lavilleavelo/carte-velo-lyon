@@ -12,6 +12,7 @@
 			| 'double'
 			| 'dashed'
 			| 'dashed-long'
+			| 'dashed-thin'
 			| 'dotted'
 			| 'dotted-bold'
 			| 'velorue'
@@ -24,6 +25,7 @@
 		{ id: 'bus-velo', label: 'Voie bus-vélo', render: 'dotted' },
 		{ id: 'velorue', label: 'Vélorue', render: 'velorue' },
 		{ id: 'dsc', label: 'Double sens cyclable', render: 'arrow' },
+		{ id: 'trottoir', label: 'Voie piétonne (vélos autorisés)', render: 'dashed-thin' },
 	];
 
 	export const legendItemIds = items.map((i) => i.id);
@@ -123,6 +125,16 @@
 									stroke-width="3"
 									stroke-dasharray="8 4"
 								/>
+							{:else if item.render === 'dashed-thin'}
+								<line
+									x1="0"
+									y1="6"
+									x2="48"
+									y2="6"
+									stroke={COLOR}
+									stroke-width="1.5"
+									stroke-dasharray="3 3"
+								/>
 							{:else if item.render === 'dotted'}
 								<line
 									x1="0"
@@ -214,6 +226,16 @@
 									stroke={COLOR}
 									stroke-width="3"
 									stroke-dasharray="8 4"
+								/>
+							{:else if item.render === 'dashed-thin'}
+								<line
+									x1="0"
+									y1="6"
+									x2="48"
+									y2="6"
+									stroke={COLOR}
+									stroke-width="1.5"
+									stroke-dasharray="3 3"
 								/>
 							{:else if item.render === 'dotted'}
 								<line

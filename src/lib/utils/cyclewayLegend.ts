@@ -5,7 +5,8 @@ export type LegendId =
 	| 'bande'
 	| 'bus-velo'
 	| 'velorue'
-	| 'dsc';
+	| 'dsc'
+	| 'trottoir';
 
 export const ALL_LEGEND_IDS: LegendId[] = [
 	'piste-bidir',
@@ -15,6 +16,7 @@ export const ALL_LEGEND_IDS: LegendId[] = [
 	'bus-velo',
 	'velorue',
 	'dsc',
+	'trottoir',
 ];
 
 export function voirieFeatureToLegendId(properties: any): LegendId | null {
@@ -38,6 +40,7 @@ export function osmFeatureToLegendId(properties: any): LegendId | null {
 	if (type === 'Couloir bus vélo') return 'bus-velo';
 	if (type === 'Vélorue') return 'velorue';
 	if (type === 'Double sens cyclable') return 'dsc';
+	if (type === 'Voie piétonne (vélos autorisés)') return 'trottoir';
 	return null;
 }
 

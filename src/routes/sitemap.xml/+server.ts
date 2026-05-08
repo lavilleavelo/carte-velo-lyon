@@ -17,6 +17,7 @@ export const GET: RequestHandler = async () => {
 		{ path: '/velov', priority: '0.7' },
 		{ path: '/compteurs', priority: '0.7' },
 		{ path: '/a-propos', priority: '0.6' },
+		{ path: '/legende', priority: '0.5' },
 		{ path: '/mentions-legales', priority: '0.3' },
 	];
 

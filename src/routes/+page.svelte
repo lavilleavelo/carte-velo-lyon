@@ -22,6 +22,7 @@
 	import PanelRightClose from '@lucide/svelte/icons/panel-right-close';
 	import PanelRightOpen from '@lucide/svelte/icons/panel-right-open';
 	import ShieldCheck from '@lucide/svelte/icons/shield-check';
+	import Info from '@lucide/svelte/icons/info';
 	import * as Dialog from '$lib/components/ui/dialog';
 	import * as Select from '$lib/components/ui/select';
 	import { Checkbox } from '$lib/components/ui/checkbox';
@@ -89,6 +90,12 @@
 	import OverpassVLShields from '$lib/components/map/layers/OverpassVLShields.svelte';
 	import OverpassOnewayArrowsLayer from '$lib/components/map/layers/OverpassOnewayArrowsLayer.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
+	import CyclewayLegendControl from '$lib/components/map/CyclewayLegendControl.svelte';
+	import {
+		toggleLegendId,
+		voirieFeatureToLegendId,
+		type LegendId,
+	} from '$lib/utils/cyclewayLegend';
 	import SpeedLimitsLayer from '$lib/components/map/layers/SpeedLimitsLayer.svelte';
 	import { SPEED_BUCKETS, type SpeedBucket } from '$lib/utils/speedLimits';
 
@@ -134,6 +141,7 @@
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => loadDefaultMapStyle()),
 		cyclewayReseau: type('string[]').default(() => []),
 		cyclewayType: type('string[]').default(() => []),
+		cyclewayTypes: type('string[]').default(() => []),
 		cyclewayLocalisation: type('string[]').default(() => []),
 		targetNetworkHorizons: type('string[]').default(() => ['2030', '2035', '2040']),
 		projectVLStatuses: type('string[]').default(() => ['wip', 'planned', 'postponed']),
@@ -218,8 +226,14 @@
 	let map: maplibregl.Map | undefined = $state();
 	let showMobileFilters = $state(false);
 	let showDesktopSidebar = $state(true);
+	let showCyclewayLegend = $state(false);
+	let hoveredLegendId: LegendId | null = $state(null);
 	let cursor: string | undefined = $state();
 	const safetyMode = $derived(params.safety);
+
+	function toggleLegendType(id: string) {
+		params.cyclewayTypes = toggleLegendId(params.cyclewayTypes ?? [], id);
+	}
 
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
 		params.mapStyle = style;
@@ -504,14 +518,18 @@
 		const reseauFilters = params.cyclewayReseau || [];
 		const typeFilters = params.cyclewayType || [];
 		const localisationFilters = params.cyclewayLocalisation || [];
+		const legendFilters = params.cyclewayTypes || [];
 
 		if (
 			reseauFilters.length === 0 &&
 			typeFilters.length === 0 &&
-			localisationFilters.length === 0
+			localisationFilters.length === 0 &&
+			legendFilters.length === 0
 		) {
 			return voirieData;
 		}
+
+		const allowedLegend = new Set(legendFilters);
 
 		const filteredFeatures = voirieData.features.filter((feature: any) => {
 			const props = feature.properties;
@@ -526,6 +544,11 @@
 
 			if (localisationFilters.length > 0 && !localisationFilters.includes(props.localisation)) {
 				return false;
+			}
+
+			if (legendFilters.length > 0) {
+				const legendId = voirieFeatureToLegendId(props);
+				if (!legendId || !allowedLegend.has(legendId)) return false;
 			}
 
 			return true;
@@ -1002,6 +1025,19 @@
 							<ShieldCheck size={20} />
 						</button>
 					</CustomControl>
+					<CustomControl position="top-right">
+						<button
+							onclick={() => (showCyclewayLegend = !showCyclewayLegend)}
+							class="rounded-lg pl-1! shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none {showCyclewayLegend
+								? 'bg-brand-navy! text-white! hover:bg-brand-navy/90!'
+								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
+							aria-pressed={showCyclewayLegend}
+							aria-label={showCyclewayLegend ? 'Masquer la légende' : 'Afficher la légende'}
+							title={showCyclewayLegend ? 'Masquer la légende' : 'Afficher la légende'}
+						>
+							<Info size={20} />
+						</button>
+					</CustomControl>
 				{/if}
 				<CustomControl position="top-right">
 					<button
@@ -1054,6 +1090,19 @@
 								: 'Colorer par sécurité (sûr / non sûr)'}
 						>
 							<ShieldCheck size={20} />
+						</button>
+					</CustomControl>
+					<CustomControl position="bottom-left">
+						<button
+							onclick={() => (showCyclewayLegend = !showCyclewayLegend)}
+							class="m-1! rounded-lg p-1! focus:ring-2 focus:ring-blue-500 focus:outline-none {showCyclewayLegend
+								? 'bg-brand-navy! text-white! hover:bg-brand-navy/90!'
+								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
+							aria-pressed={showCyclewayLegend}
+							aria-label={showCyclewayLegend ? 'Masquer la légende' : 'Afficher la légende'}
+							title={showCyclewayLegend ? 'Masquer la légende' : 'Afficher la légende'}
+						>
+							<Info size={20} />
 						</button>
 					</CustomControl>
 				{/if}
@@ -1144,8 +1193,20 @@
 				{isLayerVisible}
 				{map}
 				{safetyMode}
+				activeLegendIds={params.cyclewayTypes}
+				{hoveredLegendId}
 				hoveredFeatureId={hoveredOsmCyclewayId}
 			/>
+
+			{#if isLayerVisible('osm-cycleways') && showCyclewayLegend}
+				<CyclewayLegendControl
+					activeIds={params.cyclewayTypes}
+					onToggle={toggleLegendType}
+					onHover={(id) => (hoveredLegendId = id)}
+					position="bottom-right"
+					initiallyOpen={true}
+				/>
+			{/if}
 
 			<BusLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 

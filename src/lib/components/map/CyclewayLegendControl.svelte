@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { CustomControl } from 'svelte-maplibre-gl';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
+	import Info from '@lucide/svelte/icons/info';
 	import type { LegendId } from '$lib/utils/cyclewayLegend';
 
 	const COLOR = '#166534';
@@ -11,6 +12,7 @@
 		| 'double'
 		| 'dashed'
 		| 'dashed-long'
+		| 'dashed-thin'
 		| 'dotted'
 		| 'dotted-bold'
 		| 'velorue'
@@ -24,6 +26,7 @@
 		{ id: 'bus-velo', label: 'Voie bus-vélo', render: 'dotted' },
 		{ id: 'velorue', label: 'Vélorue', render: 'velorue' },
 		{ id: 'dsc', label: 'Double sens cyclable', render: 'arrow' },
+		{ id: 'trottoir', label: 'Voie piétonne (vélos autorisés)', render: 'dashed-thin' },
 	];
 
 	type SafetyKey = 'safe' | 'unsafe';
@@ -136,6 +139,14 @@
 		>
 			<div class="flex items-center gap-2 rounded-lg p-2 text-left">
 				<span class="text-xs font-semibold tracking-wide text-brand-navy uppercase">Légende</span>
+				<a
+					href="/legende"
+					class="text-gray-400 transition-colors hover:text-brand-navy"
+					aria-label="Documentation de la légende"
+					title="Documentation de la légende"
+				>
+					<Info size={14} />
+				</a>
 				{#if totalKm}
 					<span class="ml-auto text-xs font-semibold text-gray-700 tabular-nums">{totalKm}</span>
 				{/if}
@@ -263,6 +274,16 @@
 												stroke-width="3"
 												stroke-dasharray="6 6"
 											/>
+										{:else if item.render === 'dashed-thin'}
+											<line
+												x1="0"
+												y1="6"
+												x2="48"
+												y2="6"
+												stroke={COLOR}
+												stroke-width="1.5"
+												stroke-dasharray="3 3"
+											/>
 										{:else if item.render === 'dotted'}
 											<line
 												x1="0"
@@ -360,6 +381,16 @@
 												stroke={COLOR}
 												stroke-width="3"
 												stroke-dasharray="6 6"
+											/>
+										{:else if item.render === 'dashed-thin'}
+											<line
+												x1="0"
+												y1="6"
+												x2="48"
+												y2="6"
+												stroke={COLOR}
+												stroke-width="1.5"
+												stroke-dasharray="3 3"
 											/>
 										{:else if item.render === 'dotted'}
 											<line

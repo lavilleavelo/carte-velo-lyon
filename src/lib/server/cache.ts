@@ -266,6 +266,7 @@ const OVERPASS_CYCLEWAYS_QUERY = [
 	// Paths and pedestrian areas where bicycles are allowed
 	`  way["highway"="path"]["bicycle"="designated"](${OVERPASS_BBOX});`,
 	`  way["highway"="pedestrian"]["bicycle"~"^(yes|designated)$"](${OVERPASS_BBOX});`,
+	`  way["highway"="footway"]["bicycle"~"^(yes|designated|permissive)$"](${OVERPASS_BBOX});`,
 	`  way["highway"~"^(service|track|unclassified)$"]["bicycle"="designated"](${OVERPASS_BBOX});`,
 	// Living streets and contraflow cycling
 	`  way["highway"="living_street"](${OVERPASS_BBOX});`,

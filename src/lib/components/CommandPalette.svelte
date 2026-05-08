@@ -7,6 +7,7 @@
 	import MapIcon from '@lucide/svelte/icons/map';
 	import Building2 from '@lucide/svelte/icons/building-2';
 	import Info from '@lucide/svelte/icons/info';
+	import BookOpen from '@lucide/svelte/icons/book-open';
 	import Gauge from '@lucide/svelte/icons/gauge';
 	import AlertTriangle from '@lucide/svelte/icons/alert-triangle';
 	import Bike from '@lucide/svelte/icons/bike';
@@ -120,6 +121,13 @@
 			<Command.Item value="À propos|/a-propos" onSelect={() => go('/a-propos')}>
 				<Info class="mr-2 h-4 w-4" />
 				<span>À propos</span>
+			</Command.Item>
+			<Command.Item
+				value="Légende|conditions OSM|OpenStreetMap|documentation|/legende"
+				onSelect={() => go('/legende')}
+			>
+				<BookOpen class="mr-2 h-4 w-4" />
+				<span>Légende</span>
 			</Command.Item>
 		</Command.Group>
 		<Command.Separator />

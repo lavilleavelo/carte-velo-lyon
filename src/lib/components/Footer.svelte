@@ -14,6 +14,7 @@
 			<nav class="flex items-center gap-4 text-sm text-gray-500">
 				<a href="/communes" class="hover:text-brand-navy">Communes</a>
 				<a href="/a-propos" class="hover:text-brand-navy">À propos</a>
+				<a href="/legende" class="hover:text-brand-navy">Légende</a>
 				<a href="/mentions-legales" class="hover:text-brand-navy">Mentions légales</a>
 			</nav>
 		</div>

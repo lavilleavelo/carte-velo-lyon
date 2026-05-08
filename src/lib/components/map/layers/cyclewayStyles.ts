@@ -44,10 +44,12 @@ export const VOIE_VERTE_DASHARRAY: [number, number] = [0.3, 1.6];
 export const BANDE_DASHARRAY: [number, number] = [2.5, 1];
 export const BUS_VELO_DASHARRAY: [number, number] = [0.1, 1.5];
 export const VELORUE_DASHARRAY: [number, number] = [2.5, 1.2];
+export const TROTTOIR_DASHARRAY: [number, number] = [2, 2];
 
 export const VOIE_VERTE_LINE_CAP = 'round' as const;
 export const BUS_VELO_LINE_CAP = 'round' as const;
 export const VELORUE_LINE_CAP = 'butt' as const;
+export const TROTTOIR_LINE_CAP = 'butt' as const;
 
 export const DSC_ARROW_SYMBOL_SPACING = 40;
 export const DSC_ARROW_TEXT_SIZE = 16;

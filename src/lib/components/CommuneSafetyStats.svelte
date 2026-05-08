@@ -71,7 +71,7 @@
 					</span>
 					<div class="min-w-0 flex-1">
 						<h3 class="text-sm font-semibold text-gray-700">
-							Aménagements sécurisés (hors voies vertes)
+							Aménagements sécurisés (hors voies partagées avec piétons)
 						</h3>
 						<div class="mt-1 flex items-baseline gap-1.5">
 							<span class="text-3xl font-bold text-brand-navy">
@@ -83,8 +83,8 @@
 							</span>
 						</div>
 						<p class="mt-1 text-xs text-gray-500">
-							Pistes cyclables et vélorues uniquement (sans les voies vertes partagées avec les
-							piétons).
+							Pistes cyclables et vélorues uniquement (sans voies vertes ni voies piétonnes ouvertes
+							aux vélos).
 						</p>
 					</div>
 				</div>
