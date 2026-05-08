@@ -5,6 +5,7 @@
 	import ExternalLink from '@lucide/svelte/icons/external-link';
 	import ShieldCheck from '@lucide/svelte/icons/shield-check';
 	import ShieldAlert from '@lucide/svelte/icons/shield-alert';
+	import Footprints from '@lucide/svelte/icons/footprints';
 
 	let { properties } = $props();
 
@@ -88,13 +89,24 @@
 	</div>
 
 	{#if properties?.isSafe !== undefined}
-		<div
-			class="flex items-start gap-2 rounded-md border px-2 py-1.5 {properties.isSafe
+		{@const isPedestrianShared =
+			properties?.typeamenagement === 'Voie verte' ||
+			properties?.typeamenagement === 'Voie piétonne (vélos autorisés)'}
+		{@const safetyClasses = isPedestrianShared
+			? 'border-orange-100 bg-orange-50 text-orange-900'
+			: properties.isSafe
 				? 'border-blue-100 bg-blue-50 text-blue-900'
-				: 'border-red-100 bg-red-50 text-red-900'}"
-		>
+				: 'border-red-100 bg-red-50 text-red-900'}
+		{@const safetyLabel = isPedestrianShared
+			? 'Partagé piétons'
+			: properties.isSafe
+				? 'Sécurisé'
+				: 'Non sécurisé'}
+		<div class="flex items-start gap-2 rounded-md border px-2 py-1.5 {safetyClasses}">
 			<div class="mt-0.5 shrink-0">
-				{#if properties.isSafe}
+				{#if isPedestrianShared}
+					<Footprints size={16} />
+				{:else if properties.isSafe}
 					<ShieldCheck size={16} />
 				{:else}
 					<ShieldAlert size={16} />
@@ -102,7 +114,7 @@
 			</div>
 			<div class="flex flex-col">
 				<span class="text-xs font-bold tracking-wide uppercase">
-					{properties.isSafe ? 'Sécurisé' : 'Non sécurisé'}
+					{safetyLabel}
 				</span>
 				{#if properties.safetyReason}
 					<span class="text-xs">{properties.safetyReason}</span>

@@ -45,21 +45,37 @@ export function osmFeatureToLegendId(properties: any): LegendId | null {
 }
 
 /**
- * Compute the next cyclewayTypes filter state given a click on legend item `id`.
- * Empty array is the "all shown" sentinel — it's returned both when no filter is
+ * Compute the next filter state given a click on item `id`.
+ * Empty array is the "all shown" sentinel: returned both when no filter is
  * active and when every item would end up selected, to keep state compact.
  */
-export function toggleLegendId(current: readonly string[], id: string): string[] {
+export function toggleInclusion(
+	current: readonly string[],
+	id: string,
+	allIds: readonly string[],
+): string[] {
 	let next: string[];
 	if (current.length === 0) {
-		next = ALL_LEGEND_IDS.filter((t) => t !== id);
+		next = allIds.filter((t) => t !== id);
 	} else if (current.includes(id)) {
 		next = current.filter((t) => t !== id);
 	} else {
 		next = [...current, id];
 	}
-	if (next.length === 0 || next.length === ALL_LEGEND_IDS.length) {
+	if (next.length === 0 || next.length === allIds.length) {
 		return [];
 	}
 	return next;
+}
+
+export function toggleLegendId(current: readonly string[], id: string): string[] {
+	return toggleInclusion(current, id, ALL_LEGEND_IDS);
+}
+
+export function soloInclusion(current: readonly string[], id: string): string[] {
+	if (current.length === 1 && current[0] === id) {
+		return [];
+	}
+
+	return [id];
 }

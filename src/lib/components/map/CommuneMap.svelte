@@ -64,6 +64,8 @@
 	import { featureLineLengthMeters } from '$lib/utils/geoLength';
 	import {
 		toggleLegendId,
+		toggleInclusion,
+		soloInclusion,
 		voirieFeatureToLegendId,
 		osmFeatureToLegendId,
 		type LegendId,
@@ -178,7 +180,7 @@
 		speedLimits: type('string[]').default(() => []),
 		filterByYear: type('boolean').default(() => false),
 		safety: type('boolean').default(() => false),
-		safetyFilter: type.enumerated('safe', 'unsafe', '').default(() => ''),
+		safetyFilter: type('string[]').default(() => []),
 		sidebar: type.enumerated('open', 'closed').default(() => 'closed'),
 		zoom: type('number').default(() => 0),
 		lat: type('number').default(() => 0),
@@ -196,19 +198,28 @@
 
 	const safetyMode = $derived(params.safety);
 
-	const safetyFilter = $derived<'safe' | 'unsafe' | null>(
-		params.safetyFilter === 'safe' || params.safetyFilter === 'unsafe' ? params.safetyFilter : null,
-	);
-	let hoveredSafety = $state<'safe' | 'unsafe' | null>(null);
+	const SAFETY_KEYS = ['safe', 'unsafe', 'pedestrian'] as const;
+	type SafetyKey = (typeof SAFETY_KEYS)[number];
 
-	function toggleSafetyFilter(key: 'safe' | 'unsafe') {
-		params.safetyFilter = safetyFilter === key ? '' : key;
+	const safetyFilter = $derived<SafetyKey[]>(
+		(params.safetyFilter ?? []).filter((k): k is SafetyKey =>
+			(SAFETY_KEYS as readonly string[]).includes(k),
+		),
+	);
+	let hoveredSafety = $state<SafetyKey | null>(null);
+
+	function toggleSafetyFilter(key: SafetyKey) {
+		params.safetyFilter = toggleInclusion(safetyFilter, key, SAFETY_KEYS);
+	}
+
+	function soloSafetyFilter(key: SafetyKey) {
+		params.safetyFilter = soloInclusion(safetyFilter, key);
 	}
 
 	$effect(() => {
 		if (!safetyMode) {
-			if (params.safetyFilter !== '') {
-				params.safetyFilter = '';
+			if ((params.safetyFilter ?? []).length > 0) {
+				params.safetyFilter = [];
 			}
 
 			hoveredSafety = null;
@@ -431,6 +442,10 @@
 		params.cyclewayTypes = toggleLegendId(params.cyclewayTypes ?? [], id);
 	}
 
+	function soloCyclewayType(id: string) {
+		params.cyclewayTypes = soloInclusion(params.cyclewayTypes ?? [], id);
+	}
+
 	function toggleCyclewayReseau(value: string) {
 		const current = [...(params.cyclewayReseau ?? [])];
 		const i = current.indexOf(value);
@@ -499,14 +514,17 @@
 	const lengthByLegendId = $derived.by(() => {
 		const totals: Partial<Record<LegendId, number>> = {};
 		if (isLayerActive('osm-cycleways') && osmCyclewaysQuery.data) {
-			const wantSafe = safetyFilter === 'safe' ? true : safetyFilter === 'unsafe' ? false : null;
-
+			const allowed = safetyFilter.length > 0 ? new Set(safetyFilter) : null;
 			// dedupe bike lanes/ shared bus bus paths
 			const seen = new Set<string>();
 			for (const f of osmInsideBoundary.features) {
 				const props = f.properties as any;
-				if (wantSafe !== null && Boolean(props?.isSafe) !== wantSafe) {
-					continue;
+				if (allowed) {
+					const isPedestrian =
+						props?.typeamenagement === 'Voie verte' ||
+						props?.typeamenagement === 'Voie piétonne (vélos autorisés)';
+					const bucket: SafetyKey = isPedestrian ? 'pedestrian' : props?.isSafe ? 'safe' : 'unsafe';
+					if (!allowed.has(bucket)) continue;
 				}
 
 				const id = osmFeatureToLegendId(props);
@@ -538,6 +556,7 @@
 	const safetyLengths = $derived.by(() => {
 		let safe = 0;
 		let unsafe = 0;
+		let pedestrian = 0;
 		if (isLayerActive('osm-cycleways') && osmCyclewaysQuery.data) {
 			const seen = new Set<string>();
 			for (const f of osmInsideBoundary.features) {
@@ -553,14 +572,19 @@
 				seen.add(key);
 
 				const len = featureLineLengthMeters(f);
-				if (props?.isSafe) {
+				const isPedestrian =
+					props?.typeamenagement === 'Voie verte' ||
+					props?.typeamenagement === 'Voie piétonne (vélos autorisés)';
+				if (isPedestrian) {
+					pedestrian += len;
+				} else if (props?.isSafe) {
 					safe += len;
 				} else {
 					unsafe += len;
 				}
 			}
 		}
-		return { safe, unsafe };
+		return { safe, unsafe, pedestrian };
 	});
 
 	const outsideMask = $derived.by<FeatureCollection>(() => {
@@ -1073,12 +1097,14 @@
 				<CyclewayLegendControl
 					activeIds={params.cyclewayTypes}
 					onToggle={toggleCyclewayType}
+					onSolo={soloCyclewayType}
 					onHover={(id) => (hoveredLegendId = id)}
 					{lengthByLegendId}
 					{safetyMode}
 					{safetyLengths}
 					activeSafety={safetyFilter}
 					onToggleSafety={toggleSafetyFilter}
+					onSoloSafety={soloSafetyFilter}
 					onHoverSafety={(key) => (hoveredSafety = key)}
 					position="bottom-left"
 				/>

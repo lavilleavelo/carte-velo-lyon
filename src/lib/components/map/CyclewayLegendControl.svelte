@@ -2,6 +2,7 @@
 	import { CustomControl } from 'svelte-maplibre-gl';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import Info from '@lucide/svelte/icons/info';
+	import Focus from '@lucide/svelte/icons/focus';
 	import type { LegendId } from '$lib/utils/cyclewayLegend';
 
 	const COLOR = '#166534';
@@ -29,29 +30,33 @@
 		{ id: 'trottoir', label: 'Voie piétonne (vélos autorisés)', render: 'dashed-thin' },
 	];
 
-	type SafetyKey = 'safe' | 'unsafe';
+	type SafetyKey = 'safe' | 'unsafe' | 'pedestrian';
 
 	let {
 		activeIds,
 		onToggle,
+		onSolo,
 		onHover,
 		lengthByLegendId,
 		safetyMode = false,
 		safetyLengths,
 		activeSafety,
 		onToggleSafety,
+		onSoloSafety,
 		onHoverSafety,
 		position = 'bottom-right',
 		initiallyOpen = true,
 	}: {
 		activeIds?: string[];
 		onToggle?: (id: string) => void;
+		onSolo?: (id: string) => void;
 		onHover?: (id: LegendId | null) => void;
 		lengthByLegendId?: Partial<Record<LegendId, number>>;
 		safetyMode?: boolean;
-		safetyLengths?: { safe: number; unsafe: number };
-		activeSafety?: SafetyKey | null;
+		safetyLengths?: { safe: number; unsafe: number; pedestrian: number };
+		activeSafety?: SafetyKey[];
 		onToggleSafety?: (key: SafetyKey) => void;
+		onSoloSafety?: (key: SafetyKey) => void;
 		onHoverSafety?: (key: SafetyKey | null) => void;
 		position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 		initiallyOpen?: boolean;
@@ -90,7 +95,7 @@
 
 	const totalKm = $derived.by(() => {
 		if (safetyMode && safetyLengths) {
-			const total = safetyLengths.safe + safetyLengths.unsafe;
+			const total = safetyLengths.safe + safetyLengths.unsafe + safetyLengths.pedestrian;
 			if (!total) return null;
 			return `${kmFormatter.format(total / 1000)}\u00a0km`;
 		}
@@ -114,6 +119,12 @@
 				meters: safetyLengths.safe,
 			},
 			{
+				key: 'pedestrian' as const,
+				label: 'Partag\u00e9 pi\u00e9tons',
+				color: '#ea580c',
+				meters: safetyLengths.pedestrian,
+			},
+			{
 				key: 'unsafe' as const,
 				label: 'Non s\u00e9curis\u00e9',
 				color: '#dc2626',
@@ -123,11 +134,11 @@
 	});
 
 	function isSafetyActive(key: SafetyKey): boolean {
-		if (!activeSafety) {
+		if (!activeSafety || activeSafety.length === 0) {
 			return true;
 		}
 
-		return activeSafety === key;
+		return activeSafety.includes(key);
 	}
 </script>
 
@@ -164,7 +175,7 @@
 				<ul class="flex flex-col gap-0.5 border-b border-gray-200/70 px-3 pb-2">
 					{#each safetyRows as row (row.key)}
 						{@const active = isSafetyActive(row.key)}
-						<li>
+						<li class="group flex w-full items-center gap-2 rounded-md py-0.5 text-xs">
 							<button
 								type="button"
 								onclick={() => onToggleSafety?.(row.key)}
@@ -173,7 +184,7 @@
 								onfocus={() => active && onHoverSafety?.(row.key)}
 								onblur={() => onHoverSafety?.(null)}
 								aria-pressed={active}
-								class="flex w-full items-center gap-2 rounded-md py-0.5 text-left text-xs whitespace-nowrap text-gray-700 transition-colors hover:text-brand-navy [&_svg]:shrink-0"
+								class="flex items-center gap-2 text-left whitespace-nowrap text-gray-700 transition-colors hover:text-brand-navy [&_svg]:shrink-0"
 								class:opacity-40={!active}
 							>
 								<svg
@@ -193,12 +204,28 @@
 									/>
 								</svg>
 								<span class="leading-tight">{row.label}</span>
+							</button>
+							<div class="flex items-center gap-1" class:opacity-40={!active}>
 								{#if row.meters > 0}
-									<span class="ml-auto pl-1 text-gray-500 tabular-nums">
+									<span class="text-gray-500 tabular-nums">
 										{kmFormatter.format(row.meters / 1000)}&nbsp;km
 									</span>
 								{/if}
-							</button>
+								{#if onSoloSafety}
+									<button
+										type="button"
+										onclick={(e) => {
+											e.stopPropagation();
+											onSoloSafety?.(row.key);
+										}}
+										aria-label="N'afficher que {row.label.toLowerCase()}"
+										title="N'afficher que cette catégorie"
+										class="pointer-events-none rounded-sm text-gray-500 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 hover:text-brand-navy"
+									>
+										<Focus size={12} />
+									</button>
+								{/if}
+							</div>
 						</li>
 					{/each}
 				</ul>
@@ -212,7 +239,7 @@
 					{#each visibleItems as item (item.id)}
 						{@const active = isActive(item.id)}
 						{@const km = formatKm(item.id)}
-						<li>
+						<li class="group flex w-full items-center gap-2 rounded-md py-0.5 text-xs">
 							{#if isInteractive}
 								<button
 									type="button"
@@ -222,7 +249,7 @@
 									onfocus={() => active && onHover?.(item.id)}
 									onblur={() => onHover?.(null)}
 									aria-pressed={active}
-									class="flex w-full items-center gap-2 rounded-md py-0.5 text-left text-xs whitespace-nowrap text-gray-700 transition-colors hover:text-brand-navy [&_svg]:shrink-0"
+									class="flex items-center gap-2 text-left whitespace-nowrap text-gray-700 transition-colors hover:text-brand-navy [&_svg]:shrink-0"
 									class:opacity-40={!active}
 								>
 									<svg
@@ -324,10 +351,26 @@
 										{/if}
 									</svg>
 									<span class="leading-tight">{item.label}</span>
-									{#if km}
-										<span class="ml-auto pl-1 text-gray-500 tabular-nums">{km}</span>
-									{/if}
 								</button>
+								<div class="flex items-center gap-1" class:opacity-40={!active}>
+									{#if km}
+										<span class="text-gray-500 tabular-nums">{km}</span>
+									{/if}
+									{#if onSolo}
+										<button
+											type="button"
+											onclick={(e) => {
+												e.stopPropagation();
+												onSolo?.(item.id);
+											}}
+											aria-label="N'afficher que {item.label.toLowerCase()}"
+											title="N'afficher que cette catégorie"
+											class="pointer-events-none rounded-sm text-gray-500 opacity-0 transition-opacity group-hover:pointer-events-auto group-hover:opacity-100 hover:text-brand-navy"
+										>
+											<Focus size={12} />
+										</button>
+									{/if}
+								</div>
 							{:else}
 								<div
 									class="flex items-center gap-2 py-0.5 text-xs whitespace-nowrap text-gray-700"
@@ -433,7 +476,7 @@
 									</svg>
 									<span class="leading-tight">{item.label}</span>
 									{#if km}
-										<span class="ml-auto pl-1 text-gray-500 tabular-nums">{km}</span>
+										<span class="pl-1 text-gray-500 tabular-nums">{km}</span>
 									{/if}
 								</div>
 							{/if}

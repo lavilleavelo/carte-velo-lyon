@@ -93,6 +93,7 @@
 	import CyclewayLegendControl from '$lib/components/map/CyclewayLegendControl.svelte';
 	import {
 		toggleLegendId,
+		soloInclusion,
 		voirieFeatureToLegendId,
 		type LegendId,
 	} from '$lib/utils/cyclewayLegend';
@@ -233,6 +234,10 @@
 
 	function toggleLegendType(id: string) {
 		params.cyclewayTypes = toggleLegendId(params.cyclewayTypes ?? [], id);
+	}
+
+	function soloLegendType(id: string) {
+		params.cyclewayTypes = soloInclusion(params.cyclewayTypes ?? [], id);
 	}
 
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
@@ -1202,6 +1207,7 @@
 				<CyclewayLegendControl
 					activeIds={params.cyclewayTypes}
 					onToggle={toggleLegendType}
+					onSolo={soloLegendType}
 					onHover={(id) => (hoveredLegendId = id)}
 					position="bottom-right"
 					initiallyOpen={true}

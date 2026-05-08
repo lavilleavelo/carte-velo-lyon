@@ -33,7 +33,7 @@
 		map,
 		opacityScale = 1,
 		safetyMode = false,
-		safetyFilter = null,
+		safetyFilter = [],
 		hoveredSafety = null,
 		hoveredFeatureId = null,
 	}: {
@@ -44,8 +44,8 @@
 		map?: maplibregl.Map;
 		opacityScale?: number;
 		safetyMode?: boolean;
-		safetyFilter?: 'safe' | 'unsafe' | null;
-		hoveredSafety?: 'safe' | 'unsafe' | null;
+		safetyFilter?: ('safe' | 'unsafe' | 'pedestrian')[];
+		hoveredSafety?: 'safe' | 'unsafe' | 'pedestrian' | null;
 		hoveredFeatureId?: string | number | null;
 	} = $props();
 
@@ -65,16 +65,21 @@
 		return base * opacityScale;
 	}
 
-	const safetyOpacityExpr: any = $derived(
-		hoveredSafety
-			? [
-					'case',
-					['==', ['get', 'isSafe'], hoveredSafety === 'safe'],
-					1,
-					DIMMED_OPACITY / NORMAL_OPACITY,
-				]
-			: 1,
-	);
+	const isPedestrianSharedExpr: any = [
+		'any',
+		['==', ['get', 'typeamenagement'], 'Voie verte'],
+		['==', ['get', 'typeamenagement'], 'Voie piétonne (vélos autorisés)'],
+	];
+
+	const safetyOpacityExpr: any = $derived.by(() => {
+		if (!hoveredSafety) return 1;
+		const dim = DIMMED_OPACITY / NORMAL_OPACITY;
+		if (hoveredSafety === 'pedestrian') {
+			return ['case', isPedestrianSharedExpr, 1, dim];
+		}
+		const wantSafe = hoveredSafety === 'safe';
+		return ['case', isPedestrianSharedExpr, dim, ['==', ['get', 'isSafe'], wantSafe], 1, dim];
+	});
 
 	const opacityPisteBidir = $derived(opacityFor('piste-bidir'));
 	const opacityPisteUnidir = $derived(opacityFor('piste-unidir'));
@@ -89,18 +94,20 @@
 	const COLOR_NON_PAVED = '#03527d';
 	const SAFETY_COLOR_SAFE = '#2563eb';
 	const SAFETY_COLOR_UNSAFE = '#dc2626';
+	const SAFETY_COLOR_PEDESTRIAN = '#ea580c';
 
-	const lineColor: any = $derived(
-		safetyMode
-			? ['case', ['==', ['get', 'isSafe'], true], SAFETY_COLOR_SAFE, SAFETY_COLOR_UNSAFE]
-			: COLOR,
-	);
+	const safetyLineColorExpr: any = [
+		'case',
+		isPedestrianSharedExpr,
+		SAFETY_COLOR_PEDESTRIAN,
+		['==', ['get', 'isSafe'], true],
+		SAFETY_COLOR_SAFE,
+		SAFETY_COLOR_UNSAFE,
+	];
 
-	const lineColorNonPaved: any = $derived(
-		safetyMode
-			? ['case', ['==', ['get', 'isSafe'], true], SAFETY_COLOR_SAFE, SAFETY_COLOR_UNSAFE]
-			: COLOR_NON_PAVED,
-	);
+	const lineColor: any = $derived(safetyMode ? safetyLineColorExpr : COLOR);
+
+	const lineColorNonPaved: any = $derived(safetyMode ? safetyLineColorExpr : COLOR_NON_PAVED);
 
 	function ensureDscIcons(m: maplibregl.Map) {
 		const register = (name: string, leftColor: string, rightColor: string) => {
@@ -150,13 +157,19 @@
 				}),
 			};
 		}
-		if (safetyFilter) {
-			const wantSafe = safetyFilter === 'safe';
+
+		if (safetyFilter.length > 0) {
+			const allowed = new Set(safetyFilter);
 			result = {
 				...result,
-				features: result.features.filter(
-					(f) => Boolean((f.properties as any)?.isSafe) === wantSafe,
-				),
+				features: result.features.filter((f) => {
+					const props = f.properties as any;
+					const isPedestrian =
+						props?.typeamenagement === 'Voie verte' ||
+						props?.typeamenagement === 'Voie piétonne (vélos autorisés)';
+					const key = isPedestrian ? 'pedestrian' : props?.isSafe ? 'safe' : 'unsafe';
+					return allowed.has(key);
+				}),
 			};
 		}
 		return result;
