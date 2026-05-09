@@ -95,7 +95,9 @@
 			Calcul à partir des aménagements OpenStreetMap dans les limites
 			{communeName ? `de ${communeName}` : 'de la commune'}. Les voies vertes sont sécurisées mais
 			peuvent générer des conflits avec les piétons et sont parfois inutilisables par mauvais temps
-			(revêtement non stabilisé).
+			(revêtement non stabilisé). Les voies piétonnes ouvertes aux vélos (trottoirs, chemins) ne
+			sont pas comptabilisées : sans aménagement dédié, elles ne constituent pas un aménagement
+			cyclable à part entière.
 		</p>
 	</section>
 {/if}

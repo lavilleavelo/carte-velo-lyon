@@ -95,6 +95,7 @@
 		toggleLegendId,
 		soloInclusion,
 		voirieFeatureToLegendId,
+		DEFAULT_LEGEND_IDS,
 		type LegendId,
 	} from '$lib/utils/cyclewayLegend';
 	import SpeedLimitsLayer from '$lib/components/map/layers/SpeedLimitsLayer.svelte';
@@ -142,7 +143,7 @@
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => loadDefaultMapStyle()),
 		cyclewayReseau: type('string[]').default(() => []),
 		cyclewayType: type('string[]').default(() => []),
-		cyclewayTypes: type('string[]').default(() => []),
+		cyclewayTypes: type('string[]').default(() => [...DEFAULT_LEGEND_IDS]),
 		cyclewayLocalisation: type('string[]').default(() => []),
 		targetNetworkHorizons: type('string[]').default(() => ['2030', '2035', '2040']),
 		projectVLStatuses: type('string[]').default(() => ['wip', 'planned', 'postponed']),

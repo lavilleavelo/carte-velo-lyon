@@ -19,6 +19,8 @@ export const ALL_LEGEND_IDS: LegendId[] = [
 	'trottoir',
 ];
 
+export const DEFAULT_LEGEND_IDS: LegendId[] = ALL_LEGEND_IDS.filter((id) => id !== 'trottoir');
+
 export function voirieFeatureToLegendId(properties: any): LegendId | null {
 	const type = properties?.typeamenagement as string | undefined;
 	const sens = properties?.senscirculation as string | undefined;

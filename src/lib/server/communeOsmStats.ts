@@ -49,7 +49,7 @@ export async function getCommuneOsmCyclewaysKm(insee: string): Promise<number | 
 		let totalMeters = 0;
 		for (const f of inside.features) {
 			const id = osmFeatureToLegendId(f.properties);
-			if (!id) {
+			if (!id || id === 'trottoir') {
 				continue;
 			}
 			totalMeters += featureLineLengthMeters(f);
@@ -87,6 +87,9 @@ export async function getCommuneOsmSafetyStats(insee: string): Promise<OsmSafety
 		let voieVerteUnstable = 0;
 		for (const f of inside.features) {
 			const props = f.properties as Record<string, unknown> | null;
+			if (props?.typeamenagement === 'Voie piétonne (vélos autorisés)') {
+				continue;
+			}
 			const key = `${props?.osmId}:${props?.typeamenagement}`;
 			if (seen.has(key)) {
 				continue;
@@ -96,13 +99,13 @@ export async function getCommuneOsmSafetyStats(insee: string): Promise<OsmSafety
 			const len = featureLineLengthMeters(f);
 			const isSafe = Boolean(props?.isSafe);
 			const isVoieVerte = props?.typeamenagement === 'Voie verte';
-			const isPedestrianShared =
-				isVoieVerte || props?.typeamenagement === 'Voie piétonne (vélos autorisés)';
 			total += len;
 
 			if (isSafe) {
 				safe += len;
-				if (!isPedestrianShared) safeNoVoieVerte += len;
+				if (!isVoieVerte) {
+					safeNoVoieVerte += len;
+				}
 			}
 
 			if (isVoieVerte) {

@@ -68,6 +68,7 @@
 		soloInclusion,
 		voirieFeatureToLegendId,
 		osmFeatureToLegendId,
+		DEFAULT_LEGEND_IDS,
 		type LegendId,
 	} from '$lib/utils/cyclewayLegend';
 	import {
@@ -171,7 +172,7 @@
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),
 		yearFrom: type('number').default(() => MIN_YEAR),
 		yearTo: type('number').default(() => MAX_YEAR),
-		cyclewayTypes: type('string[]').default(() => []),
+		cyclewayTypes: type('string[]').default(() => [...DEFAULT_LEGEND_IDS]),
 		cyclewayReseau: type('string[]').default(() => []),
 		cyclewayType: type('string[]').default(() => []),
 		cyclewayLocalisation: type('string[]').default(() => []),
