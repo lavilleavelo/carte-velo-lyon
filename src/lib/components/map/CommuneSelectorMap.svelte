@@ -83,6 +83,7 @@
 		{bounds}
 		fitBoundsOptions={{ padding: 24 }}
 		attributionControl={false}
+		minZoom={7}
 		maxZoom={12}
 		{cursor}
 		onclick={handleClick}

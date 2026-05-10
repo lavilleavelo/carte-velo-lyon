@@ -132,6 +132,7 @@
 		{bounds}
 		fitBoundsOptions={{ padding: 48 }}
 		attributionControl={false}
+		minZoom={10}
 		maxZoom={14}
 		cooperativeGestures={true}
 		{cursor}

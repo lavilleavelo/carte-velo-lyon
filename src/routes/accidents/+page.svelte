@@ -727,6 +727,8 @@
 					style={mapStyleState.getMapStyleUrl()}
 					center={[4.835, 45.755]}
 					zoom={13.5}
+					minZoom={9}
+					maxZoom={18}
 					attributionControl={false}
 					{cursor}
 					onclick={handleMapClick}

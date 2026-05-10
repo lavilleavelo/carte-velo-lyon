@@ -924,6 +924,7 @@
 				{bounds}
 				fitBoundsOptions={{ padding: 24 }}
 				attributionControl={false}
+				minZoom={9}
 				maxZoom={18}
 				{cursor}
 				onload={() => {

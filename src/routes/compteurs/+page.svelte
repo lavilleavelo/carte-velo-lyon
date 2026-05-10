@@ -125,6 +125,8 @@
 			style={'https://tiles.openfreemap.org/styles/positron'}
 			center={[mapCenter.lng, mapCenter.lat]}
 			zoom={12}
+			minZoom={9}
+			maxZoom={18}
 			class="h-[calc(100vh-400px)] w-full"
 			onclick={handleMapClick}
 		>

@@ -570,6 +570,21 @@
 	let selectedLngLat: { lng: number; lat: number } | null = $state(null);
 	let showPanoramax = $state(false);
 
+	const highlightedItineraireSlugs = $derived.by(() => {
+		const slugs = new Set<string>();
+		for (const f of selectedFeatures) {
+			if (f.type === 'itineraire' && typeof f.properties?.slug === 'string') {
+				slugs.add(f.properties.slug);
+			}
+		}
+		for (const f of hoverPopupFeatures?.features ?? []) {
+			if (f.type === 'itineraire' && typeof f.properties?.slug === 'string') {
+				slugs.add(f.properties.slug);
+			}
+		}
+		return [...slugs];
+	});
+
 	function selectFeaturesAt(point: { x: number; y: number }, lngLat: { lng: number; lat: number }) {
 		if (!map) return;
 
@@ -976,6 +991,7 @@
 			maxBounds={MAP_BOUNDS}
 			{cursor}
 			attributionControl={false}
+			minZoom={8}
 			maxZoom={18}
 			onload={async () => {
 				if (map) {
@@ -1168,8 +1184,6 @@
 
 			<CommunesLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
-			<ItinerairesLayer {isLayerVisible} />
-
 			<CyclewayLayer
 				{isLayerVisible}
 				voirieData={filteredVoirieData}
@@ -1202,6 +1216,12 @@
 				activeLegendIds={params.cyclewayTypes}
 				{hoveredLegendId}
 				hoveredFeatureId={hoveredOsmCyclewayId}
+			/>
+
+			<ItinerairesLayer
+				{isLayerVisible}
+				highlightedSlugs={highlightedItineraireSlugs}
+				beforeId="cw-hover"
 			/>
 
 			{#if isLayerVisible('osm-cycleways') && showCyclewayLegend}

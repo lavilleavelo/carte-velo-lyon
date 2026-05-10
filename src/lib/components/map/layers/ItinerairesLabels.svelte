@@ -19,34 +19,30 @@
 		itineraires.filter((i) => isLayerVisible(itineraireLayerId(i.slug))).map((i) => i.slug),
 	);
 
-	const anyVisible = $derived(enabledSlugs.length > 0);
-
 	const colorMatch = $derived(itinerairesColorMatch(itineraires));
 	const enabledFilter = $derived(itinerairesEnabledFilter(enabledSlugs));
 
 	const dataUrl = `/api/fiches/${ITINERAIRES_FICHE_TYPE}.geojson`;
 </script>
 
-{#if anyVisible}
-	<GeoJSONSource id="itineraires-labels-source" data={dataUrl}>
-		<SymbolLayer
-			id="itineraires-labels"
-			minzoom={9}
-			layout={{
-				'text-field': ['get', 'title'] as any,
-				'symbol-placement': 'line',
-				'symbol-spacing': 350,
-				'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
-				'text-size': 12,
-				'text-max-angle': 30,
-				'text-keep-upright': true,
-			}}
-			paint={{
-				'text-color': colorMatch as any,
-				'text-halo-color': '#ffffff',
-				'text-halo-width': 2.5,
-			}}
-			filter={enabledFilter}
-		/>
-	</GeoJSONSource>
-{/if}
+<GeoJSONSource id="itineraires-labels-source" data={dataUrl}>
+	<SymbolLayer
+		id="itineraires-labels"
+		minzoom={9}
+		layout={{
+			'text-field': ['get', 'title'] as any,
+			'symbol-placement': 'line',
+			'symbol-spacing': 350,
+			'text-font': ['Open Sans Bold', 'Arial Unicode MS Bold'],
+			'text-size': 12,
+			'text-max-angle': 30,
+			'text-keep-upright': true,
+		}}
+		paint={{
+			'text-color': colorMatch as any,
+			'text-halo-color': '#ffffff',
+			'text-halo-width': 2.5,
+		}}
+		filter={enabledFilter}
+	/>
+</GeoJSONSource>

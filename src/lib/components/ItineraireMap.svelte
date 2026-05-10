@@ -7,12 +7,9 @@
 		LineLayer,
 		SymbolLayer,
 	} from 'svelte-maplibre-gl';
-	import { createQuery } from '@tanstack/svelte-query';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
-	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
 	import { createMapStyleState } from '$lib/utils/mapStyleToggle.svelte';
-	import { voirieQueryOptions } from '$lib/queries/cyclewayQueries';
 	import type maplibregl from 'maplibre-gl';
 
 	let {
@@ -31,23 +28,39 @@
 
 	let map: maplibregl.Map | undefined = $state();
 
-	const VISIBLE_LAYERS = new Set(['cycleways', 'osm-cycleways']);
+	const VISIBLE_LAYERS = new Set(['osm-cycleways']);
 
 	function isLayerVisible(id: string): boolean {
 		return VISIBLE_LAYERS.has(id);
 	}
 
-	const voirieQuery = createQuery(() => voirieQueryOptions());
+	const LYON_METRO_BBOX: [number, number, number, number] = [4.65, 45.6, 5.1, 45.92];
 
-	const center = $derived<{ lng: number; lat: number }>({
-		lng: (bbox[0] + bbox[2]) / 2,
-		lat: (bbox[1] + bbox[3]) / 2,
+	const initialBounds = $derived.by<[[number, number], [number, number]]>(() => {
+		const [w, s, e, n] = bbox;
+		const [lw, ls, le, ln] = LYON_METRO_BBOX;
+		const iw = Math.max(w, lw);
+		const ie = Math.min(e, le);
+		const is_ = Math.max(s, ls);
+		const in_ = Math.min(n, ln);
+
+		if (iw >= ie || is_ >= in_) {
+			return [
+				[w, s],
+				[e, n],
+			];
+		}
+
+		return [
+			[iw, is_],
+			[ie, in_],
+		];
 	});
 
-	const initialBounds: [[number, number], [number, number]] = [
-		[bbox[0], bbox[1]],
-		[bbox[2], bbox[3]],
-	];
+	const center = $derived<{ lng: number; lat: number }>({
+		lng: (initialBounds[0][0] + initialBounds[1][0]) / 2,
+		lat: (initialBounds[0][1] + initialBounds[1][1]) / 2,
+	});
 
 	let didFit = false;
 	$effect(() => {
@@ -66,6 +79,8 @@
 		style={mapStyleState.getMapStyleUrl()}
 		{center}
 		zoom={9}
+		minZoom={5}
+		maxZoom={18}
 		attributionControl={false}
 		cooperativeGestures={true}
 	>
@@ -79,18 +94,25 @@
 
 		<GeoJSONSource id="itineraire-detail-source" data={geoJsonUrl}>
 			<LineLayer
+				id="itineraire-detail-line-casing"
+				paint={{
+					'line-color': '#ffffff',
+					'line-width': ['interpolate', ['linear'], ['zoom'], 8, 3, 12, 7, 15, 12],
+				}}
+				layout={{ 'line-join': 'round', 'line-cap': 'round' }}
+			/>
+			<LineLayer
 				id="itineraire-detail-line"
 				paint={{
-					'line-color': color,
-					'line-width': 8,
+					'line-color': '#000',
+					'line-width': ['interpolate', ['linear'], ['zoom'], 8, 1.5, 12, 4, 15, 8],
 					'line-opacity': 0.45,
 				}}
 				layout={{ 'line-join': 'round', 'line-cap': 'round' }}
 			/>
 		</GeoJSONSource>
 
-		<CyclewayLayer {isLayerVisible} voirieData={voirieQuery.data} />
-		<OsmCyclewayLayer {isLayerVisible} {map} />
+		<OsmCyclewayLayer {isLayerVisible} {map} opacityScale={0.4} />
 
 		<GeoJSONSource id="itineraire-detail-label-source" data={geoJsonUrl}>
 			<SymbolLayer

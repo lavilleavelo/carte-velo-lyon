@@ -1,6 +1,5 @@
 <script lang="ts">
 	import { MapLibre, AttributionControl, NavigationControl, Marker } from 'svelte-maplibre-gl';
-	import { createQuery } from '@tanstack/svelte-query';
 	import { onMount } from 'svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import NavigationButtons from '$lib/components/map/NavigationButtons.svelte';
@@ -10,13 +9,11 @@
 		type PoiContext,
 	} from '$lib/config/navigationProviders';
 	import ParkingLayer from '$lib/components/map/layers/ParkingLayer.svelte';
-	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
 	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
 	import VoiesLyonnaisesShields from '$lib/components/map/layers/VoiesLyonnaisesShields.svelte';
 	import { createMapStyleState } from '$lib/utils/mapStyleToggle.svelte';
-	import { voirieQueryOptions } from '$lib/queries/cyclewayQueries';
 	import type maplibregl from 'maplibre-gl';
 
 	let {
@@ -42,7 +39,6 @@
 	let cursor: string | undefined = $state();
 
 	const VISIBLE_LAYERS = new Set([
-		'cycleways',
 		'osm-cycleways',
 		'parking-arceaux',
 		'parking-couverts',
@@ -55,8 +51,6 @@
 	function isLayerVisible(id: string): boolean {
 		return VISIBLE_LAYERS.has(id);
 	}
-
-	const voirieQuery = createQuery(() => voirieQueryOptions());
 
 	function handleMouseEnter() {
 		cursor = 'pointer';
@@ -78,6 +72,8 @@
 		style={mapStyleState.getMapStyleUrl()}
 		center={{ lng, lat }}
 		{zoom}
+		minZoom={9}
+		maxZoom={19}
 		attributionControl={false}
 		cooperativeGestures={true}
 		{cursor}
@@ -90,7 +86,6 @@
 			position="top-right"
 		/>
 
-		<CyclewayLayer {isLayerVisible} voirieData={voirieQuery.data} />
 		<OsmCyclewayLayer {isLayerVisible} {map} />
 		<VoiesLyonnaisesLayer {isLayerVisible} {map} />
 		<VoiesLyonnaisesShields {isLayerVisible} {map} />
