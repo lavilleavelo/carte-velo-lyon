@@ -19,10 +19,12 @@
 		isLayerVisible,
 		voirieData,
 		hoveredFeatureId = null,
+		selectedFeatureIds = [],
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		voirieData: any;
 		hoveredFeatureId?: string | number | null;
+		selectedFeatureIds?: readonly (string | number)[];
 	} = $props();
 
 	const COLOR = '#166534';
@@ -44,8 +46,14 @@
 	const visibility = $derived(isLayerVisible('cycleways') ? 'visible' : 'none');
 
 	const HOVER_COLOR = '#facc15';
+	const SELECTED_COLOR = '#f97316';
 	const hoverFilter: any = $derived(
 		hoveredFeatureId == null ? ['==', ['id'], -1] : ['==', ['id'], hoveredFeatureId],
+	);
+	const selectedFilter: any = $derived(
+		selectedFeatureIds.length === 0
+			? ['==', ['id'], -1]
+			: ['in', ['id'], ['literal', [...selectedFeatureIds]]],
 	);
 </script>
 
@@ -55,6 +63,18 @@
 	id="cycleways-source"
 	generateId
 >
+	<LineLayer
+		id="cw-selected"
+		filter={selectedFilter}
+		minzoom={14}
+		paint={{
+			'line-color': SELECTED_COLOR,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 14, 6, 17, 11],
+			'line-opacity': 0.5,
+		}}
+		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
+	/>
+
 	<LineLayer
 		id="cw-hover"
 		filter={hoverFilter}

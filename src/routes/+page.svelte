@@ -10,7 +10,6 @@
 		CustomControl,
 		GeolocateControl,
 		NavigationControl,
-		Marker,
 		Popup,
 		VectorTileSource,
 	} from 'svelte-maplibre-gl';
@@ -76,6 +75,7 @@
 	import Geocoder from '$lib/components/Geocoder.svelte';
 	import MapLoadingIndicator from '$lib/components/map/MapLoadingIndicator.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
+	import PanoramaxMarker from '$lib/components/PanoramaxMarker.svelte';
 
 	import MetroLayer from '$lib/components/map/layers/MetroLayer.svelte';
 	import TramLayer from '$lib/components/map/layers/TramLayer.svelte';
@@ -300,8 +300,9 @@
 	let contextMenuY = $state(0);
 
 	let contextMenuLngLat: { lng: number; lat: number } | null = $state(null);
-	let contextMenuPhotoLocation: { lng: number; lat: number } | null = $state(null);
-	let hoveredPhotoLocation: { lng: number; lat: number } | null = $state(null);
+	let contextMenuPhotoLocation: { lng: number; lat: number; hasPhoto: boolean } | null =
+		$state(null);
+	let hoveredPhotoLocation: { lng: number; lat: number; hasPhoto: boolean } | null = $state(null);
 	let hoverPopupFeatures: { features: any[]; lngLat: { lng: number; lat: number } } | null =
 		$state(null);
 	let hoveredCyclewayId = $state<string | number | null>(null);
@@ -636,6 +637,19 @@
 	let selectedFeatures: any[] = $state([]);
 	let selectedLngLat: { lng: number; lat: number } | null = $state(null);
 	let showPanoramax = $state(false);
+
+	const selectedCyclewayIds = $derived(
+		selectedFeatures
+			.filter((f: any) => f.layer?.id === 'cycleways-layer-hitarea')
+			.map((f: any) => f.id)
+			.filter((id: any): id is string | number => id != null),
+	);
+	const selectedOsmCyclewayIds = $derived(
+		selectedFeatures
+			.filter((f: any) => f.layer?.id === 'osm-cycleways-layer-hitarea')
+			.map((f: any) => f.id)
+			.filter((id: any): id is string | number => id != null),
+	);
 
 	const highlightedItineraireSlugs = $derived.by(() => {
 		const slugs = new Set<string>();
@@ -1213,12 +1227,11 @@
 				<GeocoderMarker lnglat={geocoderHighlight} fading={geocoderHighlightFading} />
 			{/if}
 
-			{#if selectedLngLat}
-				<Marker lnglat={selectedLngLat} />
-			{/if}
-
 			{#if contextMenuPhotoLocation}
-				<GeocoderMarker pulse={false} lnglat={contextMenuPhotoLocation} />
+				<PanoramaxMarker
+					lnglat={contextMenuPhotoLocation}
+					hasPhoto={contextMenuPhotoLocation.hasPhoto}
+				/>
 			{/if}
 
 			{#if hoverPopupFeatures && hoverPopupFeatures.features.length > 0}
@@ -1246,7 +1259,7 @@
 			{/if}
 
 			{#if hoveredPhotoLocation}
-				<GeocoderMarker lnglat={hoveredPhotoLocation} pulse={false} />
+				<PanoramaxMarker lnglat={hoveredPhotoLocation} hasPhoto={hoveredPhotoLocation.hasPhoto} />
 			{/if}
 
 			<CommunesLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
@@ -1255,6 +1268,7 @@
 				{isLayerVisible}
 				voirieData={filteredVoirieData}
 				hoveredFeatureId={hoveredCyclewayId}
+				selectedFeatureIds={selectedCyclewayIds}
 			/>
 
 			<TargetNetworkLayer {isLayerVisible} targetNetworkHorizons={params.targetNetworkHorizons} />
@@ -1287,6 +1301,7 @@
 				activeLegendIds={params.cyclewayTypes}
 				{hoveredLegendId}
 				hoveredFeatureId={hoveredOsmCyclewayId}
+				selectedFeatureIds={selectedOsmCyclewayIds}
 			/>
 
 			<ItinerairesLayer

@@ -9,7 +9,6 @@
 		LineLayer,
 		FillLayer,
 		Popup,
-		Marker,
 		VectorTileSource,
 	} from 'svelte-maplibre-gl';
 	import { untrack } from 'svelte';
@@ -53,6 +52,7 @@
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import GeocoderMarker from '$lib/components/GeocoderMarker.svelte';
+	import PanoramaxMarker from '$lib/components/PanoramaxMarker.svelte';
 	import PanelRightOpen from '@lucide/svelte/icons/panel-right-open';
 	import PanelRightClose from '@lucide/svelte/icons/panel-right-close';
 	import ShieldCheck from '@lucide/svelte/icons/shield-check';
@@ -714,9 +714,23 @@
 	let hoveredCyclewayId = $state<string | number | null>(null);
 	let hoveredOsmCyclewayId = $state<string | number | null>(null);
 	let selectedFeatures: any[] = $state([]);
+	const selectedCyclewayIds = $derived(
+		selectedFeatures
+			.filter((f: any) => f.layer?.id === 'cycleways-layer-hitarea')
+			.map((f: any) => f.id)
+			.filter((id: any): id is string | number => id != null),
+	);
+
+	const selectedOsmCyclewayIds = $derived(
+		selectedFeatures
+			.filter((f: any) => f.layer?.id === 'osm-cycleways-layer-hitarea')
+			.map((f: any) => f.id)
+			.filter((id: any): id is string | number => id != null),
+	);
+
 	let selectedLngLat: { lng: number; lat: number } | null = $state(null);
 	let showPanoramax = $state(false);
-	let hoveredPhotoLocation: { lng: number; lat: number } | null = $state(null);
+	let hoveredPhotoLocation: { lng: number; lat: number; hasPhoto: boolean } | null = $state(null);
 	let isMapMoving = false;
 	let pendingMouseMove: { point: any; lngLat: any } | null = null;
 	let mouseMoveRaf: number | null = null;
@@ -766,7 +780,8 @@
 	let contextMenuX = $state(0);
 	let contextMenuY = $state(0);
 	let contextMenuLngLat: { lng: number; lat: number } | null = $state(null);
-	let contextMenuPhotoLocation: { lng: number; lat: number } | null = $state(null);
+	let contextMenuPhotoLocation: { lng: number; lat: number; hasPhoto: boolean } | null =
+		$state(null);
 	let defaultNavProvider = $state('osm');
 
 	$effect(() => {
@@ -982,7 +997,7 @@
 						features={selectedFeatures}
 						coordinates={selectedLngLat}
 						onOpenPanoramax={() => (showPanoramax = true)}
-						onPhotoHover={(loc: { lng: number; lat: number } | null) =>
+						onPhotoHover={(loc: { lng: number; lat: number; hasPhoto: boolean } | null) =>
 							(hoveredPhotoLocation = loc)}
 						onClose={() => {
 							selectedFeatures = [];
@@ -1089,16 +1104,15 @@
 					/>
 				</GeoJSONSource>
 
-				{#if selectedLngLat}
-					<Marker lnglat={selectedLngLat} />
-				{/if}
-
 				{#if hoveredPhotoLocation}
-					<Marker lnglat={hoveredPhotoLocation} />
+					<PanoramaxMarker lnglat={hoveredPhotoLocation} hasPhoto={hoveredPhotoLocation.hasPhoto} />
 				{/if}
 
 				{#if contextMenuPhotoLocation}
-					<GeocoderMarker pulse={false} lnglat={contextMenuPhotoLocation} />
+					<PanoramaxMarker
+						lnglat={contextMenuPhotoLocation}
+						hasPhoto={contextMenuPhotoLocation.hasPhoto}
+					/>
 				{/if}
 
 				{#if hoverPopupFeatures && hoverPopupFeatures.features.length > 0}
@@ -1142,6 +1156,7 @@
 					isLayerVisible={(id) => id === 'cycleways' && isLayerActive('cycleways')}
 					voirieData={voirieInside}
 					hoveredFeatureId={hoveredCyclewayId}
+					selectedFeatureIds={selectedCyclewayIds}
 				/>
 
 				<OsmCyclewayLayer
@@ -1154,6 +1169,7 @@
 					{safetyFilter}
 					{hoveredSafety}
 					hoveredFeatureId={hoveredOsmCyclewayId}
+					selectedFeatureIds={selectedOsmCyclewayIds}
 				/>
 
 				<SpeedLimitsLayer
@@ -1323,7 +1339,8 @@
 				features={selectedFeatures}
 				coordinates={selectedLngLat}
 				onOpenPanoramax={() => (showPanoramax = true)}
-				onPhotoHover={(loc: { lng: number; lat: number } | null) => (hoveredPhotoLocation = loc)}
+				onPhotoHover={(loc: { lng: number; lat: number; hasPhoto: boolean } | null) =>
+					(hoveredPhotoLocation = loc)}
 				onClose={() => {
 					selectedFeatures = [];
 					selectedLngLat = null;

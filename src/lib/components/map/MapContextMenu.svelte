@@ -22,7 +22,7 @@
 		zoom?: number;
 		defaultNavProvider: string;
 		onClose: () => void;
-		onPhotoFound?: (coordinates: { lng: number; lat: number }) => void;
+		onPhotoFound?: (coordinates: { lng: number; lat: number; hasPhoto: boolean } | null) => void;
 	}
 
 	let {
@@ -76,11 +76,25 @@
 	}));
 
 	$effect(() => {
-		if (panoramaxQuery.data?.coordinates && onPhotoFound) {
-			onPhotoFound({
-				lng: panoramaxQuery.data.coordinates[0],
-				lat: panoramaxQuery.data.coordinates[1],
-			});
+		if (!onPhotoFound) {
+			return;
+		}
+
+		if (!visible || !lngLat) {
+			onPhotoFound(null);
+			return;
+		}
+
+		if (panoramaxQuery.isLoading) {
+			onPhotoFound(null);
+			return;
+		}
+
+		const coords = panoramaxQuery.data?.coordinates;
+		if (coords) {
+			onPhotoFound({ lng: coords[0], lat: coords[1], hasPhoto: true });
+		} else {
+			onPhotoFound({ lng: lngLat.lng, lat: lngLat.lat, hasPhoto: false });
 		}
 	});
 

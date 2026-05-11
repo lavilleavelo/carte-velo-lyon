@@ -15,6 +15,8 @@
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import Loader2 from '@lucide/svelte/icons/loader-2';
+	import Camera from '@lucide/svelte/icons/camera';
 	import NavigationButtons from './NavigationButtons.svelte';
 	import { searchPanoramaxPhoto } from '$lib/utils/panoramax';
 	import { velovStationUrl } from '$lib/utils/velovUtils';
@@ -89,6 +91,23 @@
 	}));
 
 	$effect(() => {
+		if (!onPhotoHover) return;
+		if (panoramaxQuery.isLoading) {
+			onPhotoHover(null);
+			return;
+		}
+
+		const coords = panoramaxQuery.data?.coordinates;
+		if (coords) {
+			onPhotoHover({ lng: coords[0], lat: coords[1], hasPhoto: true });
+		} else if (coordinates) {
+			onPhotoHover({ lng: coordinates.lng, lat: coordinates.lat, hasPhoto: false });
+		} else {
+			onPhotoHover(null);
+		}
+	});
+
+	$effect(() => {
 		return () => {
 			if (onPhotoHover) onPhotoHover(null);
 		};
@@ -98,20 +117,13 @@
 <div
 	class="flex w-full flex-col overflow-hidden bg-white/95 backdrop-blur-sm md:w-80 md:rounded-xl md:border md:border-gray-100 md:shadow-xl"
 >
-	{#if panoramaxQuery.data}
+	{#if panoramaxQuery.isLoading}
+		<div class="flex h-40 w-full shrink-0 items-center justify-center bg-gray-100 text-gray-500">
+			<Loader2 class="h-6 w-6 animate-spin" />
+		</div>
+	{:else if panoramaxQuery.data}
 		<button
 			onclick={onOpenPanoramax}
-			onmouseenter={() => {
-				if (onPhotoHover && panoramaxQuery.data?.coordinates) {
-					onPhotoHover({
-						lng: panoramaxQuery.data.coordinates[0],
-						lat: panoramaxQuery.data.coordinates[1],
-					});
-				}
-			}}
-			onmouseleave={() => {
-				if (onPhotoHover) onPhotoHover(null);
-			}}
 			class="group relative h-40 w-full shrink-0 overflow-hidden bg-gray-100"
 		>
 			<img
@@ -125,6 +137,13 @@
 				<ExternalLink size={12} />
 			</div>
 		</button>
+	{:else}
+		<div
+			class="flex h-40 w-full shrink-0 flex-col items-center justify-center bg-gray-100 text-sm text-gray-500"
+		>
+			<Camera class="mb-2 h-6 w-6" />
+			<span>Aucune photo</span>
+		</div>
 	{/if}
 
 	<div class="absolute top-0 left-0 z-10 flex w-full items-center justify-between p-2">
@@ -168,10 +187,7 @@
 		</button>
 	</div>
 
-	<div
-		class="flex max-h-[50vh] flex-col overflow-y-auto md:max-h-[350px]"
-		class:pt-12={!panoramaxQuery.data}
-	>
+	<div class="flex max-h-[50vh] flex-col overflow-y-auto md:max-h-[350px]">
 		<div class="p-4">
 			{#if selectedFeature}
 				{@const Component = getComponent(selectedFeature.type)}

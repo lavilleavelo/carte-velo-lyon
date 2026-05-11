@@ -36,6 +36,7 @@
 		safetyFilter = [],
 		hoveredSafety = null,
 		hoveredFeatureId = null,
+		selectedFeatureIds = [],
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		boundary?: FeatureCollection;
@@ -47,6 +48,7 @@
 		safetyFilter?: ('safe' | 'unsafe' | 'pedestrian')[];
 		hoveredSafety?: 'safe' | 'unsafe' | 'pedestrian' | null;
 		hoveredFeatureId?: string | number | null;
+		selectedFeatureIds?: readonly (string | number)[];
 	} = $props();
 
 	const DSC_CAR_COLOR = '#000000';
@@ -222,8 +224,14 @@
 	];
 
 	const HOVER_COLOR = '#facc15';
+	const SELECTED_COLOR = '#f97316';
 	const hoverFilter: any = $derived(
 		hoveredFeatureId == null ? ['==', ['id'], -1] : ['==', ['id'], hoveredFeatureId],
+	);
+	const selectedFilter: any = $derived(
+		selectedFeatureIds.length === 0
+			? ['==', ['id'], -1]
+			: ['in', ['id'], ['literal', [...selectedFeatureIds]]],
 	);
 </script>
 
@@ -233,6 +241,19 @@
 	id="osm-cycleways-source"
 	generateId
 >
+	<LineLayer
+		id="osm-cw-selected"
+		filter={selectedFilter}
+		minzoom={14}
+		paint={{
+			'line-color': SELECTED_COLOR,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 14, 6, 17, 11],
+			'line-opacity': 0.5,
+			'line-offset': zoomedOffset,
+		}}
+		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
+	/>
+
 	<LineLayer
 		id="osm-cw-hover"
 		filter={hoverFilter}
