@@ -346,6 +346,7 @@
 	<LineLayer
 		id="osm-cw-velorue"
 		filter={filterVelorue}
+		minzoom={12.5}
 		paint={{
 			'line-color': lineColor,
 			'line-width': 4,
@@ -359,9 +360,10 @@
 	<LineLayer
 		id="osm-cw-trottoir"
 		filter={filterTrottoir}
+		minzoom={13}
 		paint={{
 			'line-color': lineColor,
-			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.4, 11, 0.9, 14, 1.6, 17, 2.4],
+			'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1, 14, 1.6, 17, 2.4],
 			'line-opacity': ['*', opacityTrottoir, safetyOpacityExpr],
 			'line-dasharray': TROTTOIR_DASHARRAY,
 			'line-offset': lineOffset,
@@ -372,7 +374,7 @@
 	<SymbolLayer
 		id="osm-cw-dsc-arrows"
 		filter={filterDsc}
-		minzoom={11}
+		minzoom={13}
 		layout={{
 			'symbol-placement': 'line',
 			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 11, 80, 14, 50, 17, 35],
