@@ -12,6 +12,12 @@ export interface LayerInfoEntry {
 }
 
 export const layerInfo: Record<string, LayerInfoEntry> = {
+	Noms: {
+		description:
+			'Affichage des noms sur le fond de carte : lieux, voies, points d’intérêt et cours d’eau.',
+		source: 'OpenMapTiles',
+		sourceUrl: 'https://openmaptiles.org/schema/',
+	},
 	'Infrastructures Cyclables': {
 		description:
 			'Aménagements cyclables de la Métropole de Lyon (pistes, bandes, voies vertes, etc.).',

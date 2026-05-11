@@ -4,6 +4,11 @@ import osmBrightStyle from '$lib/components/map/osm-bright-style.json';
 import neutrinoStyle from '$lib/components/map/neutrino-style.json';
 import positronStyle from '$lib/components/map/positron-style.json';
 import osmEuStyle from '$lib/components/map/osm-eu-style';
+import {
+	ATTRIBUTION_OSM_OMT,
+	ATTRIBUTION_CYCLOSM,
+	ATTRIBUTION_ORTHO,
+} from '$lib/config/mapAttribution';
 
 export const MAP_STYLE_IDS = [
 	'cyclopolis',
@@ -18,11 +23,6 @@ export const MAP_STYLE_IDS = [
 
 export type MapStyle = (typeof MAP_STYLE_IDS)[number];
 
-const cyclosmAttribution =
-	'<a href="https://cyclosm.org" target="_blank">CyclOSM</a> (<a href="https://www.cyclosm.org/legend.html" target="_blank">Legende</a>)';
-const osmAttribution =
-	'<a href="https://www.openstreetmap.org/copyright" target="_blank">OpenStreetMap</a>';
-
 const cyclosmStyle = {
 	version: 8,
 	id: 'cyclosm',
@@ -32,11 +32,12 @@ const cyclosmStyle = {
 			type: 'raster',
 			tiles: ['https://c.tile-cyclosm.openstreetmap.fr/cyclosm/{z}/{x}/{y}.png'],
 			tileSize: 256,
-			attribution: [cyclosmAttribution, osmAttribution].join(' | '),
+			attribution: ATTRIBUTION_CYCLOSM,
 		},
 		openmaptiles: {
 			type: 'vector',
 			url: 'https://openmaptiles.data.gouv.fr/data/planet-vector.json',
+			attribution: ATTRIBUTION_CYCLOSM,
 		},
 	},
 	sprite: 'https://tiles.openfreemap.org/sprites/ofm_f384/ofm',
@@ -65,9 +66,16 @@ const satelliteStyle = {
 			type: 'raster',
 			tiles: ['https://data.geopf.fr/tms/1.0.0/ORTHOIMAGERY.ORTHOPHOTOS/{z}/{x}/{y}.jpeg'],
 			tileSize: 256,
-			attribution: 'IGN - BD ORTHO',
+			attribution: ATTRIBUTION_ORTHO,
+		},
+		openmaptiles: {
+			type: 'vector',
+			url: 'https://openmaptiles.geo.data.gouv.fr/data/france-vector.json',
+			attribution: ATTRIBUTION_OSM_OMT,
 		},
 	},
+	sprite: 'https://openmaptiles.github.io/osm-bright-gl-style/sprite',
+	glyphs: 'https://tiles.openfreemap.org/fonts/{fontstack}/{range}.pbf',
 	layers: [
 		{
 			id: 'ortho',

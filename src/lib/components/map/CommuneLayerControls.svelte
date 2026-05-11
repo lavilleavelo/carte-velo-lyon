@@ -26,6 +26,8 @@
 		isCyclewayReseauSelected,
 		isCyclewayTypeSelected,
 		isCyclewayLocalisationSelected,
+		isLayerAllowed,
+		reactivityKey,
 	}: {
 		visibleOptional: Set<string>;
 		toggleOptionalCategory: (category: string) => void;
@@ -39,6 +41,8 @@
 		isCyclewayReseauSelected?: (value: string) => boolean;
 		isCyclewayTypeSelected?: (value: string) => boolean;
 		isCyclewayLocalisationSelected?: (value: string) => boolean;
+		isLayerAllowed?: (id: string) => boolean;
+		reactivityKey?: unknown;
 	} = $props();
 
 	const HIDDEN_CATEGORIES = new Set(['Communes']);
@@ -51,7 +55,12 @@
 		return !(optionalCategoriesSet.has(category) && !visibleOptional.has(category));
 	}
 
-	const filteredCatalog = $derived(availableLayers.filter((l) => isCategoryAllowed(l.category)));
+	const filteredCatalog = $derived.by(() => {
+		void reactivityKey;
+		return availableLayers
+			.filter((l) => isCategoryAllowed(l.category))
+			.filter((l) => (isLayerAllowed ? isLayerAllowed(l.id) : true));
+	});
 	const layersByCategory = $derived<Map<string, LayerCatalogEntry[]>>(
 		groupLayersByCategory(filteredCatalog),
 	);

@@ -37,6 +37,18 @@
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import PanoramaxViewer from '$lib/components/PanoramaxViewer.svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
+	import MapLabels from '$lib/components/map/labels/MapLabels.svelte';
+	import { ATTRIBUTION_OSM_OMT } from '$lib/config/mapAttribution';
+	import {
+		loadDesktopSidebarOpen,
+		saveDesktopSidebarOpen,
+		type LabelVisibility,
+	} from '$lib/utils/mapPreferences.svelte';
+	import {
+		LABEL_CATEGORIES,
+		STYLE_LABEL_SUPPORT,
+		type LabelCategory,
+	} from '$lib/components/map/labels/labelLayers';
 	import {
 		createMapStyleState,
 		loadDefaultMapStyle,
@@ -148,6 +160,7 @@
 		targetNetworkHorizons: type('string[]').default(() => ['2030', '2035', '2040']),
 		projectVLStatuses: type('string[]').default(() => ['wip', 'planned', 'postponed']),
 		safety: type('boolean').default(() => false),
+		labelsOff: type('string[]').default(() => []),
 	});
 
 	const params = useSearchParams(mapSearchParamsSchema, {
@@ -227,7 +240,20 @@
 
 	let map: maplibregl.Map | undefined = $state();
 	let showMobileFilters = $state(false);
-	let showDesktopSidebar = $state(true);
+	let showDesktopSidebar = $state(loadDesktopSidebarOpen());
+	$effect(() => {
+		saveDesktopSidebarOpen(showDesktopSidebar);
+	});
+
+	const labelVisibility = $derived<LabelVisibility>(
+		LABEL_CATEGORIES.reduce((acc, cat) => {
+			acc[cat] = !(params.labelsOff ?? []).includes(cat);
+			return acc;
+		}, {} as LabelVisibility),
+	);
+	function setLabelVisibility(next: LabelVisibility) {
+		params.labelsOff = LABEL_CATEGORIES.filter((cat) => !next[cat]);
+	}
 	let showCyclewayLegend = $state(false);
 	let hoveredLegendId: LegendId | null = $state(null);
 	let cursor: string | undefined = $state();
@@ -244,6 +270,24 @@
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
 		params.mapStyle = style;
 	});
+
+	const supportedLabelCategories = $derived<Set<LabelCategory>>(
+		new Set(STYLE_LABEL_SUPPORT[mapStyleState.mapStyle] ?? LABEL_CATEGORIES),
+	);
+
+	const effectiveLabelVisibility = $derived<LabelVisibility>(
+		LABEL_CATEGORIES.reduce((acc, cat) => {
+			acc[cat] = labelVisibility[cat] && supportedLabelCategories.has(cat);
+			return acc;
+		}, {} as LabelVisibility),
+	);
+
+	const LABEL_PREFIX = 'label-';
+	function labelIdToCategory(id: string): LabelCategory | null {
+		if (!id.startsWith(LABEL_PREFIX)) return null;
+		const cat = id.slice(LABEL_PREFIX.length);
+		return (LABEL_CATEGORIES as readonly string[]).includes(cat) ? (cat as LabelCategory) : null;
+	}
 
 	let geocoderHighlight: { lng: number; lat: number } | null = $state(null);
 	let geocoderHighlightFading = $state(false);
@@ -314,6 +358,10 @@
 	const layersByCategory = $derived.by(() => {
 		const grouped = new Map<string, Array<(typeof availableLayers)[number]>>();
 		availableLayers.forEach((layer) => {
+			const labelCat = labelIdToCategory(layer.id);
+			if (labelCat && !supportedLabelCategories.has(labelCat)) {
+				return;
+			}
 			const category = layer.category;
 			if (!grouped.has(category)) {
 				grouped.set(category, []);
@@ -378,6 +426,11 @@
 	});
 
 	function toggleLayer(layerId: string) {
+		const labelCat = labelIdToCategory(layerId);
+		if (labelCat) {
+			setLabelVisibility({ ...labelVisibility, [labelCat]: !labelVisibility[labelCat] });
+			return;
+		}
 		const currentLayers = new Set(visibleLayers);
 		if (currentLayers.has(layerId)) {
 			currentLayers.delete(layerId);
@@ -394,6 +447,8 @@
 
 	function isLayerVisible(layerId: string): boolean {
 		if (layerId === 'speed-limits') return speedLimitsLayerActive;
+		const labelCat = labelIdToCategory(layerId);
+		if (labelCat) return labelVisibility[labelCat];
 		return visibleLayers.has(layerId);
 	}
 
@@ -416,6 +471,18 @@
 	function toggleCategory(category: string) {
 		const categoryLayers = layersByCategory.get(category);
 		if (!categoryLayers) return;
+
+		const labelCats = categoryLayers
+			.map((layer) => labelIdToCategory(layer.id))
+			.filter((c): c is LabelCategory => c !== null);
+
+		if (labelCats.length === categoryLayers.length && labelCats.length > 0) {
+			const allOn = labelCats.every((c) => labelVisibility[c]);
+			const next = { ...labelVisibility };
+			for (const c of labelCats) next[c] = !allOn;
+			setLabelVisibility(next);
+			return;
+		}
 
 		const layerIds = categoryLayers.map((layer) => layer.id);
 		const allVisible = layerIds.every((id) => visibleLayers.has(id));
@@ -1194,7 +1261,11 @@
 
 			<ParkingLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
-			<VectorTileSource id="osm-vector" url="https://tiles.openfreemap.org/planet" />
+			<VectorTileSource
+				id="osm-vector"
+				url="https://tiles.openfreemap.org/planet"
+				attribution={ATTRIBUTION_OSM_OMT}
+			/>
 
 			<OverpassOnewayArrowsLayer {map} />
 
@@ -1262,6 +1333,8 @@
 			<VelovLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
 			<AccidentsVeloLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
+
+			<MapLabels show={effectiveLabelVisibility} />
 		</MapLibre>
 	</div>
 

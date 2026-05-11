@@ -209,7 +209,17 @@
 	const filterTrottoir: any = ['==', ['get', 'typeamenagement'], 'Voie piétonne (vélos autorisés)'];
 
 	const lineOffset: any = ['get', 'offset'];
-	const zoomedOffset: any = ['interpolate', ['linear'], ['zoom'], 12, 0, 15, ['get', 'offset']];
+	const zoomedOffset: any = [
+		'interpolate',
+		['linear'],
+		['zoom'],
+		12,
+		0,
+		15,
+		['get', 'offset'],
+		18,
+		['*', ['get', 'offset'], 1.8],
+	];
 
 	const HOVER_COLOR = '#facc15';
 	const hoverFilter: any = $derived(

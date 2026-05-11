@@ -315,6 +315,36 @@ export const availableLayers: readonly LayerCatalogEntry[] = [
 		category: 'Projets',
 		hasSubFilters: true,
 	},
+	{
+		id: 'label-places',
+		label: 'Lieux',
+		color: '#374151',
+		category: 'Noms',
+	},
+	{
+		id: 'label-roads',
+		label: 'Voies',
+		color: '#374151',
+		category: 'Noms',
+	},
+	{
+		id: 'label-transit',
+		label: 'Transports',
+		color: '#9333ea',
+		category: 'Noms',
+	},
+	{
+		id: 'label-pois',
+		label: 'Points d’intérêt',
+		color: '#374151',
+		category: 'Noms',
+	},
+	{
+		id: 'label-water',
+		label: 'Cours d’eau',
+		color: '#0369a1',
+		category: 'Noms',
+	},
 ] as const;
 
 export const layerGroups: Record<string, string[]> = {
@@ -444,6 +474,13 @@ export const COMMUNE_PINNED: PinnedItem[] = [
 		yearIncompatible: true,
 		kind: 'category',
 		target: 'Limitations de vitesse',
+	},
+	{
+		key: 'pin-noms',
+		label: 'Noms',
+		color: '#374151',
+		kind: 'category',
+		target: 'Noms',
 	},
 ];
 

@@ -17,6 +17,14 @@
 	import { useSearchParams } from 'runed/kit';
 	import { type } from 'arktype';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
+	import { ATTRIBUTION_OSM_OMT } from '$lib/config/mapAttribution';
+	import MapLabels from '$lib/components/map/labels/MapLabels.svelte';
+	import {
+		LABEL_CATEGORIES,
+		STYLE_LABEL_SUPPORT,
+		type LabelCategory,
+	} from '$lib/components/map/labels/labelLayers';
+	import { type LabelVisibility } from '$lib/utils/mapPreferences.svelte';
 	import { registerArrowIconsHandler } from '$lib/utils/mapUtils';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
@@ -182,6 +190,7 @@
 		filterByYear: type('boolean').default(() => false),
 		safety: type('boolean').default(() => false),
 		safetyFilter: type('string[]').default(() => []),
+		labelsOff: type('string[]').default(() => []),
 		sidebar: type.enumerated('open', 'closed').default(() => 'closed'),
 		zoom: type('number').default(() => 0),
 		lat: type('number').default(() => 0),
@@ -231,6 +240,30 @@
 	$effect(() => {
 		visibleOptional = loadVisibleOptionalCategories();
 	});
+
+	const labelVisibility = $derived<LabelVisibility>(
+		LABEL_CATEGORIES.reduce((acc, cat) => {
+			acc[cat] = !(params.labelsOff ?? []).includes(cat);
+			return acc;
+		}, {} as LabelVisibility),
+	);
+
+	function setLabelVisibility(next: LabelVisibility) {
+		params.labelsOff = LABEL_CATEGORIES.filter((cat) => !next[cat]);
+	}
+
+	const LABEL_PREFIX = 'label-';
+	function labelIdToCategory(id: string): LabelCategory | null {
+		if (!id.startsWith(LABEL_PREFIX)) return null;
+		const cat = id.slice(LABEL_PREFIX.length);
+		return (LABEL_CATEGORIES as readonly string[]).includes(cat) ? (cat as LabelCategory) : null;
+	}
+
+	function isLayerAllowed(id: string): boolean {
+		const labelCat = labelIdToCategory(id);
+		if (!labelCat) return true;
+		return supportedLabelCategories.has(labelCat);
+	}
 	function toggleOptionalCategory(category: string) {
 		const next = new Set(visibleOptional);
 		if (next.has(category)) next.delete(category);
@@ -253,6 +286,10 @@
 	const visibleSet = $derived(new Set(expandLayers(params.layers)));
 
 	function isFineActive(id: string): boolean {
+		const labelCat = labelIdToCategory(id);
+		if (labelCat) {
+			return labelVisibility[labelCat] && supportedLabelCategories.has(labelCat);
+		}
 		if (!visibleSet.has(id)) return false;
 		if (params.filterByYear && !YEAR_COMPATIBLE_FINE_IDS.has(id)) return false;
 		return true;
@@ -281,6 +318,11 @@
 	}
 
 	function toggleLayer(id: string) {
+		const labelCat = labelIdToCategory(id);
+		if (labelCat) {
+			setLabelVisibility({ ...labelVisibility, [labelCat]: !labelVisibility[labelCat] });
+			return;
+		}
 		const next = new Set(visibleSet);
 		if (next.has(id)) next.delete(id);
 		else next.add(id);
@@ -289,6 +331,19 @@
 
 	function toggleCategory(category: string) {
 		const layerIds = availableLayers.filter((l) => l.category === category).map((l) => l.id);
+		const labelCats = layerIds
+			.map((id) => labelIdToCategory(id))
+			.filter((c): c is LabelCategory => c !== null);
+
+		if (labelCats.length === layerIds.length && labelCats.length > 0) {
+			const supportedCats = labelCats.filter((c) => supportedLabelCategories.has(c));
+			const allOn = supportedCats.every((c) => labelVisibility[c]);
+			const next = { ...labelVisibility };
+			for (const c of supportedCats) next[c] = !allOn;
+			setLabelVisibility(next);
+			return;
+		}
+
 		const allOn = layerIds.every((id) => visibleSet.has(id));
 		const next = new Set(visibleSet);
 		if (allOn) layerIds.forEach((id) => next.delete(id));
@@ -298,6 +353,16 @@
 
 	function deactivateCategory(category: string) {
 		const layerIds = availableLayers.filter((l) => l.category === category).map((l) => l.id);
+		const labelCats = layerIds
+			.map((id) => labelIdToCategory(id))
+			.filter((c): c is LabelCategory => c !== null);
+
+		if (labelCats.length === layerIds.length && labelCats.length > 0) {
+			const next = { ...labelVisibility };
+			for (const c of labelCats) next[c] = false;
+			setLabelVisibility(next);
+			return;
+		}
 
 		const next = new Set(visibleSet);
 		for (const id of layerIds) {
@@ -343,6 +408,17 @@
 			}
 		});
 	});
+
+	const supportedLabelCategories = $derived<Set<LabelCategory>>(
+		new Set(STYLE_LABEL_SUPPORT[mapStyleState.mapStyle] ?? LABEL_CATEGORIES),
+	);
+
+	const effectiveLabelVisibility = $derived<LabelVisibility>(
+		LABEL_CATEGORIES.reduce((acc, cat) => {
+			acc[cat] = labelVisibility[cat] && supportedLabelCategories.has(cat);
+			return acc;
+		}, {} as LabelVisibility),
+	);
 
 	const voirieQuery = createQuery(() => voirieQueryOptions());
 
@@ -1086,7 +1162,11 @@
 					selectedBuckets={selectedSpeedBuckets}
 				/>
 
-				<VectorTileSource id="osm-vector" url="https://tiles.openfreemap.org/planet" />
+				<VectorTileSource
+					id="osm-vector"
+					url="https://tiles.openfreemap.org/planet"
+					attribution={ATTRIBUTION_OSM_OMT}
+				/>
 
 				<CommuneMapLayers
 					visible={effectiveVisibleSet}
@@ -1095,6 +1175,8 @@
 					yearRange={effectiveYearRange}
 					targetNetworkHorizons={params.targetNetworkHorizons}
 				/>
+
+				<MapLabels show={effectiveLabelVisibility} />
 
 				<CyclewayLegendControl
 					activeIds={params.cyclewayTypes}
@@ -1197,6 +1279,8 @@
 				{isCyclewayReseauSelected}
 				{isCyclewayTypeSelected}
 				{isCyclewayLocalisationSelected}
+				{isLayerAllowed}
+				reactivityKey={mapStyleState.mapStyle}
 			/>
 		</aside>
 	{/if}
@@ -1217,6 +1301,8 @@
 				{isCategoryActive}
 				{toggleLayer}
 				{toggleCategory}
+				{isLayerAllowed}
+				reactivityKey={mapStyleState.mapStyle}
 			/>
 		</div>
 	</MobileDrawer>

@@ -30,8 +30,8 @@ export type Classification = {
 };
 
 function sideOffset(side: Side): number {
-	if (side === 'left') return -3;
-	if (side === 'right') return 3;
+	if (side === 'left') return -5;
+	if (side === 'right') return 5;
 	return 0;
 }
 
