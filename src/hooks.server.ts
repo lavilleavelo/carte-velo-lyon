@@ -1,6 +1,7 @@
 import type { Handle } from '@sveltejs/kit';
 
 const ALLOWED_ORIGINS = new Set([
+	'ca-bloque-les-contributions.lavilleavelo.org',
 	'https://dazzling-gumdrop-a1bad4.netlify.app',
 	'http://localhost:5173',
 	'http://localhost:4173',
