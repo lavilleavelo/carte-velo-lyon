@@ -1,15 +1,22 @@
 import type { Handle } from '@sveltejs/kit';
 
 const ALLOWED_ORIGINS = new Set([
-	'https://ca-bloque-les-contributions.lavilleavelo.org',
 	'https://dazzling-gumdrop-a1bad4.netlify.app',
 	'http://localhost:5173',
 	'http://localhost:4173',
 ]);
 
+const ALLOWED_ORIGIN_PATTERN = /^https:\/\/([a-z0-9-]+\.)*lavilleavelo\.org$/;
+
 function corsOrigin(request: Request): string | null {
 	const origin = request.headers.get('origin');
-	return origin && ALLOWED_ORIGINS.has(origin) ? origin : null;
+	if (!origin) {
+		return null;
+	}
+	if (ALLOWED_ORIGINS.has(origin) || ALLOWED_ORIGIN_PATTERN.test(origin)) {
+		return origin;
+	}
+	return null;
 }
 
 export const handle: Handle = async ({ event, resolve }) => {
