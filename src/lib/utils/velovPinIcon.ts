@@ -1,4 +1,4 @@
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 
 export const PIN = { width: 48, height: 62, cx: 24, cy: 22, r: 19, tip: 56 };
 const RATIO_STEPS = 20;

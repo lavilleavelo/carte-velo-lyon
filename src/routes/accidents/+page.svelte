@@ -1,4 +1,5 @@
 <script lang="ts">
+	import 'svelte-maplibre-gl/vite';
 	import {
 		MapLibre,
 		AttributionControl,
@@ -36,7 +37,7 @@
 	import accidentsUrl from '$lib/data/accidents-velo.json?url';
 	import communeIndex from '$lib/data/communes/_index.json';
 	import type { Feature, FeatureCollection, Point } from 'geojson';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 	import {
 		GRAVITIES,
 		DEFAULT_GRAVITIES,

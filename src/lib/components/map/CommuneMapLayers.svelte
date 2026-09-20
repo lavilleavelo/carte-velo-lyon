@@ -15,8 +15,10 @@
 	import CountersLayer from '$lib/components/map/layers/CountersLayer.svelte';
 	import TargetNetworkLayer from '$lib/components/map/layers/TargetNetworkLayer.svelte';
 	import AccidentsVeloLayer from '$lib/components/map/layers/AccidentsVeloLayer.svelte';
+	import TreesLayer from '$lib/components/map/layers/TreesLayer.svelte';
+	import Buildings3DLayer from '$lib/components/map/layers/Buildings3DLayer.svelte';
 	import type { FeatureCollection } from 'geojson';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 
 	let {
 		visible,
@@ -81,3 +83,5 @@
 	{map}
 	{boundary}
 />
+<Buildings3DLayer {isLayerVisible} />
+<TreesLayer {isLayerVisible} {map} />

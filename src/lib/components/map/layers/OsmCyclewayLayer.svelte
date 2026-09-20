@@ -2,7 +2,7 @@
 	import { GeoJSONSource, LineLayer, SymbolLayer } from 'svelte-maplibre-gl';
 	import { createQuery } from '@tanstack/svelte-query';
 	import type { FeatureCollection } from 'geojson';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 	import { EMPTY_FEATURE_COLLECTION, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
 	import { PAVED_SURFACES } from '$lib/utils/osmCycleway';

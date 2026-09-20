@@ -345,6 +345,19 @@ export const availableLayers: readonly LayerCatalogEntry[] = [
 		color: '#0369a1',
 		category: 'Noms',
 	},
+	{
+		id: 'batiments-3d',
+		label: 'Bâtiments',
+		color: '#9ca3af',
+		category: '3D',
+		shape: 'square',
+	},
+	{
+		id: 'arbres',
+		label: 'Arbres d’alignement',
+		color: '#16a34a',
+		category: '3D',
+	},
 ] as const;
 
 export const layerGroups: Record<string, string[]> = {

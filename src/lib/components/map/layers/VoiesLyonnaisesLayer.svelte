@@ -8,7 +8,7 @@
 		filterFeaturesInsideBoundary,
 	} from '$lib/utils/geoFilter';
 	import type { Feature, FeatureCollection } from 'geojson';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 
 	type ProjectVLSubLayer = {
 		id: string;

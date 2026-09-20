@@ -1,4 +1,5 @@
 <script lang="ts">
+	import 'svelte-maplibre-gl/vite';
 	import {
 		MapLibre,
 		AttributionControl,
@@ -10,7 +11,7 @@
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
 	import { createMapStyleState } from '$lib/utils/mapStyleToggle.svelte';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 
 	let {
 		title,

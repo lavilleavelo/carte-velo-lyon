@@ -78,7 +78,7 @@ const BASEMAP_ONEWAY_LAYER_IDS = [
 ];
 
 /**
- * Registers a `styleimagemissing` handler that lazily creates the
+ * Registers a missing-style-image resolver that lazily creates the
  * oneway / DSC arrow icons whenever a layer references them.
  * Also hides the basemap-baked oneway arrow layers (across all styles)
  * so our `OverpassOnewayArrowsLayer` remains the single source of truth.
@@ -91,10 +91,10 @@ export function registerArrowIconsHandler(map: any): void {
 
 	map.__arrowIconsHandlerRegistered = true;
 
-	const handle = (e: { id: string }) => {
+	map.setMissingStyleImageResolver((id: string) => {
 		if (!map.style) return;
 		let canvas: HTMLCanvasElement | null = null;
-		switch (e.id) {
+		switch (id) {
 			case 'oneway-arrow-forward':
 				canvas = createOnewayArrowIcon('#000000', false);
 				break;
@@ -112,17 +112,16 @@ export function registerArrowIconsHandler(map: any): void {
 			return;
 		}
 
-		if (map.hasImage(e.id)) {
+		if (map.hasImage(id)) {
 			return;
 		}
 
 		const ctx = canvas.getContext('2d');
 		const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
 		if (imageData) {
-			map.addImage(e.id, imageData, { pixelRatio: window.devicePixelRatio || 1 });
+			map.addImage(id, imageData, { pixelRatio: window.devicePixelRatio || 1 });
 		}
-	};
-	map.on('styleimagemissing', handle);
+	});
 
 	const hideBasemapOnewayArrows = () => {
 		for (const id of BASEMAP_ONEWAY_LAYER_IDS) {

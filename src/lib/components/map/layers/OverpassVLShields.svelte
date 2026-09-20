@@ -8,7 +8,7 @@
 		calculateLineDistance,
 	} from '$lib/utils/mapUtils';
 	import type { GeoJSON, FeatureCollection } from 'geojson';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 	import { EMPTY_FEATURE_COLLECTION, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 
 	let {

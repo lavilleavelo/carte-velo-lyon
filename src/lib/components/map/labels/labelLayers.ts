@@ -1,4 +1,4 @@
-import type maplibregl from 'maplibre-gl';
+import type * as maplibregl from 'maplibre-gl';
 import type { MapStyle } from '$lib/utils/mapStyleToggle.svelte';
 
 export type LabelCategory = 'places' | 'roads' | 'transit' | 'pois' | 'water';

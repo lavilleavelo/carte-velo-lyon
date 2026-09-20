@@ -1,9 +1,10 @@
 <script lang="ts">
+	import 'svelte-maplibre-gl/vite';
 	import { createQuery } from '@tanstack/svelte-query';
 	import { parse } from '@std/csv';
 	import { MapLibre, GeoJSONSource, CircleLayer, SymbolLayer, Popup } from 'svelte-maplibre-gl';
 	import type { Map } from 'maplibre-gl';
-	import maplibregl from 'maplibre-gl';
+	import * as maplibregl from 'maplibre-gl';
 
 	let mapInstance: Map | undefined = $state();
 	let selectedCompteur: any = $state(null);

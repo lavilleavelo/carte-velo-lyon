@@ -27,6 +27,8 @@
 		isCyclewayTypeSelected,
 		isCyclewayLocalisationSelected,
 		isLayerAllowed,
+		auto3DLayers,
+		toggleAuto3DLayers,
 		reactivityKey,
 	}: {
 		visibleOptional: Set<string>;
@@ -42,6 +44,8 @@
 		isCyclewayTypeSelected?: (value: string) => boolean;
 		isCyclewayLocalisationSelected?: (value: string) => boolean;
 		isLayerAllowed?: (id: string) => boolean;
+		auto3DLayers?: boolean;
+		toggleAuto3DLayers?: () => void;
 		reactivityKey?: unknown;
 	} = $props();
 
@@ -148,5 +152,22 @@
 				</div>
 			{/each}
 		</div>
+		{#if toggleAuto3DLayers}
+			<hr class="border-gray-100" />
+			<div class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50">
+				<Checkbox
+					id="commune-config-auto-3d"
+					checked={auto3DLayers}
+					onCheckedChange={toggleAuto3DLayers}
+					class="border-gray-300 data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy"
+				/>
+				<Label
+					for="commune-config-auto-3d"
+					class="cursor-pointer text-sm font-medium text-gray-700"
+				>
+					Afficher les bâtiments et arbres en 3D quand la carte est inclinée
+				</Label>
+			</div>
+		{/if}
 	</Dialog.Content>
 </Dialog.Root>

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import 'svelte-maplibre-gl/vite';
 	import {
 		MapLibre,
 		AttributionControl,
@@ -23,7 +24,12 @@
 		STYLE_LABEL_SUPPORT,
 		type LabelCategory,
 	} from '$lib/components/map/labels/labelLayers';
-	import { type LabelVisibility } from '$lib/utils/mapPreferences.svelte';
+	import {
+		loadAuto3DLayers,
+		saveAuto3DLayers,
+		type LabelVisibility,
+	} from '$lib/utils/mapPreferences.svelte';
+	import { watchPitchForAuto3D } from '$lib/utils/auto3DLayers.svelte';
 	import { registerArrowIconsHandler } from '$lib/utils/mapUtils';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
@@ -86,7 +92,7 @@
 	} from '$lib/queries/cyclewayQueries';
 	import { computeSpeedLimitsStats, SPEED_BUCKETS, type SpeedBucket } from '$lib/utils/speedLimits';
 	import type { FeatureCollection } from 'geojson';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 
 	// 1990 covers the oldest voies vertes in the dataset (e.g. Voie de la Dombes, 1996).
 	// Features with no year value are kept regardless (see filterFeaturesByYear).
@@ -328,6 +334,22 @@
 		else next.add(id);
 		setLayers([...next]);
 	}
+
+	let pitch = $state(0);
+	let auto3DLayers = $state(loadAuto3DLayers());
+
+	function toggleAuto3DLayers() {
+		auto3DLayers = !auto3DLayers;
+		saveAuto3DLayers(auto3DLayers);
+	}
+
+	watchPitchForAuto3D({
+		pitch: () => pitch,
+		enabled: () => auto3DLayers,
+		hasLayer: (id) => visibleSet.has(id),
+		addLayers: (ids) => setLayers([...visibleSet, ...ids]),
+		removeLayers: (ids) => setLayers([...visibleSet].filter((id) => !ids.includes(id))),
+	});
 
 	function toggleCategory(category: string) {
 		const layerIds = availableLayers.filter((l) => l.category === category).map((l) => l.id);
@@ -1010,6 +1032,7 @@
 
 			<MapLibre
 				bind:map
+				bind:pitch
 				class="h-full w-full"
 				style={mapStyleState.getMapStyleUrl()}
 				{bounds}
@@ -1296,6 +1319,8 @@
 				{isCyclewayTypeSelected}
 				{isCyclewayLocalisationSelected}
 				{isLayerAllowed}
+				{auto3DLayers}
+				{toggleAuto3DLayers}
 				reactivityKey={mapStyleState.mapStyle}
 			/>
 		</aside>
@@ -1318,6 +1343,8 @@
 				{toggleLayer}
 				{toggleCategory}
 				{isLayerAllowed}
+				{auto3DLayers}
+				{toggleAuto3DLayers}
 				reactivityKey={mapStyleState.mapStyle}
 			/>
 		</div>

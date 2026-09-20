@@ -5,6 +5,7 @@ const store = new Map<string, unknown>();
 const fetchers = new Map<string, () => Promise<unknown>>();
 const lastFetched = new Map<string, number>();
 const inflight = new Map<string, Promise<unknown>>();
+const ttls = new Map<string, number>();
 
 const CACHE_DIR = process.env.CACHE_DIR ?? '.cache';
 const TTL_MS = 5 * 60 * 1000;
@@ -12,7 +13,8 @@ let cacheDirReady: Promise<void> | null = null;
 
 function isStale(key: string): boolean {
 	const ts = lastFetched.get(key);
-	return ts === undefined || Date.now() - ts > TTL_MS;
+	const ttl = ttls.get(key) ?? TTL_MS;
+	return ts === undefined || Date.now() - ts > ttl;
 }
 
 function ensureCacheDir(): Promise<void> {
@@ -88,8 +90,11 @@ function refreshInBackground(key: string): void {
 	});
 }
 
-function registerEntry(key: string, fetcher: () => Promise<unknown>): void {
+function registerEntry(key: string, fetcher: () => Promise<unknown>, ttlMs?: number): void {
 	fetchers.set(key, fetcher);
+	if (ttlMs !== undefined) {
+		ttls.set(key, ttlMs);
+	}
 }
 
 async function getCached<T>(key: string): Promise<T> {
@@ -179,6 +184,28 @@ for (const type of Object.keys(GRAND_LYON_URLS) as GrandLyonDataType[]) {
 
 export async function getCachedGrandLyonData(type: GrandLyonDataType): Promise<unknown> {
 	return getCached(`grandlyon:${type}`);
+}
+
+const TREES_WFS_URL =
+	'https://data.grandlyon.com/geoserver/metropole-de-lyon/ows?SERVICE=WFS&VERSION=2.0.0&request=GetFeature&typename=metropole-de-lyon:abr_arbres_alignement.abrarbre&outputFormat=application/json&SRSNAME=EPSG:4326&count=9000';
+const TREES_TTL_MS = 24 * 60 * 60 * 1000;
+
+export async function getCachedGrandLyonTreesData(bbox: string): Promise<unknown> {
+	const key = `grandlyon:arbres:${bbox}`;
+	if (!fetchers.has(key)) {
+		registerEntry(
+			key,
+			async () => {
+				const response = await fetch(`${TREES_WFS_URL}&bbox=${bbox},EPSG:4326`);
+				if (!response.ok) {
+					throw new Error(`Failed to fetch arbres data: ${response.statusText}`);
+				}
+				return response.json();
+			},
+			TREES_TTL_MS,
+		);
+	}
+	return getCached(key);
 }
 
 // Voies Lyonnaises

@@ -1,6 +1,7 @@
-onlyBuiltDependencies:
-  - esbuild
-  - '@tailwindcss/oxide'
+allowBuilds:
+  esbuild: true
+  '@tailwindcss/oxide': true
+engineStrict: true
 packages:
   - .
 verifyDepsBeforeRun: install

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import 'svelte-maplibre-gl/vite';
 	import { goto } from '$app/navigation';
 	import { buildCommuneHref } from '$lib/utils/communeNavigation';
 	import {
@@ -13,7 +14,7 @@
 	import communesLimitUrl from '$lib/data/communes_limit_arrondissements.json?url';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 
 	type CommuneSummary = { slug: string; insee: string; name: string };
 

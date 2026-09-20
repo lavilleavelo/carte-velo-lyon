@@ -1,4 +1,5 @@
 <script lang="ts">
+	import 'svelte-maplibre-gl/vite';
 	import { goto } from '$app/navigation';
 	import { buildCommuneHref } from '$lib/utils/communeNavigation';
 	import {
@@ -20,7 +21,7 @@
 		SPEED_BUCKET_LABELS,
 		type SpeedBucket,
 	} from '$lib/utils/speedLimits';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 
 	const SPEED_LEGEND_BUCKETS = SPEED_BUCKETS.filter((b) => b !== 'unknown');
 

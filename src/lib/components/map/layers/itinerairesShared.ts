@@ -2,6 +2,9 @@ import type { ItineraireFiche } from '$lib/content/fiches';
 import { getItineraireColor } from '$lib/config/itineraires';
 
 export function itinerairesColorMatch(itineraires: readonly ItineraireFiche[]) {
+	if (itineraires.length === 0) {
+		return '#888';
+	}
 	const expr: (string | string[])[] = ['match', ['get', 'slug']];
 	for (const i of itineraires) {
 		expr.push(i.slug, getItineraireColor(i));
@@ -16,6 +19,9 @@ export function itinerairesEnabledFilter(slugs: readonly string[]): unknown {
 
 export function itinerairesOffsetMatch(itineraires: readonly ItineraireFiche[]) {
 	const n = itineraires.length;
+	if (n === 0) {
+		return 0;
+	}
 	const tFor = (idx: number) => (n > 1 ? idx / (n - 1) - 0.5 : 0);
 
 	const matchAtScale = (scale: number) => {

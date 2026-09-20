@@ -1,4 +1,5 @@
 <script lang="ts">
+	import 'svelte-maplibre-gl/vite';
 	import {
 		MapLibre,
 		AttributionControl,
@@ -37,7 +38,7 @@
 	import { loadDefaultProvider } from '$lib/config/navigationProviders';
 	import velovStaticUrl from '$lib/data/velov-data-grand-lyon.json?url';
 	import type { FeatureCollection, Point } from 'geojson';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 
 	const REFRESH_INTERVAL_MS = 60_000;
 

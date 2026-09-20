@@ -27,6 +27,7 @@
 		"@tailwindcss/vite": "^4.1.14",
 		"@tanstack/table-core": "^8.21.3",
 		"@types/geojson": "^7946.0.16",
+		"@types/three": "^0.185.0",
 		"bits-ui": "^2.14.3",
 		"clsx": "^2.1.1",
 		"mdsvex": "^0.12.7",
@@ -51,10 +52,11 @@
 		"@types/node": "^24.10.0",
 		"arktype": "^2.1.26",
 		"layerchart": "2.0.0-next.44",
-		"maplibre-gl": "^5.24.0",
+		"maplibre-gl": "^6.10.0",
 		"runed": "^0.36.0",
-		"svelte-maplibre-gl": "^1.0.3",
+		"svelte-maplibre-gl": "^2.2.1",
+		"three": "^0.185.1",
 		"virtua": "^0.46.7"
 	},
-	"packageManager": "pnpm@10.24.0+sha512.01ff8ae71b4419903b65c60fb2dc9d34cf8bb6e06d03bde112ef38f7a34d6904c424ba66bea5cdcf12890230bf39f9580473140ed9c946fef328b6e5238a345a"
+	"packageManager": "pnpm@12.5.1+sha512.e3f305bc784a2bc89f5ad3b6138889470fae8d2af5f36b61216ec91c2c3d64089775f9de38aac331044ea40f245cb0d5666392dfdf65824e1907ef6a2c62de5f"
 }

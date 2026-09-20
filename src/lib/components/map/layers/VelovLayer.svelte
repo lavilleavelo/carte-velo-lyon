@@ -10,7 +10,7 @@
 		VELOV_DEFAULT_PIN_ICON,
 	} from '$lib/utils/velovPinIcon';
 	import type { FeatureCollection, Point } from 'geojson';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 
 	let {
 		isLayerVisible,

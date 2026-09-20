@@ -12,6 +12,23 @@ export interface LayerInfoEntry {
 }
 
 export const layerInfo: Record<string, LayerInfoEntry> = {
+	'3D': {
+		description:
+			'Affichage en 3D sur n’importe quel fond de carte : bâtiments extrudés (OpenMapTiles) et arbres d’alignement de la Métropole de Lyon (~112 000 arbres, avec leur hauteur et leur couronne réelles). Visibles à partir du zoom 14-15 ; inclinez la carte (clic droit ou deux doigts) pour en profiter.',
+		source: 'OpenMapTiles / Métropole de Lyon',
+		sourceUrl:
+			'https://data.grandlyon.com/portail/fr/jeux-de-donnees/arbres-alignement-metropole-lyon/info',
+		links: [
+			{
+				label: 'Arbres d’alignement — data.grandlyon.com',
+				url: 'https://data.grandlyon.com/portail/fr/jeux-de-donnees/arbres-alignement-metropole-lyon/info',
+			},
+			{
+				label: 'Bâtiments — OpenMapTiles',
+				url: 'https://openmaptiles.org/schema/#building',
+			},
+		],
+	},
 	Noms: {
 		description:
 			'Affichage des noms sur le fond de carte : lieux, voies, points d’intérêt et cours d’eau.',

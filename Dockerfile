@@ -1,6 +1,6 @@
 FROM node:24-alpine AS builder
 WORKDIR /app
-COPY package*.json ./
+COPY package.json pnpm-lock.yaml pnpm-workspace.yaml .npmrc ./
 RUN npm -g i corepack && corepack enable
 RUN pnpm i
 COPY . .

@@ -1,4 +1,5 @@
 <script lang="ts">
+	import 'svelte-maplibre-gl/vite';
 	import '../app.css';
 	import { onMount, untrack } from 'svelte';
 	import { type } from 'arktype';
@@ -13,7 +14,7 @@
 		Popup,
 		VectorTileSource,
 	} from 'svelte-maplibre-gl';
-	import maplibregl from 'maplibre-gl';
+	import * as maplibregl from 'maplibre-gl';
 	import Filter from '@lucide/svelte/icons/filter';
 	import Settings from '@lucide/svelte/icons/settings';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
@@ -41,8 +42,11 @@
 	import {
 		loadDesktopSidebarOpen,
 		saveDesktopSidebarOpen,
+		loadAuto3DLayers,
+		saveAuto3DLayers,
 		type LabelVisibility,
 	} from '$lib/utils/mapPreferences.svelte';
+	import { watchPitchForAuto3D } from '$lib/utils/auto3DLayers.svelte';
 	import {
 		LABEL_CATEGORIES,
 		STYLE_LABEL_SUPPORT,
@@ -91,6 +95,8 @@
 	import ToiletLayer from '$lib/components/map/layers/ToiletLayer.svelte';
 	import SchoolLayer from '$lib/components/map/layers/SchoolLayer.svelte';
 	import AccidentsVeloLayer from '$lib/components/map/layers/AccidentsVeloLayer.svelte';
+	import TreesLayer from '$lib/components/map/layers/TreesLayer.svelte';
+	import Buildings3DLayer from '$lib/components/map/layers/Buildings3DLayer.svelte';
 	import AdditionalPOILayer from '$lib/components/map/layers/AdditionalPOILayer.svelte';
 	import CyclewayFilters from '$lib/components/map/filters/CyclewayFilters.svelte';
 	import TargetNetworkLayer from '$lib/components/map/layers/TargetNetworkLayer.svelte';
@@ -311,6 +317,15 @@
 	let innerWidth = $state(0);
 	let bearing = $state(0);
 	let pitch = $state(0);
+
+	let auto3DLayers = $state(loadAuto3DLayers());
+	watchPitchForAuto3D({
+		pitch: () => pitch,
+		enabled: () => auto3DLayers,
+		hasLayer: (id) => visibleLayers.has(id),
+		addLayers: (ids) => setLayers([...visibleLayers, ...ids]),
+		removeLayers: (ids) => setLayers([...visibleLayers].filter((id) => !ids.includes(id))),
+	});
 
 	let touchTimeout: ReturnType<typeof setTimeout> | null = null;
 	let touchStartPoint: { x: number; y: number } | null = null;
@@ -1349,6 +1364,10 @@
 
 			<AccidentsVeloLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
+			<Buildings3DLayer {isLayerVisible} />
+
+			<TreesLayer {isLayerVisible} {map} />
+
 			<MapLabels show={effectiveLabelVisibility} />
 		</MapLibre>
 	</div>
@@ -1668,6 +1687,26 @@
 						{/each}
 					</Select.Content>
 				</Select.Root>
+			</div>
+
+			<hr class="border-gray-100" />
+
+			<div>
+				<h3 class="mb-2 text-sm font-semibold text-gray-900">3D</h3>
+				<div class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50">
+					<Checkbox
+						id="config-auto-3d"
+						checked={auto3DLayers}
+						onCheckedChange={() => {
+							auto3DLayers = !auto3DLayers;
+							saveAuto3DLayers(auto3DLayers);
+						}}
+						class="border-gray-300 data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy"
+					/>
+					<Label for="config-auto-3d" class="cursor-pointer text-sm font-medium text-gray-700">
+						Afficher les bâtiments et arbres en 3D quand la carte est inclinée
+					</Label>
+				</div>
 			</div>
 
 			<hr class="border-gray-100" />

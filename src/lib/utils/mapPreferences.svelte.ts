@@ -33,3 +33,17 @@ export function saveDesktopSidebarOpen(open: boolean) {
 }
 
 export type LabelVisibility = Record<LabelCategory, boolean>;
+
+const AUTO_3D_KEY = 'auto3DLayersOnPitch';
+const AUTO_3D_DEFAULT = true;
+
+export function loadAuto3DLayers(): boolean {
+	const stored = safeGetItem(AUTO_3D_KEY);
+	if (stored === 'true') return true;
+	if (stored === 'false') return false;
+	return AUTO_3D_DEFAULT;
+}
+
+export function saveAuto3DLayers(on: boolean) {
+	safeSetItem(AUTO_3D_KEY, String(on));
+}

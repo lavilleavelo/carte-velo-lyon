@@ -1,4 +1,5 @@
 <script lang="ts">
+	import 'svelte-maplibre-gl/vite';
 	import { MapLibre, AttributionControl, NavigationControl, Marker } from 'svelte-maplibre-gl';
 	import { onMount } from 'svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
@@ -14,7 +15,7 @@
 	import OverpassVLLayer from '$lib/components/map/layers/OverpassVLLayer.svelte';
 	import VoiesLyonnaisesShields from '$lib/components/map/layers/VoiesLyonnaisesShields.svelte';
 	import { createMapStyleState } from '$lib/utils/mapStyleToggle.svelte';
-	import type maplibregl from 'maplibre-gl';
+	import type * as maplibregl from 'maplibre-gl';
 
 	let {
 		lng,
