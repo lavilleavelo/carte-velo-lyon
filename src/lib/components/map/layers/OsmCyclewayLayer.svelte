@@ -7,7 +7,12 @@
 	import { osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
 	import { PAVED_SURFACES } from '$lib/utils/osmCycleway';
 	import { osmCyclewaysQueryOptions } from '$lib/queries/cyclewayQueries';
-	import { createDscArrowIcon } from '$lib/utils/mapUtils';
+	import {
+		createDscArrowIconById,
+		DSC_ARROW_BIKE_COLORS,
+		dscArrowIconId,
+		type DscArrowVariant,
+	} from '$lib/utils/mapUtils';
 	import {
 		BANDE_DASHARRAY,
 		BUS_VELO_DASHARRAY,
@@ -53,10 +58,6 @@
 		selectedFeatureIds?: readonly (string | number)[];
 		declutterOverview?: boolean;
 	} = $props();
-
-	const DSC_CAR_COLOR = '#000000';
-	const DSC_ICON_FORWARD = 'dsc-arrow-forward';
-	const DSC_ICON_REVERSE = 'dsc-arrow-reverse';
 
 	const DIMMED_OPACITY = 0.2;
 	const NORMAL_OPACITY = 0.9;
@@ -115,25 +116,30 @@
 	const lineColorNonPaved: any = $derived(safetyMode ? safetyLineColorExpr : COLOR_NON_PAVED);
 
 	function ensureDscIcons(m: maplibregl.Map) {
-		const register = (name: string, leftColor: string, rightColor: string) => {
-			if (m.hasImage(name)) {
-				return;
+		for (const variant of Object.keys(DSC_ARROW_BIKE_COLORS) as DscArrowVariant[]) {
+			for (const reverse of [false, true]) {
+				const name = dscArrowIconId(variant, reverse);
+				const canvas = m.hasImage(name) ? null : createDscArrowIconById(name);
+				const imageData = canvas?.getContext('2d')?.getImageData(0, 0, canvas.width, canvas.height);
+				if (imageData) {
+					m.addImage(name, imageData, { pixelRatio: window.devicePixelRatio || 1 });
+				}
 			}
-
-			const canvas = createDscArrowIcon(leftColor, rightColor);
-			const ctx = canvas.getContext('2d');
-			const imageData = ctx?.getImageData(0, 0, canvas.width, canvas.height);
-			if (imageData) {
-				m.addImage(name, imageData, { pixelRatio: window.devicePixelRatio || 1 });
-			}
-		};
-
-		// forward (oneway=yes): line direction = car. Left of icon = bike (blue), right = car (black).
-		register(DSC_ICON_FORWARD, COLOR, DSC_CAR_COLOR);
-
-		// reverse (oneway=-1): line direction = opposite of car. Left = car (black), right = bike (blue).
-		register(DSC_ICON_REVERSE, DSC_CAR_COLOR, COLOR);
+		}
 	}
+
+	const dscIconImage: any = $derived.by(() => {
+		const isReverse = ['==', ['get', 'oneway'], '-1'];
+		const pick = (variant: DscArrowVariant) => [
+			'case',
+			isReverse,
+			dscArrowIconId(variant, true),
+			dscArrowIconId(variant, false),
+		];
+		return safetyMode
+			? ['case', ['==', ['get', 'isSafe'], true], pick('safe'), pick('unsafe')]
+			: pick('default');
+	});
 
 	$effect(() => {
 		if (map) {
@@ -454,7 +460,7 @@
 			'symbol-placement': 'line',
 			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 11, 80, 14, 50, 17, 35],
 			'icon-size': ['interpolate', ['exponential', 1.4], ['zoom'], 11, 0.4, 14, 0.8, 17, 1.2],
-			'icon-image': ['case', ['==', ['get', 'oneway'], '-1'], DSC_ICON_REVERSE, DSC_ICON_FORWARD],
+			'icon-image': dscIconImage,
 			'icon-rotation-alignment': 'map',
 			'icon-pitch-alignment': 'map',
 			'icon-keep-upright': true,

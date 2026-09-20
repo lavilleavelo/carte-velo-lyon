@@ -327,6 +327,15 @@
 		return false;
 	}
 
+	const dscArrowsShown = $derived.by(() => {
+		const types = params.cyclewayTypes ?? [];
+		return (
+			isLayerActive('osm-cycleways') &&
+			(types.length === 0 || types.includes('dsc')) &&
+			safetyFilter.length === 0
+		);
+	});
+
 	function isLayerActive(id: string): boolean {
 		if (id === 'vl') return isCategoryActive('Voies Lyonnaises');
 		if (id === 'osm-vl') return isCategoryActive('Voies Lyonnaises (OSM)');
@@ -1234,6 +1243,7 @@
 					{map}
 					yearRange={effectiveYearRange}
 					targetNetworkHorizons={params.targetNetworkHorizons}
+					{dscArrowsShown}
 				/>
 
 				<MapLabels show={effectiveLabelVisibility} />

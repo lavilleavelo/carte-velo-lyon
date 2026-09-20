@@ -26,12 +26,14 @@
 		map,
 		yearRange,
 		targetNetworkHorizons = [],
+		dscArrowsShown = false,
 	}: {
 		visible: Set<string>;
 		boundary?: FeatureCollection;
 		map?: maplibregl.Map;
 		yearRange?: [number, number];
 		targetNetworkHorizons?: string[];
+		dscArrowsShown?: boolean;
 	} = $props();
 
 	const isLayerVisible = (id: string) => visible.has(id);
@@ -56,7 +58,7 @@
 />
 <VoiesLyonnaisesShields {isLayerVisible} {map} {boundary} {yearRange} />
 <OverpassVLShields {isLayerVisible} {map} {boundary} />
-<OverpassOnewayArrowsLayer {boundary} {map} />
+<OverpassOnewayArrowsLayer {boundary} {map} hideOnDsc={dscArrowsShown} />
 <VelovLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {map} {boundary} />
 {#if visible.has('metro')}
 	<MetroLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {map} {boundary} />

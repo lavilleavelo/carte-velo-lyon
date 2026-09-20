@@ -101,12 +101,8 @@ export function registerArrowIconsHandler(map: any): void {
 			case 'oneway-arrow-reverse':
 				canvas = createOnewayArrowIcon('#000000', true);
 				break;
-			case 'dsc-arrow-forward':
-				canvas = createDscArrowIcon('#0369a1', '#000000');
-				break;
-			case 'dsc-arrow-reverse':
-				canvas = createDscArrowIcon('#000000', '#0369a1');
-				break;
+			default:
+				canvas = createDscArrowIconById(id);
 		}
 		if (!canvas) {
 			return;
@@ -228,6 +224,35 @@ export function createOnewayArrowIcon(color: string, reverse = false): HTMLCanva
  * @param leftColor color of the left-pointing arrow (left half)
  * @param rightColor color of the right-pointing arrow (right half)
  */
+const DSC_CAR_COLOR = '#000000';
+
+export const DSC_ARROW_BIKE_COLORS = {
+	default: '#0369a1',
+	safe: '#2563eb',
+	unsafe: '#dc2626',
+} as const;
+
+export type DscArrowVariant = keyof typeof DSC_ARROW_BIKE_COLORS;
+
+export function dscArrowIconId(variant: DscArrowVariant, reverse: boolean): string {
+	const base = reverse ? 'dsc-arrow-reverse' : 'dsc-arrow-forward';
+	return variant === 'default' ? base : `${base}-${variant}`;
+}
+
+export function createDscArrowIconById(id: string): HTMLCanvasElement | null {
+	for (const variant of Object.keys(DSC_ARROW_BIKE_COLORS) as DscArrowVariant[]) {
+		const bikeColor = DSC_ARROW_BIKE_COLORS[variant];
+		if (id === dscArrowIconId(variant, false)) {
+			return createDscArrowIcon(bikeColor, DSC_CAR_COLOR);
+		}
+
+		if (id === dscArrowIconId(variant, true)) {
+			return createDscArrowIcon(DSC_CAR_COLOR, bikeColor);
+		}
+	}
+	return null;
+}
+
 export function createDscArrowIcon(leftColor: string, rightColor: string): HTMLCanvasElement {
 	const canvas = document.createElement('canvas');
 	const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;

@@ -5,15 +5,18 @@
 	import type * as maplibregl from 'maplibre-gl';
 	import { EMPTY_FEATURE_COLLECTION, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { createOnewayArrowIcon } from '$lib/utils/mapUtils';
+	import { classifyOsmCycleway } from '$lib/utils/osmCycleway';
 
 	let {
 		boundary,
 		map,
 		maxzoom = 22,
+		hideOnDsc = false,
 	}: {
 		boundary?: FeatureCollection;
 		map?: maplibregl.Map;
 		maxzoom?: number;
+		hideOnDsc?: boolean;
 	} = $props();
 
 	const ICON_FORWARD = 'oneway-arrow-forward';
@@ -77,6 +80,9 @@
 					highway,
 					isMajor: MAJOR_CLASSES.has(highway) ? 1 : 0,
 					reverse: reverse ? 1 : 0,
+					isDsc: classifyOsmCycleway(tags).some((c) => c.typeamenagement === 'Double sens cyclable')
+						? 1
+						: 0,
 				},
 				geometry: { type: 'LineString', coordinates: coords },
 			});
@@ -105,6 +111,11 @@
 	});
 
 	const iconImageExpr: any = ['case', ['==', ['get', 'reverse'], 1], ICON_REVERSE, ICON_FORWARD];
+
+	function arrowFilter(isMajor: 0 | 1): any {
+		const byClass = ['==', ['get', 'isMajor'], isMajor];
+		return hideOnDsc ? ['all', byClass, ['!=', ['get', 'isDsc'], 1]] : byClass;
+	}
 </script>
 
 <GeoJSONSource id="overpass-oneways-source" data={filteredData}>
@@ -112,7 +123,7 @@
 		id="overpass-oneways-major"
 		minzoom={14}
 		{maxzoom}
-		filter={['==', ['get', 'isMajor'], 1]}
+		filter={arrowFilter(1)}
 		layout={{
 			'symbol-placement': 'line',
 			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 11, 220, 14, 140],
@@ -132,7 +143,7 @@
 		id="overpass-oneways-minor"
 		minzoom={14}
 		{maxzoom}
-		filter={['==', ['get', 'isMajor'], 0]}
+		filter={arrowFilter(0)}
 		layout={{
 			'symbol-placement': 'line',
 			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 12.5, 180, 14, 140],

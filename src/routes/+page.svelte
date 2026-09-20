@@ -237,6 +237,11 @@
 		(layers) => setLayers(layers),
 	);
 
+	const dscArrowsShown = $derived.by(() => {
+		const types = params.cyclewayTypes ?? [];
+		return visibleLayers.has('osm-cycleways') && (types.length === 0 || types.includes('dsc'));
+	});
+
 	const hasNonDefaultFilters = $derived.by(() => {
 		const defaultSet = new Set(expandLayers(DEFAULT_MAP_LAYERS));
 		if (visibleLayers.size !== defaultSet.size) return true;
@@ -1297,7 +1302,7 @@
 				attribution={ATTRIBUTION_OSM_OMT}
 			/>
 
-			<OverpassOnewayArrowsLayer {map} />
+			<OverpassOnewayArrowsLayer {map} hideOnDsc={dscArrowsShown} />
 
 			<SpeedLimitsLayer {isLayerVisible} enabledBuckets={enabledSpeedBuckets} />
 
