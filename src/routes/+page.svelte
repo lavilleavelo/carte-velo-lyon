@@ -48,6 +48,7 @@
 	} from '$lib/utils/mapPreferences.svelte';
 	import { watchPitchForAuto3D } from '$lib/utils/auto3DLayers.svelte';
 	import {
+		DEFAULT_LABELS_OFF,
 		LABEL_CATEGORIES,
 		STYLE_LABEL_SUPPORT,
 		type LabelCategory,
@@ -67,6 +68,7 @@
 	import { registerArrowIconsHandler } from '$lib/utils/mapUtils';
 	import {
 		availableLayers,
+		DEFAULT_MAP_LAYERS,
 		expandLayers,
 		compactLayers,
 		groupLayersByCategory,
@@ -153,7 +155,7 @@
 	const layerToFeatureType = createLayerToFeatureTypeMap();
 
 	const mapSearchParamsSchema = type({
-		layers: type('string[]').default(() => ['osm-cycleways', 'vl']),
+		layers: type('string[]').default(() => [...DEFAULT_MAP_LAYERS]),
 		commune: 'string = ""',
 		zoom: 'number = 13',
 		center: type('number[]').default(() => [4.835659, 45.764043]),
@@ -166,7 +168,7 @@
 		targetNetworkHorizons: type('string[]').default(() => ['2030', '2035', '2040']),
 		projectVLStatuses: type('string[]').default(() => ['wip', 'planned', 'postponed']),
 		safety: type('boolean').default(() => false),
-		labelsOff: type('string[]').default(() => []),
+		labelsOff: type('string[]').default(() => [...DEFAULT_LABELS_OFF]),
 	});
 
 	const params = useSearchParams(mapSearchParamsSchema, {
@@ -220,7 +222,7 @@
 	}
 
 	function resetLayers() {
-		params.layers = ['osm-cycleways', 'vl'];
+		params.layers = [...DEFAULT_MAP_LAYERS];
 	}
 
 	const visibleLayers = $derived(new Set(expandLayers(params.layers || [])));
@@ -236,7 +238,7 @@
 	);
 
 	const hasNonDefaultFilters = $derived.by(() => {
-		const defaultSet = new Set(expandLayers(['osm-cycleways', 'vl']));
+		const defaultSet = new Set(expandLayers(DEFAULT_MAP_LAYERS));
 		if (visibleLayers.size !== defaultSet.size) return true;
 		for (const id of visibleLayers) {
 			if (!defaultSet.has(id)) return true;
@@ -1175,6 +1177,7 @@
 					currentStyle={mapStyleState.mapStyle}
 					onSelect={mapStyleState.setMapStyle}
 					position="top-right"
+					variant="thumbnail"
 				/>
 			{:else}
 				<CustomControl position="bottom-left">
@@ -1288,8 +1291,6 @@
 
 			<TargetNetworkLayer {isLayerVisible} targetNetworkHorizons={params.targetNetworkHorizons} />
 
-			<ParkingLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
-
 			<VectorTileSource
 				id="osm-vector"
 				url="https://tiles.openfreemap.org/planet"
@@ -1317,6 +1318,7 @@
 				{hoveredLegendId}
 				hoveredFeatureId={hoveredOsmCyclewayId}
 				selectedFeatureIds={selectedOsmCyclewayIds}
+				declutterOverview
 			/>
 
 			<ItinerairesLayer
@@ -1347,6 +1349,8 @@
 			<OverpassVLShields {isLayerVisible} {map} />
 
 			<ItinerairesLabels {isLayerVisible} />
+
+			<ParkingLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<CountersLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 

@@ -20,6 +20,7 @@
 	import { ATTRIBUTION_OSM_OMT } from '$lib/config/mapAttribution';
 	import MapLabels from '$lib/components/map/labels/MapLabels.svelte';
 	import {
+		DEFAULT_LABELS_OFF,
 		LABEL_CATEGORIES,
 		STYLE_LABEL_SUPPORT,
 		type LabelCategory,
@@ -123,6 +124,24 @@
 		}, 200);
 	}
 
+	function handleExpandShortcut(e: KeyboardEvent) {
+		if (e.key.toLowerCase() !== 'f' || e.defaultPrevented || e.repeat) {
+			return;
+		}
+		if (e.metaKey || e.ctrlKey || e.altKey) {
+			return;
+		}
+		const target = e.target as HTMLElement | null;
+		if (
+			target &&
+			(target.isContentEditable || ['INPUT', 'TEXTAREA', 'SELECT'].includes(target.tagName))
+		) {
+			return;
+		}
+		e.preventDefault();
+		toggleMapExpand();
+	}
+
 	$effect(() => {
 		expanded;
 		sidebarCollapsed;
@@ -183,7 +202,7 @@
 
 	const paramsSchema = type({
 		layers: type('string[]').default(() => ['osm-cycleways', 'vl', 'parking']),
-		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),
+		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'cyclopolis'),
 		yearFrom: type('number').default(() => MIN_YEAR),
 		yearTo: type('number').default(() => MAX_YEAR),
 		cyclewayTypes: type('string[]').default(() => [...DEFAULT_LEGEND_IDS]),
@@ -196,7 +215,7 @@
 		filterByYear: type('boolean').default(() => false),
 		safety: type('boolean').default(() => false),
 		safetyFilter: type('string[]').default(() => []),
-		labelsOff: type('string[]').default(() => []),
+		labelsOff: type('string[]').default(() => [...DEFAULT_LABELS_OFF]),
 		sidebar: type.enumerated('open', 'closed').default(() => 'closed'),
 		zoom: type('number').default(() => 0),
 		lat: type('number').default(() => 0),
@@ -974,7 +993,7 @@
 	}
 </script>
 
-<svelte:window bind:innerWidth />
+<svelte:window bind:innerWidth onkeydown={handleExpandShortcut} />
 
 <div class="lg:flex lg:items-stretch lg:gap-4 lg:px-4 xl:px-6">
 	<div class="flex flex-col gap-3 lg:min-w-0 lg:flex-1">
@@ -1068,6 +1087,8 @@
 					currentStyle={mapStyleState.mapStyle}
 					onSelect={mapStyleState.setMapStyle}
 					position="top-right"
+					variant="thumbnail"
+					thumbnailPosition="bottom-right"
 				/>
 
 				{#if isLayerActive('osm-cycleways')}
@@ -1269,8 +1290,9 @@
 				<button
 					type="button"
 					onclick={toggleMapExpand}
-					title={expanded ? 'Réduire la carte' : 'Agrandir la carte'}
+					title={expanded ? 'Réduire la carte (F)' : 'Agrandir la carte (F)'}
 					aria-label={expanded ? 'Réduire la carte' : 'Agrandir la carte'}
+					aria-keyshortcuts="F"
 					class="ml-auto flex items-center gap-1.5 rounded-md border border-gray-200 bg-white px-2 py-1 text-xs font-medium text-gray-600 transition-colors hover:bg-gray-50 hover:text-gray-900"
 				>
 					{#if expanded}
@@ -1280,6 +1302,11 @@
 						<Maximize2 size={13} />
 						<span class="hidden sm:inline">Agrandir la carte</span>
 					{/if}
+					<kbd
+						class="pointer-events-none hidden h-4 items-center rounded border bg-muted px-1 font-mono text-[10px] font-medium text-gray-500 select-none sm:flex"
+					>
+						F
+					</kbd>
 				</button>
 			</div>
 			{#if params.filterByYear}

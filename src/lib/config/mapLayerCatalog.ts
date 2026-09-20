@@ -370,6 +370,10 @@ export const layerGroups: Record<string, string[]> = {
 		'speed-limit-70',
 		'speed-limit-unknown',
 	],
+	// Parkings en ouvrage (vélostations, LPA) vs mobilier sur voirie (arceaux, abris, box).
+	'parking-ouvrages': ['parking-velostation', 'parking-lpa'],
+	'parking-mobilier': ['parking-arceaux', 'parking-couverts', 'parking-box'],
+	// Legacy alias (every parking type), still expanded from old shared links.
 	parking: [
 		'parking-arceaux',
 		'parking-couverts',
@@ -380,6 +384,12 @@ export const layerGroups: Record<string, string[]> = {
 	accidents: ['accidents-tue', 'accidents-hospitalise', 'accidents-leger', 'accidents-indemne'],
 	fountains: ['water-fountains'],
 };
+
+// Expanded when read from a URL, never written back.
+const LEGACY_GROUP_ALIASES = new Set(['fountains', 'parking']);
+
+/** Layers shown on the main map when the URL does not say otherwise. */
+export const DEFAULT_MAP_LAYERS = ['osm-cycleways', 'vl', 'parking-ouvrages'];
 
 export function expandLayers(layers: readonly string[]): string[] {
 	const expanded: string[] = [];
@@ -399,7 +409,9 @@ export function compactLayers(layers: readonly string[]): string[] {
 	const consumed = new Set<string>();
 
 	for (const [group, members] of Object.entries(layerGroups)) {
-		if (group === 'fountains') continue; // legacy-only alias, never emit
+		if (LEGACY_GROUP_ALIASES.has(group)) {
+			continue;
+		}
 		if (members.every((m) => set.has(m))) {
 			result.push(group);
 			members.forEach((m) => consumed.add(m));

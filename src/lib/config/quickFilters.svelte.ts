@@ -13,19 +13,19 @@ export const presetQuickFilters: QuickFilter[] = [
 		layerIds: Array.from({ length: 12 }, (_, i) => `vl-${i + 1}`),
 	},
 	{ id: 'qf-pistes', label: 'Pistes', color: '#15803d', layerIds: ['osm-cycleways'] },
-	{ id: 'qf-velov', label: "Vélo'v", color: '#EA2127', layerIds: ['velov'] },
 	{
 		id: 'qf-parking',
-		label: 'Parking',
-		color: '#4ade80',
-		layerIds: [
-			'parking-arceaux',
-			'parking-couverts',
-			'parking-box',
-			'parking-velostation',
-			'parking-lpa',
-		],
+		label: 'Parkings',
+		color: '#0d9488',
+		layerIds: ['parking-velostation', 'parking-lpa'],
 	},
+	{
+		id: 'qf-arceaux',
+		label: 'Arceaux',
+		color: '#4ade80',
+		layerIds: ['parking-arceaux', 'parking-couverts', 'parking-box'],
+	},
+	{ id: 'qf-velov', label: "Vélo'v", color: '#EA2127', layerIds: ['velov'] },
 	{
 		id: 'qf-transport',
 		label: 'Transport',
@@ -81,13 +81,30 @@ const shortLabels: Record<string, string> = {
 const DEFAULT_QF_IDS = [
 	'qf-vl',
 	'qf-pistes',
-	'qf-velov',
 	'qf-parking',
+	'qf-arceaux',
+	'qf-velov',
 	'qf-transport',
 	'qf-pumps',
 	'qf-fountains',
 ];
 const QF_STORAGE_KEY = 'quickFilterIds';
+// The former "Parking" pill also toggled arceaux: saved pill lists get the new Arceaux pill once.
+const QF_ARCEAUX_SPLIT_KEY = 'quickFilterIds:arceauxSplit';
+
+function addArceauxPillOnce(ids: string[]): string[] {
+	if (localStorage.getItem(QF_ARCEAUX_SPLIT_KEY)) {
+		return ids;
+	}
+	localStorage.setItem(QF_ARCEAUX_SPLIT_KEY, '1');
+	const at = ids.indexOf('qf-parking');
+	if (at === -1 || ids.includes('qf-arceaux')) {
+		return ids;
+	}
+	const migrated = [...ids.slice(0, at + 1), 'qf-arceaux', ...ids.slice(at + 1)];
+	localStorage.setItem(QF_STORAGE_KEY, JSON.stringify(migrated));
+	return migrated;
+}
 
 export function buildExtraQuickFilters(
 	availableLayers: readonly { id: string; label: string; color: string }[],
@@ -122,7 +139,7 @@ export function createQuickFilterState(
 		try {
 			const stored = localStorage.getItem(QF_STORAGE_KEY);
 			if (stored) {
-				const parsed = JSON.parse(stored) as string[];
+				const parsed = addArceauxPillOnce(JSON.parse(stored) as string[]);
 				const filtered = parsed.filter((id) => allQuickFilterMap.has(id));
 				return filtered.length > 0 ? filtered : DEFAULT_QF_IDS;
 			}

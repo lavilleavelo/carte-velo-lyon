@@ -12,6 +12,7 @@
 		BANDE_DASHARRAY,
 		BUS_VELO_DASHARRAY,
 		BUS_VELO_LINE_CAP,
+		CYCLEWAY_DETAIL_ZOOM,
 		DSC_ARROW_SYMBOL_SPACING,
 		DSC_ARROW_TEXT_SIZE,
 		PISTE_BIDIR_LINE_WIDTH,
@@ -37,6 +38,7 @@
 		hoveredSafety = null,
 		hoveredFeatureId = null,
 		selectedFeatureIds = [],
+		declutterOverview = false,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		boundary?: FeatureCollection;
@@ -49,6 +51,7 @@
 		hoveredSafety?: 'safe' | 'unsafe' | 'pedestrian' | null;
 		hoveredFeatureId?: string | number | null;
 		selectedFeatureIds?: readonly (string | number)[];
+		declutterOverview?: boolean;
 	} = $props();
 
 	const DSC_CAR_COLOR = '#000000';
@@ -211,17 +214,75 @@
 	const filterTrottoir: any = ['==', ['get', 'typeamenagement'], 'Voie piétonne (vélos autorisés)'];
 
 	const lineOffset: any = ['get', 'offset'];
+	// One line per street below CYCLEWAY_DETAIL_ZOOM, then the sides spread apart (0.6 is where the
+	// former 12 -> 15 ramp stood at that zoom, so the detail view is unchanged).
 	const zoomedOffset: any = [
 		'interpolate',
 		['linear'],
 		['zoom'],
-		12,
+		CYCLEWAY_DETAIL_ZOOM - 0.01,
 		0,
+		CYCLEWAY_DETAIL_ZOOM,
+		['*', ['get', 'offset'], 0.6],
 		15,
 		['get', 'offset'],
 		18,
 		['*', ['get', 'offset'], 1.8],
 	];
+
+	// Below CYCLEWAY_DETAIL_ZOOM, bandes, double-sens and trottoirs stay on the map but thinner and
+	// lighter so the structuring network leads. They keep full strength when the user is looking
+	// for them: safety mode (fading bandes would flatter the network), legend hover, or a legend
+	// selection without any structuring type.
+	const MINOR_LEGEND_IDS = ['bande', 'dsc', 'trottoir'];
+	const OVERVIEW_DIM = 0.55;
+	const dimMinorAtOverview = $derived.by(() => {
+		if (!declutterOverview || safetyMode) {
+			return false;
+		}
+		if (hoveredLegendId && MINOR_LEGEND_IDS.includes(hoveredLegendId)) {
+			return false;
+		}
+		const active = activeLegendIds ?? [];
+		return active.length === 0 || active.some((id) => !MINOR_LEGEND_IDS.includes(id));
+	});
+	function minorOpacity(base: number): any {
+		const full = ['*', base, safetyOpacityExpr];
+		if (!dimMinorAtOverview) {
+			return full;
+		}
+		return [
+			'interpolate',
+			['linear'],
+			['zoom'],
+			CYCLEWAY_DETAIL_ZOOM - 0.01,
+			['*', base * OVERVIEW_DIM, safetyOpacityExpr],
+			CYCLEWAY_DETAIL_ZOOM,
+			full,
+		];
+	}
+	// 1.94 is where the regular bande ramp stands at CYCLEWAY_DETAIL_ZOOM.
+	const bandeWidth: any = $derived(
+		dimMinorAtOverview
+			? [
+					'interpolate',
+					['linear'],
+					['zoom'],
+					8,
+					0.4,
+					11,
+					0.8,
+					CYCLEWAY_DETAIL_ZOOM - 0.01,
+					1.2,
+					CYCLEWAY_DETAIL_ZOOM,
+					1.94,
+					14,
+					2,
+					17,
+					2.8,
+				]
+			: ['interpolate', ['linear'], ['zoom'], 8, 0.5, 11, 1.1, 14, 2, 17, 2.8],
+	);
 
 	const HOVER_COLOR = '#facc15';
 	const SELECTED_COLOR = '#f97316';
@@ -322,8 +383,8 @@
 		filter={filterBande}
 		paint={{
 			'line-color': lineColor,
-			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.5, 11, 1.1, 14, 2, 17, 2.8],
-			'line-opacity': ['*', opacityBande, safetyOpacityExpr],
+			'line-width': bandeWidth,
+			'line-opacity': minorOpacity(opacityBande),
 			'line-dasharray': BANDE_DASHARRAY,
 			'line-offset': zoomedOffset,
 		}}
@@ -364,17 +425,31 @@
 		paint={{
 			'line-color': lineColor,
 			'line-width': ['interpolate', ['linear'], ['zoom'], 13, 1, 14, 1.6, 17, 2.4],
-			'line-opacity': ['*', opacityTrottoir, safetyOpacityExpr],
+			'line-opacity': minorOpacity(opacityTrottoir),
 			'line-dasharray': TROTTOIR_DASHARRAY,
 			'line-offset': lineOffset,
 		}}
 		layout={{ 'line-cap': TROTTOIR_LINE_CAP, visibility }}
 	/>
 
+	<LineLayer
+		id="osm-cw-dsc-overview"
+		filter={filterDsc}
+		minzoom={12}
+		maxzoom={CYCLEWAY_DETAIL_ZOOM}
+		paint={{
+			'line-color': lineColor,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 12, 0.6, CYCLEWAY_DETAIL_ZOOM, 1],
+			'line-opacity': opacityDsc * OVERVIEW_DIM,
+			'line-dasharray': [1, 2],
+		}}
+		layout={{ visibility: dimMinorAtOverview ? visibility : 'none' }}
+	/>
+
 	<SymbolLayer
 		id="osm-cw-dsc-arrows"
 		filter={filterDsc}
-		minzoom={13}
+		minzoom={dimMinorAtOverview ? CYCLEWAY_DETAIL_ZOOM : 13}
 		layout={{
 			'symbol-placement': 'line',
 			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 11, 80, 14, 50, 17, 35],

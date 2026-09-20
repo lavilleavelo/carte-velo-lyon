@@ -5,6 +5,8 @@ export type LabelCategory = 'places' | 'roads' | 'transit' | 'pois' | 'water';
 
 export const LABEL_CATEGORIES: LabelCategory[] = ['places', 'roads', 'transit', 'pois', 'water'];
 
+export const DEFAULT_LABELS_OFF: LabelCategory[] = ['water'];
+
 export const STYLE_LABEL_SUPPORT: Record<MapStyle, LabelCategory[]> = {
 	cyclopolis: ['places', 'roads', 'transit', 'pois', 'water'],
 	'osm-bright': ['places', 'roads', 'transit', 'pois', 'water'],
@@ -17,6 +19,129 @@ export const STYLE_LABEL_SUPPORT: Record<MapStyle, LabelCategory[]> = {
 };
 
 type LabelLayer = maplibregl.LayerSpecification;
+
+type PoiFilter = maplibregl.FilterSpecification;
+
+const poiSubclass = (cls: string, ...subclasses: string[]) =>
+	['all', ['==', 'class', cls], ['in', 'subclass', ...subclasses]] as PoiFilter;
+const poiNotSubclass = (cls: string, ...subclasses: string[]) =>
+	['all', ['==', 'class', cls], ['!in', 'subclass', ...subclasses]] as PoiFilter;
+
+const POI_TIERS: {
+	id: string;
+	minzoom: number;
+	textSize: number;
+	textColor: string;
+	match: PoiFilter[];
+}[] = [
+	{
+		// City-scale landmarks.
+		id: 'poi-landmark',
+		minzoom: 14,
+		textSize: 12,
+		textColor: '#555',
+		match: [
+			['in', 'class', 'museum', 'castle', 'stadium', 'zoo'],
+			poiSubclass('hospital', 'hospital'),
+			poiSubclass('college', 'university'),
+			poiSubclass('town_hall', 'townhall'),
+		],
+	},
+	{
+		// Culture, sport, public services, bike shops.
+		id: 'poi-civic',
+		minzoom: 15,
+		textSize: 11,
+		textColor: '#666',
+		match: [
+			[
+				'in',
+				'class',
+				'theatre',
+				'cinema',
+				'attraction',
+				'swimming_pool',
+				'sports_centre',
+				'place_of_worship',
+				'police',
+				'fire_station',
+				'bicycle',
+				'garden',
+				'cemetery',
+				'harbor',
+			],
+			poiSubclass('library', 'library'),
+			poiSubclass('town_hall', 'courthouse'),
+		],
+	},
+	{
+		// Neighbourhood scale: schools, private colleges, health, post offices, playgrounds.
+		id: 'poi-local',
+		minzoom: 16,
+		textSize: 11,
+		textColor: '#777',
+		match: [
+			[
+				'in',
+				'class',
+				'school',
+				'doctors',
+				'dentist',
+				'pharmacy',
+				'playground',
+				'pitch',
+				'dog_park',
+			],
+			poiNotSubclass('hospital', 'hospital'),
+			poiNotSubclass('college', 'university'),
+			poiNotSubclass('town_hall', 'townhall', 'courthouse'),
+			poiSubclass('post', 'post_office'),
+		],
+	},
+];
+
+const poiTierLayers: LabelLayer[] = POI_TIERS.map((tier) => ({
+	id: tier.id,
+	type: 'symbol',
+	source: 'openmaptiles',
+	'source-layer': 'poi',
+	minzoom: tier.minzoom,
+	filter: [
+		'all',
+		['==', '$type', 'Point'],
+		['has', 'name'],
+		['any', ['!has', 'level'], ['==', 'level', 0]],
+		['any', ...tier.match],
+	] as PoiFilter,
+	layout: {
+		// Classes without an icon in the OSM Bright sprite borrow a close one.
+		'icon-image': [
+			'match',
+			['get', 'class'],
+			'swimming_pool',
+			'swimming_11',
+			'sports_centre',
+			'pitch_11',
+			'doctors',
+			'hospital_11',
+			['concat', ['get', 'class'], '_11'],
+		],
+		'symbol-sort-key': ['get', 'rank'],
+		'text-anchor': 'top',
+		'text-field': '{name:latin}\n{name:nonlatin}',
+		'text-font': ['Noto Sans Regular'],
+		'text-max-width': 9,
+		'text-offset': [0, 0.6],
+		'text-padding': 2,
+		'text-size': tier.textSize,
+	},
+	paint: {
+		'text-color': tier.textColor,
+		'text-halo-blur': 0.5,
+		'text-halo-color': '#ffffff',
+		'text-halo-width': 1,
+	},
+}));
 
 export const labelLayers: Record<LabelCategory, LabelLayer[]> = {
 	places: [
@@ -616,139 +741,6 @@ export const labelLayers: Record<LabelCategory, LabelLayer[]> = {
 	],
 	pois: [
 		{
-			id: 'poi-level-3',
-			type: 'symbol',
-			source: 'openmaptiles',
-			'source-layer': 'poi',
-			minzoom: 16,
-			filter: [
-				'all',
-				['==', '$type', 'Point'],
-				['>=', 'rank', 25],
-				['any', ['!has', 'level'], ['==', 'level', 0]],
-				['!=', 'class', 'park'],
-				[
-					'!in',
-					'class',
-					'restaurant',
-					'fast_food',
-					'cafe',
-					'bar',
-					'beer',
-					'ice_cream',
-					'alcohol_shop',
-					'shop',
-					'clothing_store',
-					'grocery',
-					'bakery',
-					'butcher',
-					'hairdresser',
-					'music',
-					'laundry',
-					'lodging',
-					'ferry_terminal',
-					'car',
-					'fuel',
-					'parking',
-					'motorcycle_parking',
-					'bank',
-					'atm',
-					'library',
-					'art_gallery',
-					'office',
-					'veterinary',
-					'railway',
-					'airport',
-					'bus',
-					'aerialway',
-				],
-			],
-			layout: {
-				'icon-image': '{class}_11',
-				'text-anchor': 'top',
-				'text-field': '{name:latin}\n{name:nonlatin}',
-				'text-font': ['Noto Sans Regular'],
-				'text-max-width': 9,
-				'text-offset': [0, 0.6],
-				'text-padding': 2,
-				'text-size': 12,
-				visibility: 'visible',
-			},
-			paint: {
-				'text-color': '#666',
-				'text-halo-blur': 0.5,
-				'text-halo-color': '#ffffff',
-				'text-halo-width': 1,
-			},
-		},
-		{
-			id: 'poi-level-2',
-			type: 'symbol',
-			source: 'openmaptiles',
-			'source-layer': 'poi',
-			minzoom: 15,
-			filter: [
-				'all',
-				['==', '$type', 'Point'],
-				['<=', 'rank', 24],
-				['>=', 'rank', 15],
-				['any', ['!has', 'level'], ['==', 'level', 0]],
-				['!=', 'class', 'park'],
-				[
-					'!in',
-					'class',
-					'restaurant',
-					'fast_food',
-					'cafe',
-					'bar',
-					'beer',
-					'ice_cream',
-					'alcohol_shop',
-					'shop',
-					'clothing_store',
-					'grocery',
-					'bakery',
-					'butcher',
-					'hairdresser',
-					'music',
-					'laundry',
-					'lodging',
-					'ferry_terminal',
-					'car',
-					'fuel',
-					'parking',
-					'motorcycle_parking',
-					'bank',
-					'atm',
-					'library',
-					'art_gallery',
-					'office',
-					'veterinary',
-					'railway',
-					'airport',
-					'bus',
-					'aerialway',
-				],
-			],
-			layout: {
-				'icon-image': '{class}_11',
-				'text-anchor': 'top',
-				'text-field': '{name:latin}\n{name:nonlatin}',
-				'text-font': ['Noto Sans Regular'],
-				'text-max-width': 9,
-				'text-offset': [0, 0.6],
-				'text-padding': 2,
-				'text-size': 12,
-				visibility: 'visible',
-			},
-			paint: {
-				'text-color': '#666',
-				'text-halo-blur': 0.5,
-				'text-halo-color': '#ffffff',
-				'text-halo-width': 1,
-			},
-		},
-		{
 			id: 'poi-park-label',
 			type: 'symbol',
 			source: 'openmaptiles',
@@ -785,73 +777,7 @@ export const labelLayers: Record<LabelCategory, LabelLayer[]> = {
 				'text-halo-width': 1.5,
 			},
 		},
-		{
-			id: 'poi-level-1',
-			type: 'symbol',
-			source: 'openmaptiles',
-			'source-layer': 'poi',
-			minzoom: 14,
-			filter: [
-				'all',
-				['==', '$type', 'Point'],
-				['<=', 'rank', 14],
-				['has', 'name'],
-				['any', ['!has', 'level'], ['==', 'level', 0]],
-				['!=', 'class', 'park'],
-				[
-					'!in',
-					'class',
-					'restaurant',
-					'fast_food',
-					'cafe',
-					'bar',
-					'beer',
-					'ice_cream',
-					'alcohol_shop',
-					'shop',
-					'clothing_store',
-					'grocery',
-					'bakery',
-					'butcher',
-					'hairdresser',
-					'music',
-					'laundry',
-					'lodging',
-					'ferry_terminal',
-					'car',
-					'fuel',
-					'parking',
-					'motorcycle_parking',
-					'bank',
-					'atm',
-					'library',
-					'art_gallery',
-					'office',
-					'veterinary',
-					'railway',
-					'airport',
-					'bus',
-					'aerialway',
-				],
-			],
-			layout: {
-				'icon-image': '{class}_11',
-				'text-anchor': 'top',
-				'text-field': '{name:latin}\n{name:nonlatin}',
-				'text-font': ['Noto Sans Regular'],
-				'text-max-width': 9,
-				'text-offset': [0, 0.6],
-				'text-padding': 2,
-				'text-size': 12,
-				visibility: 'visible',
-			},
-			paint: {
-				'text-color': '#666',
-				'text-halo-blur': 0.5,
-				'text-halo-color': '#ffffff',
-				'text-halo-width': 1,
-			},
-		},
+		...poiTierLayers,
 	],
 	water: [
 		{

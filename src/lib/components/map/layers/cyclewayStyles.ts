@@ -55,3 +55,6 @@ export const DSC_ARROW_SYMBOL_SPACING = 40;
 export const DSC_ARROW_TEXT_SIZE = 16;
 
 export const NORMAL_LINE_OPACITY = 0.9;
+
+// Below this zoom the map is an overview: both sides of a street collapse into a single line
+export const CYCLEWAY_DETAIL_ZOOM = 13.8;

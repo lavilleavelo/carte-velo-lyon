@@ -744,6 +744,7 @@
 						currentStyle={mapStyleState.mapStyle}
 						onSelect={mapStyleState.setMapStyle}
 						position="top-right"
+						variant="thumbnail"
 					/>
 
 					{#if params.showCycleways}

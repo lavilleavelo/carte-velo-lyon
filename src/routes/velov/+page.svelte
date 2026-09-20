@@ -49,7 +49,7 @@
 		sort: type
 			.enumerated('bikes', 'elec', 'mech', 'stands', 'capacity', 'name')
 			.default(() => 'bikes'),
-		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'neutrino'),
+		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'cyclopolis'),
 		zoom: type('number').default(() => 0),
 		lat: type('number').default(() => 0),
 		lng: type('number').default(() => 0),
@@ -576,6 +576,7 @@
 					currentStyle={mapStyleState.mapStyle}
 					onSelect={mapStyleState.setMapStyle}
 					position="top-right"
+					variant="thumbnail"
 				/>
 
 				<OsmCyclewayLayer
