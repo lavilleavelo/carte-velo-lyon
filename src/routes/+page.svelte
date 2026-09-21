@@ -1425,7 +1425,7 @@
 
 			<TreesLayer {isLayerVisible} {map} />
 
-			<MapLabels show={effectiveLabelVisibility} />
+			<MapLabels show={effectiveLabelVisibility} offsetDscStreets={dscArrowsShown} />
 		</MapLibre>
 	</div>
 

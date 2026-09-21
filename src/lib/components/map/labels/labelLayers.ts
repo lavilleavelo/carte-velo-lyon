@@ -143,6 +143,23 @@ const poiTierLayers: LabelLayer[] = POI_TIERS.map((tier) => ({
 	},
 }));
 
+const ARRONDISSEMENT_SHORT_NAMES = Array.from({ length: 9 }, (_, i) => {
+	const ordinal = i === 0 ? '1er' : `${i + 1}e`;
+	return [`${ordinal} Arrondissement`, `${ordinal} arr.`];
+}).flat();
+
+const placeOtherTextField = [
+	'match',
+	['get', 'name:latin'],
+	...ARRONDISSEMENT_SHORT_NAMES,
+	[
+		'concat',
+		['coalesce', ['get', 'name:latin'], ''],
+		'\n',
+		['coalesce', ['get', 'name:nonlatin'], ''],
+	],
+] as unknown as maplibregl.ExpressionSpecification;
+
 export const labelLayers: Record<LabelCategory, LabelLayer[]> = {
 	places: [
 		{
@@ -158,7 +175,7 @@ export const labelLayers: Record<LabelCategory, LabelLayer[]> = {
 				['!in', 'class', 'city', 'town', 'village', 'state', 'country', 'continent', 'island'],
 			],
 			layout: {
-				'text-field': '{name:latin}\n{name:nonlatin}',
+				'text-field': placeOtherTextField,
 				'text-font': ['Noto Sans Bold'],
 				'text-letter-spacing': 0.1,
 				'text-max-width': 9,

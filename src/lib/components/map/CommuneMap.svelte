@@ -1261,7 +1261,7 @@
 					{dscArrowsShown}
 				/>
 
-				<MapLabels show={effectiveLabelVisibility} />
+				<MapLabels show={effectiveLabelVisibility} offsetDscStreets={dscArrowsShown} />
 
 				<CyclewayLegendControl
 					activeIds={cyclewayTypesParam.current}
