@@ -47,6 +47,7 @@
 		type LabelVisibility,
 	} from '$lib/utils/mapPreferences.svelte';
 	import { watchPitchForAuto3D } from '$lib/utils/auto3DLayers.svelte';
+	import { stableDerived } from '$lib/utils/stableDerived.svelte';
 	import {
 		DEFAULT_LABELS_OFF,
 		LABEL_CATEGORIES,
@@ -175,6 +176,15 @@
 		pushHistory: false,
 	});
 
+	const layersParam = stableDerived(() => params.layers ?? []);
+	const cyclewayTypesParam = stableDerived(() => params.cyclewayTypes ?? []);
+	const cyclewayReseauParam = stableDerived(() => params.cyclewayReseau ?? []);
+	const cyclewayTypeParam = stableDerived(() => params.cyclewayType ?? []);
+	const cyclewayLocalisationParam = stableDerived(() => params.cyclewayLocalisation ?? []);
+	const targetNetworkHorizonsParam = stableDerived(() => params.targetNetworkHorizons ?? []);
+	const projectVLStatusesParam = stableDerived(() => params.projectVLStatuses ?? []);
+	const labelsOffParam = stableDerived(() => params.labelsOff ?? []);
+
 	const projectVLSubLayers = [
 		{
 			id: 'wip',
@@ -225,7 +235,7 @@
 		params.layers = [...DEFAULT_MAP_LAYERS];
 	}
 
-	const visibleLayers = $derived(new Set(expandLayers(params.layers || [])));
+	const visibleLayers = $derived(new Set(expandLayers(layersParam.current)));
 
 	function setLayers(layers: string[]) {
 		params.layers = compactLayers(layers);
@@ -238,7 +248,7 @@
 	);
 
 	const dscArrowsShown = $derived.by(() => {
-		const types = params.cyclewayTypes ?? [];
+		const types = cyclewayTypesParam.current;
 		return visibleLayers.has('osm-cycleways') && (types.length === 0 || types.includes('dsc'));
 	});
 
@@ -260,7 +270,7 @@
 
 	const labelVisibility = $derived<LabelVisibility>(
 		LABEL_CATEGORIES.reduce((acc, cat) => {
-			acc[cat] = !(params.labelsOff ?? []).includes(cat);
+			acc[cat] = !labelsOffParam.current.includes(cat);
 			return acc;
 		}, {} as LabelVisibility),
 	);
@@ -594,15 +604,15 @@
 	}
 
 	function isCyclewayReseauSelected(value: string): boolean {
-		return (params.cyclewayReseau || []).includes(value);
+		return cyclewayReseauParam.current.includes(value);
 	}
 
 	function isCyclewayTypeSelected(value: string): boolean {
-		return (params.cyclewayType || []).includes(value);
+		return cyclewayTypeParam.current.includes(value);
 	}
 
 	function isCyclewayLocalisationSelected(value: string): boolean {
-		return (params.cyclewayLocalisation || []).includes(value);
+		return cyclewayLocalisationParam.current.includes(value);
 	}
 
 	const filteredVoirieData = $derived.by(() => {
@@ -611,10 +621,10 @@
 			return undefined;
 		}
 
-		const reseauFilters = params.cyclewayReseau || [];
-		const typeFilters = params.cyclewayType || [];
-		const localisationFilters = params.cyclewayLocalisation || [];
-		const legendFilters = params.cyclewayTypes || [];
+		const reseauFilters = cyclewayReseauParam.current;
+		const typeFilters = cyclewayTypeParam.current;
+		const localisationFilters = cyclewayLocalisationParam.current;
+		const legendFilters = cyclewayTypesParam.current;
 
 		if (
 			reseauFilters.length === 0 &&
@@ -750,8 +760,42 @@
 		}
 	}
 
+	// Hover queries are skipped while the map moves and run at most once per frame.
+	let pendingMouseMove: any = null;
+	let mouseMoveRaf: number | null = null;
+
+	function cancelPendingMouseMove() {
+		if (mouseMoveRaf !== null) {
+			cancelAnimationFrame(mouseMoveRaf);
+			mouseMoveRaf = null;
+		}
+		pendingMouseMove = null;
+	}
+
 	function handleMapMouseMove(e: any) {
-		if (!map) return;
+		if (!map || map.isMoving()) {
+			return;
+		}
+
+		pendingMouseMove = e;
+		if (mouseMoveRaf !== null) {
+			return;
+		}
+
+		mouseMoveRaf = requestAnimationFrame(() => {
+			mouseMoveRaf = null;
+			const pending = pendingMouseMove;
+			pendingMouseMove = null;
+			if (pending) {
+				processMouseMove(pending);
+			}
+		});
+	}
+
+	function processMouseMove(e: any) {
+		if (!map || map.isMoving()) {
+			return;
+		}
 
 		// Clear any pending timeout when moving mouse
 		if (hoverTimeout) {
@@ -848,6 +892,7 @@
 			clearTimeout(hoverTimeout);
 			hoverTimeout = null;
 		}
+		cancelPendingMouseMove();
 		hoverPopupFeatures = null;
 		hoveredCyclewayId = null;
 		hoveredOsmCyclewayId = null;
@@ -859,6 +904,7 @@
 			clearTimeout(hoverTimeout);
 			hoverTimeout = null;
 		}
+		cancelPendingMouseMove();
 		hoverPopupFeatures = null;
 		hoveredCyclewayId = null;
 		hoveredOsmCyclewayId = null;
@@ -1120,8 +1166,7 @@
 			onzoomstart={handleMapMoveStart}
 			onmoveend={() => {
 				lastMapMoveTime = Date.now();
-				params.zoom = zoom;
-				params.center = [center.lng, center.lat];
+				params.update({ zoom, center: [center.lng, center.lat] });
 			}}
 		>
 			<AttributionControl compact={true} position="bottom-left" />
@@ -1294,7 +1339,10 @@
 				selectedFeatureIds={selectedCyclewayIds}
 			/>
 
-			<TargetNetworkLayer {isLayerVisible} targetNetworkHorizons={params.targetNetworkHorizons} />
+			<TargetNetworkLayer
+				{isLayerVisible}
+				targetNetworkHorizons={targetNetworkHorizonsParam.current}
+			/>
 
 			<VectorTileSource
 				id="osm-vector"
@@ -1309,7 +1357,7 @@
 			<VoiesLyonnaisesLayer
 				{isLayerVisible}
 				{map}
-				projectVLStatuses={params.projectVLStatuses}
+				projectVLStatuses={projectVLStatusesParam.current}
 				{projectVLSubLayers}
 			/>
 
@@ -1319,7 +1367,7 @@
 				{isLayerVisible}
 				{map}
 				{safetyMode}
-				activeLegendIds={params.cyclewayTypes}
+				activeLegendIds={cyclewayTypesParam.current}
 				{hoveredLegendId}
 				hoveredFeatureId={hoveredOsmCyclewayId}
 				selectedFeatureIds={selectedOsmCyclewayIds}
@@ -1334,7 +1382,7 @@
 
 			{#if isLayerVisible('osm-cycleways') && showCyclewayLegend}
 				<CyclewayLegendControl
-					activeIds={params.cyclewayTypes}
+					activeIds={cyclewayTypesParam.current}
 					onToggle={toggleLegendType}
 					onSolo={soloLegendType}
 					onHover={(id) => (hoveredLegendId = id)}
@@ -1429,13 +1477,13 @@
 							/>
 						{:else if layerId === 'target-network'}
 							<TargetNetworkFilters
-								targetNetworkHorizons={params.targetNetworkHorizons}
+								targetNetworkHorizons={targetNetworkHorizonsParam.current}
 								toggleHorizon={toggleTargetNetworkHorizon}
 							/>
 						{:else if layerId === 'project-vl'}
 							<ProjectVLFilters
 								subLayers={projectVLSubLayers}
-								selectedStatuses={params.projectVLStatuses || []}
+								selectedStatuses={projectVLStatusesParam.current}
 								toggleStatus={toggleProjectVLStatus}
 							/>
 						{/if}
@@ -1490,13 +1538,13 @@
 							/>
 						{:else if layerId === 'target-network'}
 							<TargetNetworkFilters
-								targetNetworkHorizons={params.targetNetworkHorizons}
+								targetNetworkHorizons={targetNetworkHorizonsParam.current}
 								toggleHorizon={toggleTargetNetworkHorizon}
 							/>
 						{:else if layerId === 'project-vl'}
 							<ProjectVLFilters
 								subLayers={projectVLSubLayers}
-								selectedStatuses={params.projectVLStatuses || []}
+								selectedStatuses={projectVLStatusesParam.current}
 								toggleStatus={toggleProjectVLStatus}
 							/>
 						{/if}

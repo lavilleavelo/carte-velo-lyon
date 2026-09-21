@@ -292,22 +292,27 @@
 
 	const HOVER_COLOR = '#facc15';
 	const SELECTED_COLOR = '#f97316';
-	const hoverFilter: any = $derived(
-		hoveredFeatureId == null ? ['==', ['id'], -1] : ['==', ['id'], hoveredFeatureId],
-	);
-	const selectedFilter: any = $derived(
-		selectedFeatureIds.length === 0
-			? ['==', ['id'], -1]
-			: ['in', ['id'], ['literal', [...selectedFeatureIds]]],
-	);
+
+	const highlightData = $derived.by<FeatureCollection>(() => {
+		const features = displayData?.features ?? [];
+		const pick = (id: string | number, highlight: 'hover' | 'selected') => {
+			const feature = features[Number(id)];
+			return feature ? [{ ...feature, properties: { ...feature.properties, highlight } }] : [];
+		};
+		return {
+			type: 'FeatureCollection',
+			features: [
+				...selectedFeatureIds.flatMap((id) => pick(id, 'selected')),
+				...(hoveredFeatureId == null ? [] : pick(hoveredFeatureId, 'hover')),
+			],
+		};
+	});
+
+	const hoverFilter: any = ['==', ['get', 'highlight'], 'hover'];
+	const selectedFilter: any = ['==', ['get', 'highlight'], 'selected'];
 </script>
 
-<GeoJSONSource
-	maxzoom={13}
-	data={displayData ?? EMPTY_FEATURE_COLLECTION}
-	id="osm-cycleways-source"
-	generateId
->
+<GeoJSONSource data={highlightData} id="osm-cycleways-highlight-source">
 	<LineLayer
 		id="osm-cw-selected"
 		filter={selectedFilter}
@@ -333,7 +338,14 @@
 		}}
 		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
 	/>
+</GeoJSONSource>
 
+<GeoJSONSource
+	maxzoom={13}
+	data={displayData ?? EMPTY_FEATURE_COLLECTION}
+	id="osm-cycleways-source"
+	generateId
+>
 	<LineLayer
 		id="osm-cw-piste-bidir"
 		filter={filterPisteBidir}

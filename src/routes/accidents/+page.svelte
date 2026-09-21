@@ -21,6 +21,7 @@
 	import FeatureInfo from '$lib/components/map/FeatureInfo.svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
+	import { stableDerived } from '$lib/utils/stableDerived.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
 	import VoiesLyonnaisesLayer from '$lib/components/map/layers/VoiesLyonnaisesLayer.svelte';
 	import CountersLayer from '$lib/components/map/layers/CountersLayer.svelte';
@@ -97,6 +98,12 @@
 	});
 	const params = useSearchParams(paramsSchema, { pushHistory: false, noScroll: true });
 
+	const gravitiesParam = stableDerived(() => params.gravities);
+	const collisionsParam = stableDerived(() => params.collisions);
+	const vehiclesParam = stableDerived(() => params.vehicles);
+	const communesParam = stableDerived(() => params.communes);
+	const streetsParam = stableDerived(() => params.streets);
+
 	let communeSearch = $state('');
 
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
@@ -129,9 +136,11 @@
 		const m = map;
 		const onMoveEnd = () => {
 			const c = m.getCenter();
-			params.lng = Number(c.lng.toFixed(5));
-			params.lat = Number(c.lat.toFixed(5));
-			params.zoom = Number(m.getZoom().toFixed(2));
+			params.update({
+				lng: Number(c.lng.toFixed(5)),
+				lat: Number(c.lat.toFixed(5)),
+				zoom: Number(m.getZoom().toFixed(2)),
+			});
 		};
 		m.on('moveend', onMoveEnd);
 		return () => {
@@ -162,14 +171,14 @@
 
 	const COMMUNES_NONE = '__none__';
 
-	const gravitySet = $derived(new Set(params.gravities));
-	const collisionSet = $derived(new Set(params.collisions));
-	const vehicleSet = $derived(new Set(params.vehicles));
-	const communeSet = $derived(new Set(params.communes));
+	const gravitySet = $derived(new Set(gravitiesParam.current));
+	const collisionSet = $derived(new Set(collisionsParam.current));
+	const vehicleSet = $derived(new Set(vehiclesParam.current));
+	const communeSet = $derived(new Set(communesParam.current));
 	const communesAll = $derived(communeSet.size === 0);
 	const communesNone = $derived(communeSet.size === 1 && communeSet.has(COMMUNES_NONE));
 
-	const streetKeySet = $derived(new Set(params.streets.map((s) => normalizeStreet(s))));
+	const streetKeySet = $derived(new Set(streetsParam.current.map((s) => normalizeStreet(s))));
 	const streetsActive = $derived(streetKeySet.size > 0);
 
 	const gravityActive = $derived.by(() => {

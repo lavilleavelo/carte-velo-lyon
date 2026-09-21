@@ -31,6 +31,7 @@
 		type LabelVisibility,
 	} from '$lib/utils/mapPreferences.svelte';
 	import { watchPitchForAuto3D } from '$lib/utils/auto3DLayers.svelte';
+	import { stableDerived } from '$lib/utils/stableDerived.svelte';
 	import { registerArrowIconsHandler } from '$lib/utils/mapUtils';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import CyclewayLayer from '$lib/components/map/layers/CyclewayLayer.svelte';
@@ -188,9 +189,11 @@
 		const m = map;
 		const onMoveEnd = () => {
 			const c = m.getCenter();
-			params.lng = Number(c.lng.toFixed(5));
-			params.lat = Number(c.lat.toFixed(5));
-			params.zoom = Number(m.getZoom().toFixed(2));
+			params.update({
+				lng: Number(c.lng.toFixed(5)),
+				lat: Number(c.lat.toFixed(5)),
+				zoom: Number(m.getZoom().toFixed(2)),
+			});
 		};
 
 		m.on('moveend', onMoveEnd);
@@ -224,6 +227,18 @@
 
 	const params = useSearchParams(paramsSchema, { pushHistory: false, noScroll: true });
 
+	const layersParam = stableDerived(() => params.layers ?? []);
+	const cyclewayTypesParam = stableDerived(() => params.cyclewayTypes ?? []);
+	const cyclewayReseauParam = stableDerived(() => params.cyclewayReseau ?? []);
+	const cyclewayTypeParam = stableDerived(() => params.cyclewayType ?? []);
+	const cyclewayLocalisationParam = stableDerived(() => params.cyclewayLocalisation ?? []);
+	const targetNetworkHorizonsParam = stableDerived(() => params.targetNetworkHorizons ?? []);
+	const speedLimitsParam = stableDerived(() => params.speedLimits ?? []);
+	const safetyFilterParam = stableDerived(() => params.safetyFilter ?? []);
+	const labelsOffParam = stableDerived(() => params.labelsOff ?? []);
+	const yearRangeParam = stableDerived<[number, number]>(() => [params.yearFrom, params.yearTo]);
+	const filterByYear = $derived(params.filterByYear);
+
 	const sidebarHidden = $derived(params.sidebar === 'closed');
 	const sidebarCollapsed = $derived(sidebarHidden && isDesktop);
 
@@ -237,7 +252,7 @@
 	type SafetyKey = (typeof SAFETY_KEYS)[number];
 
 	const safetyFilter = $derived<SafetyKey[]>(
-		(params.safetyFilter ?? []).filter((k): k is SafetyKey =>
+		safetyFilterParam.current.filter((k): k is SafetyKey =>
 			(SAFETY_KEYS as readonly string[]).includes(k),
 		),
 	);
@@ -253,7 +268,7 @@
 
 	$effect(() => {
 		if (!safetyMode) {
-			if ((params.safetyFilter ?? []).length > 0) {
+			if (safetyFilterParam.current.length > 0) {
 				params.safetyFilter = [];
 			}
 
@@ -268,7 +283,7 @@
 
 	const labelVisibility = $derived<LabelVisibility>(
 		LABEL_CATEGORIES.reduce((acc, cat) => {
-			acc[cat] = !(params.labelsOff ?? []).includes(cat);
+			acc[cat] = !labelsOffParam.current.includes(cat);
 			return acc;
 		}, {} as LabelVisibility),
 	);
@@ -297,9 +312,9 @@
 		saveVisibleOptionalCategories(next);
 	}
 
-	const yearRange = $derived<[number, number]>([params.yearFrom, params.yearTo]);
+	const yearRange = $derived(yearRangeParam.current);
 	const effectiveYearRange = $derived<[number, number] | undefined>(
-		params.filterByYear ? yearRange : undefined,
+		filterByYear ? yearRange : undefined,
 	);
 
 	const YEAR_COMPATIBLE_FINE_IDS = new Set<string>([
@@ -308,7 +323,7 @@
 		...layerGroups.parking,
 	]);
 
-	const visibleSet = $derived(new Set(expandLayers(params.layers)));
+	const visibleSet = $derived(new Set(expandLayers(layersParam.current)));
 
 	function isFineActive(id: string): boolean {
 		const labelCat = labelIdToCategory(id);
@@ -316,7 +331,7 @@
 			return labelVisibility[labelCat] && supportedLabelCategories.has(labelCat);
 		}
 		if (!visibleSet.has(id)) return false;
-		if (params.filterByYear && !YEAR_COMPATIBLE_FINE_IDS.has(id)) return false;
+		if (filterByYear && !YEAR_COMPATIBLE_FINE_IDS.has(id)) return false;
 		return true;
 	}
 
@@ -328,7 +343,7 @@
 	}
 
 	const dscArrowsShown = $derived.by(() => {
-		const types = params.cyclewayTypes ?? [];
+		const types = cyclewayTypesParam.current;
 		return (
 			isLayerActive('osm-cycleways') &&
 			(types.length === 0 || types.includes('dsc')) &&
@@ -538,10 +553,10 @@
 	const voirieInside = $derived.by(() => {
 		const filtered = voirieBoundaryYearFiltered;
 		if (!filtered) return undefined;
-		const activeLegendTypes = params.cyclewayTypes ?? [];
-		const reseauFilters = params.cyclewayReseau ?? [];
-		const typeFilters = params.cyclewayType ?? [];
-		const localisationFilters = params.cyclewayLocalisation ?? [];
+		const activeLegendTypes = cyclewayTypesParam.current;
+		const reseauFilters = cyclewayReseauParam.current;
+		const typeFilters = cyclewayTypeParam.current;
+		const localisationFilters = cyclewayLocalisationParam.current;
 		const hasLegend = activeLegendTypes.length > 0;
 		const hasSubFilters =
 			reseauFilters.length > 0 || typeFilters.length > 0 || localisationFilters.length > 0;
@@ -598,19 +613,19 @@
 	}
 
 	function isCyclewayReseauSelected(value: string): boolean {
-		return (params.cyclewayReseau ?? []).includes(value);
+		return cyclewayReseauParam.current.includes(value);
 	}
 	function isCyclewayTypeSelected(value: string): boolean {
-		return (params.cyclewayType ?? []).includes(value);
+		return cyclewayTypeParam.current.includes(value);
 	}
 	function isCyclewayLocalisationSelected(value: string): boolean {
-		return (params.cyclewayLocalisation ?? []).includes(value);
+		return cyclewayLocalisationParam.current.includes(value);
 	}
 
 	let hoveredLegendId: LegendId | null = $state(null);
 
 	const selectedSpeedBuckets = $derived<SpeedBucket[]>(
-		(params.speedLimits ?? []).filter((b): b is SpeedBucket =>
+		speedLimitsParam.current.filter((b): b is SpeedBucket =>
 			(SPEED_BUCKETS as string[]).includes(b),
 		),
 	);
@@ -1032,7 +1047,7 @@
 
 			<CommuneLayerPills
 				{visibleOptional}
-				filterByYear={params.filterByYear}
+				{filterByYear}
 				{isFineActive}
 				{isCategoryActive}
 				{toggleLayer}
@@ -1215,7 +1230,7 @@
 				<OsmCyclewayLayer
 					isLayerVisible={(id) => id === 'osm-cycleways' && isLayerActive('osm-cycleways')}
 					{boundary}
-					activeLegendIds={params.cyclewayTypes}
+					activeLegendIds={cyclewayTypesParam.current}
 					{hoveredLegendId}
 					{map}
 					{safetyMode}
@@ -1242,14 +1257,14 @@
 					{boundary}
 					{map}
 					yearRange={effectiveYearRange}
-					targetNetworkHorizons={params.targetNetworkHorizons}
+					targetNetworkHorizons={targetNetworkHorizonsParam.current}
 					{dscArrowsShown}
 				/>
 
 				<MapLabels show={effectiveLabelVisibility} />
 
 				<CyclewayLegendControl
-					activeIds={params.cyclewayTypes}
+					activeIds={cyclewayTypesParam.current}
 					onToggle={toggleCyclewayType}
 					onSolo={soloCyclewayType}
 					onHover={(id) => (hoveredLegendId = id)}

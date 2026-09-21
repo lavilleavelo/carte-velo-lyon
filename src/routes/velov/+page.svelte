@@ -177,9 +177,11 @@
 		const m = map;
 		const onMoveEnd = () => {
 			const c = m.getCenter();
-			params.lng = Number(c.lng.toFixed(5));
-			params.lat = Number(c.lat.toFixed(5));
-			params.zoom = Number(m.getZoom().toFixed(2));
+			params.update({
+				lng: Number(c.lng.toFixed(5)),
+				lat: Number(c.lat.toFixed(5)),
+				zoom: Number(m.getZoom().toFixed(2)),
+			});
 		};
 
 		m.on('moveend', onMoveEnd);
