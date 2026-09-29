@@ -11,7 +11,13 @@ const MAX_LAG_HOURS = 3;
 
 // Days not in the database yet: complete days since the last sync, and days being published
 // (today, or yesterday just after midnight). hours: data published until `hours`h
-export type LiveDay = { day: string; count: number; hours: number; partial: boolean };
+export type LiveDay = {
+	day: string;
+	count: number;
+	hours: number;
+	hourly: (number | null)[];
+	partial: boolean;
+};
 
 const cache = new Map<number, { expiresAt: number; promise: Promise<LiveDay[] | null> }>();
 
@@ -44,13 +50,17 @@ async function fetchLiveDays(idPdc: number): Promise<LiveDay[] | null> {
 	for (const [day, counts] of countsByDay) {
 		const count = counts.reduce((sum, value) => sum + value, 0);
 		// Rows carry no hour: on the spring DST day, 2am is missing
-		const hours = isSpringDstDay(day) && counts.length > 2 ? counts.length + 1 : counts.length;
+		const hourly =
+			isSpringDstDay(day) && counts.length > 2
+				? [...counts.slice(0, 2), null, ...counts.slice(2)]
+				: counts;
+		const hours = hourly.length;
 		const elapsedHours =
 			((Date.parse(today) - Date.parse(day)) / DAY_MS) * 24 + currentHourInParis();
 		if (hours === 24 && day !== today) {
-			liveDays.push({ day, count, hours, partial: false });
+			liveDays.push({ day, count, hours, hourly, partial: false });
 		} else if (hours > 0 && elapsedHours - hours <= MAX_LAG_HOURS) {
-			liveDays.push({ day, count, hours, partial: true });
+			liveDays.push({ day, count, hours, hourly, partial: true });
 		}
 	}
 	return liveDays;
