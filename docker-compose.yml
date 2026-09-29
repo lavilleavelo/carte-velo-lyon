@@ -6,13 +6,16 @@ services:
       - '3000:3000'
     environment:
       - CACHE_DIR=/data/cache
+      - COUNTERS_DB_PATH=/data/db/counters.sqlite
     volumes:
       - cache-data:/data/cache
+      - counters-db:/data/db
     networks:
       - scoobydoo
 
 volumes:
   cache-data:
+  counters-db:
 
 networks:
   scoobydoo:

@@ -1,4 +1,6 @@
-import type { Handle } from '@sveltejs/kit';
+import type { Handle, ServerInit } from '@sveltejs/kit';
+import { building } from '$app/environment';
+import { startCountersSync } from '$lib/server/counters/sync';
 
 const ALLOWED_ORIGINS = new Set([
 	'https://dazzling-gumdrop-a1bad4.netlify.app',
@@ -18,6 +20,13 @@ function corsOrigin(request: Request): string | null {
 	}
 	return null;
 }
+
+export const init: ServerInit = () => {
+	// Prerendering runs the server at build time: no sync there
+	if (!building) {
+		startCountersSync();
+	}
+};
 
 export const handle: Handle = async ({ event, resolve }) => {
 	const isApi = event.url.pathname.startsWith('/api/');
