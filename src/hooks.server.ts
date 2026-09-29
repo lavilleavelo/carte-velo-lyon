@@ -4,8 +4,11 @@ import { startCountersSync } from '$lib/server/counters/sync';
 
 const ALLOWED_ORIGINS = new Set([
 	'https://dazzling-gumdrop-a1bad4.netlify.app',
+	'https://cyclopolis.fr',
+	'https://www.cyclopolis.fr',
 	'http://localhost:5173',
 	'http://localhost:4173',
+	'http://localhost:3000',
 ]);
 
 const ALLOWED_ORIGIN_PATTERN = /^https:\/\/([a-z0-9-]+\.)*lavilleavelo\.org$/;
