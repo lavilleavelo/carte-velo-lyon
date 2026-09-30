@@ -54,6 +54,7 @@
 		"layerchart": "2.0.0-next.44",
 		"maplibre-gl": "^6.10.0",
 		"runed": "^0.36.0",
+		"sharp": "^0.35.5",
 		"svelte-maplibre-gl": "^2.2.1",
 		"three": "^0.185.1",
 		"virtua": "^0.46.7"

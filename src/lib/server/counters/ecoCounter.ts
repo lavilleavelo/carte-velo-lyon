@@ -15,6 +15,7 @@ export type EcoCounter = {
 	flowIds: string;
 	lat: number | null;
 	lon: number | null;
+	photos: string[];
 };
 
 type EcoCounterListItem = {
@@ -23,6 +24,7 @@ type EcoCounterListItem = {
 	lat: number | null;
 	lon: number | null;
 	pratique: { pratique: number; id: number }[];
+	photo: { lien: string }[] | null;
 };
 
 // '2026-09-29' -> '29/09/2026'
@@ -47,6 +49,7 @@ export async function fetchEcoCounters(): Promise<EcoCounter[]> {
 		flowIds: item.pratique.map((p) => p.id).join(';'),
 		lat: item.lat ?? null,
 		lon: item.lon ?? null,
+		photos: (item.photo ?? []).map((photo) => photo.lien),
 	}));
 }
 

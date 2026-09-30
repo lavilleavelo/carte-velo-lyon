@@ -2,6 +2,7 @@ import { addDays, isSpringDstDay, todayInParis } from './calendar';
 import { startCarCountersSync } from './carSync';
 import { getCountersDb, transaction } from './db';
 import { fetchEcoCounters, fetchEcoCounts, type EcoCounter } from './ecoCounter';
+import { syncCounterPhotos } from './photos';
 import { fetchSchoolHolidays } from './schoolHolidays';
 
 const HISTORY_START = '2015-01-01';
@@ -187,6 +188,12 @@ async function runSync(): Promise<void> {
 	console.log(
 		`[counters] synced ${toSync.length - failures}/${toSync.length} counters in ${seconds}s`,
 	);
+
+	try {
+		await syncCounterPhotos(counters);
+	} catch (error) {
+		console.error('[counters] photos sync failed:', error);
+	}
 }
 
 export function syncCounters(): Promise<void> {

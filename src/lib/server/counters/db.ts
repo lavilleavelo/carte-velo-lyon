@@ -31,6 +31,21 @@ const SCHEMA = `
 		name TEXT NOT NULL
 	);
 
+	-- Eco-Counter photos of the counters, cached as files (original and WebP thumbnail)
+	CREATE TABLE IF NOT EXISTS counter_photos (
+		id_pdc INTEGER NOT NULL,
+		position INTEGER NOT NULL,
+		url TEXT NOT NULL,
+		file TEXT NOT NULL,
+		thumbnail TEXT,
+		PRIMARY KEY (id_pdc, position)
+	) WITHOUT ROWID;
+
+	CREATE TABLE IF NOT EXISTS sync_state (
+		key TEXT PRIMARY KEY,
+		value TEXT NOT NULL
+	);
+
 	-- Cerema car count points. hourly_from: oldest day with hourly data (backfill cursor)
 	CREATE TABLE IF NOT EXISTS car_points (
 		id INTEGER PRIMARY KEY,
