@@ -44,6 +44,10 @@ export type DetailedStats = {
 
 export type CounterStats = DetailedStats & { idPdc: number; name: string; syncedAt: string | null };
 
+type Profile = Pick<DetailedStats, 'averages' | 'hourlyProfile' | 'weekdayProfile' | 'peakHours'>;
+
+export type YearlyStats = Profile & { year: number; days: number };
+
 function median(values: number[]): number {
 	const sorted = [...values].sort((a, b) => a - b);
 	const middle = Math.floor(sorted.length / 2);
@@ -171,18 +175,13 @@ function buildRecords(rows: DayRow[]): DetailedStats['records'] {
 
 export type StatsOptions = { from?: string; to?: string };
 
-// rows: days with data, sorted by day
-export function computeStats(rows: DayRow[], options: StatsOptions = {}): DetailedStats {
-	const db = getCountersDb();
-	const schoolHolidays = db
+function loadSchoolHolidays(): SchoolHoliday[] {
+	return getCountersDb()
 		.prepare('SELECT start, end, name FROM school_holidays ORDER BY start')
 		.all() as SchoolHoliday[];
-	const schoolHolidayDays = expandSchoolHolidays(schoolHolidays);
+}
 
-	const lastDay = rows[rows.length - 1].day;
-	const to = options.to ?? lastDay;
-	const from = options.from ?? addDays(to, -(PROFILE_DAYS - 1));
-	const periodRows = rows.filter((row) => row.day >= from && row.day <= to);
+function computeProfile(periodRows: DayRow[], schoolHolidayDays: Set<string>): Profile {
 	const rowsByType = Object.fromEntries(
 		DAY_TYPES.map((type) => [
 			type,
@@ -205,10 +204,6 @@ export function computeStats(rows: DayRow[], options: StatsOptions = {}): Detail
 	}
 
 	return {
-		firstDay: rows[0].day,
-		lastDay,
-		daily: buildDailySeries(rows, schoolHolidays),
-		period: { from, to },
 		averages,
 		hourlyProfile,
 		weekdayProfile: totalsByDayOfWeek.map((totals) => average(totals)),
@@ -217,8 +212,50 @@ export function computeStats(rows: DayRow[], options: StatsOptions = {}): Detail
 			evening: peakHour(hourlyProfile.weekday, EVENING_HOURS),
 			weekend: peakHour(hourlyProfile.weekend, [0, 24]),
 		},
+	};
+}
+
+// rows: days with data, sorted by day
+export function computeStats(rows: DayRow[], options: StatsOptions = {}): DetailedStats {
+	const schoolHolidays = loadSchoolHolidays();
+	const lastDay = rows[rows.length - 1].day;
+	const to = options.to ?? lastDay;
+	const from = options.from ?? addDays(to, -(PROFILE_DAYS - 1));
+
+	return {
+		firstDay: rows[0].day,
+		lastDay,
+		daily: buildDailySeries(rows, schoolHolidays),
+		period: { from, to },
+		...computeProfile(
+			rows.filter((row) => row.day >= from && row.day <= to),
+			expandSchoolHolidays(schoolHolidays),
+		),
 		records: buildRecords(rows),
 	};
+}
+
+export function computeYearlyStats(rows: DayRow[]): YearlyStats[] {
+	const schoolHolidayDays = expandSchoolHolidays(loadSchoolHolidays());
+	return [...Map.groupBy(rows, (row) => Number(row.day.slice(0, 4)))].map(([year, yearRows]) => ({
+		year,
+		days: yearRows.length,
+		...computeProfile(yearRows, schoolHolidayDays),
+	}));
+}
+
+function loadCounterRows(idPdc: number): DayRow[] {
+	// Days at 0 are counter outages, not days without any bike
+	return (
+		getCountersDb()
+			.prepare(
+				'SELECT day, total, hourly FROM counter_days WHERE id_pdc = ? AND total > 0 ORDER BY day',
+			)
+			.all(idPdc) as { day: string; total: number; hourly: string | null }[]
+	).map((row) => ({
+		...row,
+		hourly: row.hourly ? (JSON.parse(row.hourly) as (number | null)[]) : null,
+	}));
 }
 
 export function getCounterStats(idPdc: number, options: StatsOptions = {}): CounterStats | null {
@@ -230,20 +267,15 @@ export function getCounterStats(idPdc: number, options: StatsOptions = {}): Coun
 		return null;
 	}
 
-	// Days at 0 are counter outages, not days without any bike
-	const rows = (
-		db
-			.prepare(
-				'SELECT day, total, hourly FROM counter_days WHERE id_pdc = ? AND total > 0 ORDER BY day',
-			)
-			.all(idPdc) as { day: string; total: number; hourly: string | null }[]
-	).map((row) => ({
-		...row,
-		hourly: row.hourly ? (JSON.parse(row.hourly) as (number | null)[]) : null,
-	}));
+	const rows = loadCounterRows(idPdc);
 	if (rows.length === 0) {
 		return null;
 	}
 
 	return { idPdc, name: counter.name, syncedAt: counter.synced_at, ...computeStats(rows, options) };
+}
+
+export function getCounterYearlyStats(idPdc: number): YearlyStats[] | null {
+	const rows = loadCounterRows(idPdc);
+	return rows.length > 0 ? computeYearlyStats(rows) : null;
 }
