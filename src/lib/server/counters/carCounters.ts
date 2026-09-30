@@ -3,7 +3,14 @@ import { getCarLiveSnapshot } from './carSync';
 import { getCountersDb } from './db';
 import type { DayHours } from './hours';
 import type { LiveDay } from './live';
-import { computeStats, type DayRow, type DetailedStats, type StatsOptions } from './stats';
+import {
+	computeStats,
+	computeYearlyStats,
+	type DayRow,
+	type DetailedStats,
+	type StatsOptions,
+	type YearlyStats,
+} from './stats';
 
 const MAX_POINTS = 10;
 const MAX_LAG_HOURS = 3;
@@ -17,7 +24,24 @@ export type CarCounterStats = DetailedStats & {
 	quality: { measuredShare: number | null };
 };
 
+export type CarYearlyStats = YearlyStats & { measuredShare: number | null };
+
 type Quality = { measured: number; all: number };
+
+function measuredShare(
+	quality: Map<string, Quality>,
+	includes: (day: string) => boolean,
+): number | null {
+	let measured = 0;
+	let all = 0;
+	for (const [day, dayQuality] of quality) {
+		if (includes(day)) {
+			measured += dayQuality.measured;
+			all += dayQuality.all;
+		}
+	}
+	return all > 0 ? Math.round((measured / all) * 1000) / 1000 : null;
+}
 
 export function parsePointIds(value: string | null): number[] | null {
 	const ids = (value ?? '').split(',').filter(Boolean).map(Number);
@@ -102,14 +126,6 @@ export function getCarCounterStats(
 	}
 
 	const stats = computeStats(days, options);
-	let measured = 0;
-	let all = 0;
-	for (const [day, dayQuality] of quality) {
-		if (day >= stats.period.from && day <= stats.period.to) {
-			measured += dayQuality.measured;
-			all += dayQuality.all;
-		}
-	}
 	const { syncedAt } = getCountersDb()
 		.prepare(
 			`SELECT MIN(synced_at) AS syncedAt FROM car_points WHERE id IN (${pointIds.map(() => '?').join(', ')})`,
@@ -120,8 +136,26 @@ export function getCarCounterStats(
 		pointIds,
 		syncedAt,
 		...stats,
-		quality: { measuredShare: all > 0 ? Math.round((measured / all) * 1000) / 1000 : null },
+		quality: {
+			measuredShare: measuredShare(
+				quality,
+				(day) => day >= stats.period.from && day <= stats.period.to,
+			),
+		},
 	};
+}
+
+export function getCarCounterYearlyStats(pointIds: number[]): CarYearlyStats[] | null {
+	const { rows, quality } = loadDays(pointIds);
+	const days = rows.filter((row) => row.total > 0);
+	if (days.length === 0) {
+		return null;
+	}
+
+	return computeYearlyStats(days).map((stats) => ({
+		...stats,
+		measuredShare: measuredShare(quality, (day) => Number(day.slice(0, 4)) === stats.year),
+	}));
 }
 
 // Days after the last synced day, from the snapshot refreshed every 20 minutes
