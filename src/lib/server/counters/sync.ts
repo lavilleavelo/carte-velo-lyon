@@ -1,4 +1,5 @@
 import { addDays, isSpringDstDay, todayInParis } from './calendar';
+import { startCarCountersSync } from './carSync';
 import { getCountersDb, transaction } from './db';
 import { fetchEcoCounters, fetchEcoCounts, type EcoCounter } from './ecoCounter';
 import { fetchSchoolHolidays } from './schoolHolidays';
@@ -216,4 +217,6 @@ export function startCountersSync(): void {
 	};
 	run();
 	setInterval(run, SYNC_INTERVAL_MS).unref();
+
+	startCarCountersSync();
 }

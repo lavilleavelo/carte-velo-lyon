@@ -30,6 +30,25 @@ const SCHEMA = `
 		end TEXT NOT NULL,
 		name TEXT NOT NULL
 	);
+
+	-- Cerema car count points. hourly_from: oldest day with hourly data (backfill cursor)
+	CREATE TABLE IF NOT EXISTS car_points (
+		id INTEGER PRIMARY KEY,
+		hourly_from TEXT,
+		synced_at TEXT
+	);
+
+	-- total and hourly include the values reconstructed by the Cerema model when the sensor data is
+	-- missing or filtered. predicted, hourly_predicted: share of reconstructed values (%)
+	CREATE TABLE IF NOT EXISTS car_point_days (
+		point_id INTEGER NOT NULL,
+		day TEXT NOT NULL,
+		total INTEGER NOT NULL,
+		predicted REAL,
+		hourly TEXT,
+		hourly_predicted TEXT,
+		PRIMARY KEY (point_id, day)
+	) WITHOUT ROWID;
 `;
 
 let db: DatabaseSync | null = null;
