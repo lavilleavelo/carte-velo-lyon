@@ -9,7 +9,7 @@ const OUTAGE_THRESHOLD = 0.2;
 const MORNING_HOURS = [5, 12];
 const EVENING_HOURS = [12, 22];
 
-type DayRow = { day: string; total: number; hourly: string | null };
+export type DayRow = { day: string; total: number; hourly: (number | null)[] | null };
 
 // weekday: working day during school periods, schoolHoliday: working day during school
 // holidays, weekend: weekends and public holidays
@@ -19,12 +19,9 @@ const DAY_TYPES: DayType[] = ['weekday', 'schoolHoliday', 'weekend'];
 export type DayCount = { day: string; count: number };
 export type HourPeak = { hour: number; count: number };
 
-export type CounterStats = {
-	idPdc: number;
-	name: string;
+export type DetailedStats = {
 	firstDay: string;
 	lastDay: string;
-	syncedAt: string | null;
 	daily: {
 		start: string;
 		values: (number | null)[];
@@ -44,6 +41,8 @@ export type CounterStats = {
 		hour: (DayCount & { hour: number }) | null;
 	};
 };
+
+export type CounterStats = DetailedStats & { idPdc: number; name: string; syncedAt: string | null };
 
 function median(values: number[]): number {
 	const sorted = [...values].sort((a, b) => a - b);
@@ -72,13 +71,11 @@ function withoutOutages(rows: DayRow[]): DayRow[] {
 function hourlyAverages(rows: DayRow[]): (number | null)[] {
 	const valuesByHour: number[][] = Array.from({ length: 24 }, () => []);
 	for (const row of rows) {
-		if (row.hourly) {
-			(JSON.parse(row.hourly) as (number | null)[]).forEach((count, hour) => {
-				if (count !== null) {
-					valuesByHour[hour].push(count);
-				}
-			});
-		}
+		row.hourly?.forEach((count, hour) => {
+			if (count !== null) {
+				valuesByHour[hour].push(count);
+			}
+		});
 	}
 	return valuesByHour.map((values) => average(values, 1));
 }
@@ -112,7 +109,7 @@ function dayType(day: string, schoolHolidayDays: Set<string>): DayType {
 }
 
 // Holidays go up to today, to classify the days not synced yet (see live.ts)
-function buildDailySeries(rows: DayRow[], schoolHolidays: SchoolHoliday[]): CounterStats['daily'] {
+function buildDailySeries(rows: DayRow[], schoolHolidays: SchoolHoliday[]): DetailedStats['daily'] {
 	const firstDay = rows[0].day;
 	const lastDay = rows[rows.length - 1].day;
 	const today = todayInParis();
@@ -142,7 +139,7 @@ function buildDailySeries(rows: DayRow[], schoolHolidays: SchoolHoliday[]): Coun
 	};
 }
 
-function buildRecords(rows: DayRow[]): CounterStats['records'] {
+function buildRecords(rows: DayRow[]): DetailedStats['records'] {
 	const sorted = [...rows].sort((a, b) => b.total - a.total);
 	const toDayCount = (row: DayRow): DayCount => ({ day: row.day, count: row.total });
 
@@ -155,15 +152,13 @@ function buildRecords(rows: DayRow[]): CounterStats['records'] {
 		}
 	}
 
-	let hour: CounterStats['records']['hour'] = null;
+	let hour: DetailedStats['records']['hour'] = null;
 	for (const row of rows) {
-		if (row.hourly) {
-			(JSON.parse(row.hourly) as (number | null)[]).forEach((count, index) => {
-				if (count !== null && (!hour || count > hour.count)) {
-					hour = { day: row.day, hour: index, count };
-				}
-			});
-		}
+		row.hourly?.forEach((count, index) => {
+			if (count !== null && (!hour || count > hour.count)) {
+				hour = { day: row.day, hour: index, count };
+			}
+		});
 	}
 
 	return {
@@ -174,28 +169,11 @@ function buildRecords(rows: DayRow[]): CounterStats['records'] {
 	};
 }
 
-export function getCounterStats(
-	idPdc: number,
-	options: { from?: string; to?: string } = {},
-): CounterStats | null {
+export type StatsOptions = { from?: string; to?: string };
+
+// rows: days with data, sorted by day
+export function computeStats(rows: DayRow[], options: StatsOptions = {}): DetailedStats {
 	const db = getCountersDb();
-	const counter = db.prepare('SELECT name, synced_at FROM counters WHERE id_pdc = ?').get(idPdc) as
-		| { name: string; synced_at: string | null }
-		| undefined;
-	if (!counter) {
-		return null;
-	}
-
-	// Days at 0 are counter outages, not days without any bike
-	const rows = db
-		.prepare(
-			'SELECT day, total, hourly FROM counter_days WHERE id_pdc = ? AND total > 0 ORDER BY day',
-		)
-		.all(idPdc) as DayRow[];
-	if (rows.length === 0) {
-		return null;
-	}
-
 	const schoolHolidays = db
 		.prepare('SELECT start, end, name FROM school_holidays ORDER BY start')
 		.all() as SchoolHoliday[];
@@ -227,11 +205,8 @@ export function getCounterStats(
 	}
 
 	return {
-		idPdc,
-		name: counter.name,
 		firstDay: rows[0].day,
 		lastDay,
-		syncedAt: counter.synced_at,
 		daily: buildDailySeries(rows, schoolHolidays),
 		period: { from, to },
 		averages,
@@ -244,4 +219,31 @@ export function getCounterStats(
 		},
 		records: buildRecords(rows),
 	};
+}
+
+export function getCounterStats(idPdc: number, options: StatsOptions = {}): CounterStats | null {
+	const db = getCountersDb();
+	const counter = db.prepare('SELECT name, synced_at FROM counters WHERE id_pdc = ?').get(idPdc) as
+		| { name: string; synced_at: string | null }
+		| undefined;
+	if (!counter) {
+		return null;
+	}
+
+	// Days at 0 are counter outages, not days without any bike
+	const rows = (
+		db
+			.prepare(
+				'SELECT day, total, hourly FROM counter_days WHERE id_pdc = ? AND total > 0 ORDER BY day',
+			)
+			.all(idPdc) as { day: string; total: number; hourly: string | null }[]
+	).map((row) => ({
+		...row,
+		hourly: row.hourly ? (JSON.parse(row.hourly) as (number | null)[]) : null,
+	}));
+	if (rows.length === 0) {
+		return null;
+	}
+
+	return { idPdc, name: counter.name, syncedAt: counter.synced_at, ...computeStats(rows, options) };
 }
