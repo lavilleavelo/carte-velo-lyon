@@ -15,6 +15,9 @@ import {
 const MAX_POINTS = 10;
 const MAX_LAG_HOURS = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
+// Periods without data shorter than this are not reported
+const MIN_GAP_DAYS = 7;
+const AVAILABILITY_DAYS = 365;
 
 // measuredShare: share of the traffic actually measured over the period, the rest being
 // reconstructed by the Cerema model. points: traffic of each count point over the period
@@ -30,7 +33,11 @@ export type CarPointStats = {
 	average: number | null;
 	share: number | null;
 	measuredShare: number | null;
+	lastDay: string | null;
+	gaps: DayRange[];
 };
+
+type DayRange = { from: string; to: string };
 
 type PointTotal = { pointId: number; total: number; predicted: number | null };
 
@@ -130,11 +137,73 @@ function loadDays(
 	return { rows, quality, pointTotals };
 }
 
+function daysBetween(from: string, to: string): number {
+	return Math.round((Date.parse(to) - Date.parse(from)) / DAY_MS);
+}
+
+function findGaps(days: Set<string>, from: string, to: string): DayRange[] {
+	const gaps: DayRange[] = [];
+	let start: string | null = null;
+	for (let day = from; day <= to; day = addDays(day, 1)) {
+		if (!days.has(day)) {
+			start ??= day;
+			continue;
+		}
+		if (start && daysBetween(start, day) >= MIN_GAP_DAYS) {
+			gaps.push({ from: start, to: addDays(day, -1) });
+		}
+		start = null;
+	}
+	if (start && daysBetween(start, addDays(to, 1)) >= MIN_GAP_DAYS) {
+		gaps.push({ from: start, to });
+	}
+	return gaps;
+}
+
+// Last day with data and periods without data over the last year, for each count point
+function pointAvailability(
+	pointIds: number[],
+): Map<number, { lastDay: string | null; gaps: DayRange[] }> {
+	const to = addDays(todayInParis(), -1);
+	const from = addDays(to, -(AVAILABILITY_DAYS - 1));
+	const placeholders = pointIds.map(() => '?').join(', ');
+	const db = getCountersDb();
+	const lastDays = new Map(
+		(
+			db
+				.prepare(
+					`SELECT point_id AS pointId, MAX(day) AS lastDay FROM car_point_days
+					WHERE point_id IN (${placeholders}) AND total > 0 GROUP BY point_id`,
+				)
+				.all(...pointIds) as { pointId: number; lastDay: string }[]
+		).map((row) => [row.pointId, row.lastDay]),
+	);
+	const recentDays = Map.groupBy(
+		db
+			.prepare(
+				`SELECT point_id AS pointId, day FROM car_point_days
+				WHERE point_id IN (${placeholders}) AND total > 0 AND day >= ?`,
+			)
+			.all(...pointIds, from) as { pointId: number; day: string }[],
+		(row) => row.pointId,
+	);
+	return new Map(
+		pointIds.map((id) => [
+			id,
+			{
+				lastDay: lastDays.get(id) ?? null,
+				gaps: findGaps(new Set((recentDays.get(id) ?? []).map((row) => row.day)), from, to),
+			},
+		]),
+	);
+}
+
 function pointStats(
 	pointIds: number[],
 	pointTotals: Map<string, PointTotal[]>,
 	includes: (day: string) => boolean,
 ): CarPointStats[] {
+	const availability = pointAvailability(pointIds);
 	const sums = new Map(pointIds.map((id) => [id, { total: 0, days: 0, measured: 0, known: 0 }]));
 	for (const [day, values] of pointTotals) {
 		if (!includes(day)) {
@@ -159,6 +228,8 @@ function pointStats(
 			average: sum.days > 0 ? Math.round(sum.total / sum.days) : null,
 			share: all > 0 ? Math.round((sum.total / all) * 1000) / 1000 : null,
 			measuredShare: sum.known > 0 ? Math.round((sum.measured / sum.known) * 1000) / 1000 : null,
+			lastDay: availability.get(id)?.lastDay ?? null,
+			gaps: availability.get(id)?.gaps ?? [],
 		};
 	});
 }
