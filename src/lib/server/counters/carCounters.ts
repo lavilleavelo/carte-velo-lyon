@@ -17,12 +17,22 @@ const MAX_LAG_HOURS = 3;
 const DAY_MS = 24 * 60 * 60 * 1000;
 
 // measuredShare: share of the traffic actually measured over the period, the rest being
-// reconstructed by the Cerema model
+// reconstructed by the Cerema model. points: traffic of each count point over the period
 export type CarCounterStats = DetailedStats & {
 	pointIds: number[];
 	syncedAt: string | null;
 	quality: { measuredShare: number | null };
+	points: CarPointStats[];
 };
+
+export type CarPointStats = {
+	id: number;
+	average: number | null;
+	share: number | null;
+	measuredShare: number | null;
+};
+
+type PointTotal = { pointId: number; total: number; predicted: number | null };
 
 export type CarYearlyStats = YearlyStats & { measuredShare: number | null };
 
@@ -70,7 +80,7 @@ function combineHourly(
 function loadDays(
 	pointIds: number[],
 	days?: string[],
-): { rows: DayRow[]; quality: Map<string, Quality> } {
+): { rows: DayRow[]; quality: Map<string, Quality>; pointTotals: Map<string, PointTotal[]> } {
 	const pointPlaceholders = pointIds.map(() => '?').join(', ');
 	const dayFilter = days ? `AND day IN (${days.map(() => '?').join(', ')})` : '';
 	const pointDays = getCountersDb()
@@ -93,10 +103,15 @@ function loadDays(
 
 	const rows: DayRow[] = [];
 	const quality = new Map<string, Quality>();
+	const pointTotals = new Map<string, PointTotal[]>();
 	for (const [day, values] of byDay) {
 		if (values.length !== pointIds.length) {
 			continue;
 		}
+		pointTotals.set(
+			day,
+			values.map(({ pointId, total, predicted }) => ({ pointId, total, predicted })),
+		);
 		rows.push({
 			day,
 			total: values.reduce((sum, value) => sum + value.total, 0),
@@ -112,20 +127,55 @@ function loadDays(
 			all: known.reduce((sum, value) => sum + value.total, 0),
 		});
 	}
-	return { rows, quality };
+	return { rows, quality, pointTotals };
+}
+
+function pointStats(
+	pointIds: number[],
+	pointTotals: Map<string, PointTotal[]>,
+	includes: (day: string) => boolean,
+): CarPointStats[] {
+	const sums = new Map(pointIds.map((id) => [id, { total: 0, days: 0, measured: 0, known: 0 }]));
+	for (const [day, values] of pointTotals) {
+		if (!includes(day)) {
+			continue;
+		}
+		for (const { pointId, total, predicted } of values) {
+			const sum = sums.get(pointId)!;
+			sum.total += total;
+			sum.days += 1;
+			if (predicted !== null) {
+				sum.measured += total * (1 - predicted / 100);
+				sum.known += total;
+			}
+		}
+	}
+
+	const all = [...sums.values()].reduce((total, sum) => total + sum.total, 0);
+	return pointIds.map((id) => {
+		const sum = sums.get(id)!;
+		return {
+			id,
+			average: sum.days > 0 ? Math.round(sum.total / sum.days) : null,
+			share: all > 0 ? Math.round((sum.total / all) * 1000) / 1000 : null,
+			measuredShare: sum.known > 0 ? Math.round((sum.measured / sum.known) * 1000) / 1000 : null,
+		};
+	});
 }
 
 export function getCarCounterStats(
 	pointIds: number[],
 	options: StatsOptions = {},
 ): CarCounterStats | null {
-	const { rows, quality } = loadDays(pointIds);
+	const { rows, quality, pointTotals } = loadDays(pointIds);
 	const days = rows.filter((row) => row.total > 0);
 	if (days.length === 0) {
 		return null;
 	}
 
 	const stats = computeStats(days, options);
+	const inPeriod = (day: string) => day >= stats.period.from && day <= stats.period.to;
+	const countedDays = new Set(days.map((row) => row.day));
 	const { syncedAt } = getCountersDb()
 		.prepare(
 			`SELECT MIN(synced_at) AS syncedAt FROM car_points WHERE id IN (${pointIds.map(() => '?').join(', ')})`,
@@ -136,12 +186,8 @@ export function getCarCounterStats(
 		pointIds,
 		syncedAt,
 		...stats,
-		quality: {
-			measuredShare: measuredShare(
-				quality,
-				(day) => day >= stats.period.from && day <= stats.period.to,
-			),
-		},
+		quality: { measuredShare: measuredShare(quality, inPeriod) },
+		points: pointStats(pointIds, pointTotals, (day) => inPeriod(day) && countedDays.has(day)),
 	};
 }
 
