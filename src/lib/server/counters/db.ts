@@ -24,6 +24,22 @@ const SCHEMA = `
 		PRIMARY KEY (id_pdc, day)
 	) WITHOUT ROWID;
 
+	-- Eco-Counter flows of each counter. practice: 2 for bikes, 13 for e-scooters
+	CREATE TABLE IF NOT EXISTS counter_flows (
+		id_pdc INTEGER NOT NULL,
+		flow_id INTEGER NOT NULL,
+		practice INTEGER NOT NULL,
+		PRIMARY KEY (id_pdc, flow_id)
+	) WITHOUT ROWID;
+
+	-- Daily counts of the e-scooter flows, already included in counter_days.total
+	CREATE TABLE IF NOT EXISTS counter_scooter_days (
+		id_pdc INTEGER NOT NULL,
+		day TEXT NOT NULL,
+		total INTEGER NOT NULL,
+		PRIMARY KEY (id_pdc, day)
+	) WITHOUT ROWID;
+
 	-- end: day classes resume (exclusive)
 	CREATE TABLE IF NOT EXISTS school_holidays (
 		start TEXT PRIMARY KEY,

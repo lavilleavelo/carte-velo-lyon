@@ -1,7 +1,7 @@
 import { addDays, isSpringDstDay, todayInParis } from './calendar';
 import { startCarCountersSync } from './carSync';
 import { getCountersDb, transaction } from './db';
-import { fetchEcoCounters, fetchEcoCounts, type EcoCounter } from './ecoCounter';
+import { fetchEcoCounters, fetchEcoCounts, SCOOTER_PRACTICE, type EcoCounter } from './ecoCounter';
 import { syncCounterPhotos } from './photos';
 import { fetchSchoolHolidays } from './schoolHolidays';
 
@@ -64,6 +64,8 @@ async function syncCounter(counter: EcoCounter, today: string): Promise<void> {
 		}
 	});
 
+	await syncScooterDays(counter, today);
+
 	const { lastHourlyDay, firstDay } = db
 		.prepare(
 			`SELECT
@@ -104,6 +106,37 @@ async function syncCounter(counter: EcoCounter, today: string): Promise<void> {
 		new Date().toISOString(),
 		counter.idPdc,
 	);
+}
+
+// E-scooters are counted with the bikes in counter_days, their own flows give their share
+async function syncScooterDays(counter: EcoCounter, today: string): Promise<void> {
+	const flowIds = counter.flows
+		.filter((flow) => flow.practice === SCOOTER_PRACTICE)
+		.map((flow) => flow.id)
+		.join(';');
+	if (!flowIds) {
+		return;
+	}
+
+	const db = getCountersDb();
+	const { lastDay } = db
+		.prepare('SELECT MAX(day) AS lastDay FROM counter_scooter_days WHERE id_pdc = ?')
+		.get(counter.idPdc) as { lastDay: string | null };
+	const rows = await fetchEcoCounts(
+		{ idPdc: counter.idPdc, flowIds },
+		'day',
+		lastDay ? addDays(lastDay, -OVERLAP_DAYS) : HISTORY_START,
+		today,
+	);
+	const upsert = db.prepare(`
+		INSERT INTO counter_scooter_days (id_pdc, day, total) VALUES (?, ?, ?)
+		ON CONFLICT (id_pdc, day) DO UPDATE SET total = excluded.total
+	`);
+	transaction(db, () => {
+		for (const [day, count] of rows) {
+			upsert.run(counter.idPdc, day, count);
+		}
+	});
 }
 
 async function runWithConcurrency<T>(
@@ -154,9 +187,17 @@ async function runSync(): Promise<void> {
 		ON CONFLICT (id_pdc) DO UPDATE SET
 			name = excluded.name, flow_ids = excluded.flow_ids, lat = excluded.lat, lon = excluded.lon
 	`);
+	const deleteFlows = db.prepare('DELETE FROM counter_flows WHERE id_pdc = ?');
+	const insertFlow = db.prepare(
+		'INSERT INTO counter_flows (id_pdc, flow_id, practice) VALUES (?, ?, ?)',
+	);
 	transaction(db, () => {
 		for (const counter of counters) {
 			upsertCounter.run(counter.idPdc, counter.name, counter.flowIds, counter.lat, counter.lon);
+			deleteFlows.run(counter.idPdc);
+			for (const flow of counter.flows) {
+				insertFlow.run(counter.idPdc, flow.id, flow.practice);
+			}
 		}
 	});
 

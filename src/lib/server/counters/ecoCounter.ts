@@ -4,6 +4,9 @@ import { fetchJson, type FetchOptions } from './http';
 const BASE_URL = 'https://www.eco-visio.net/api/aladdin/1.0.0/pbl/publicwebpageplus';
 const ORGANISME_ID = '3902';
 
+export const BIKE_PRACTICE = 2;
+export const SCOOTER_PRACTICE = 13;
+
 const INTERVALS = {
 	hour: '3',
 	day: '4',
@@ -13,6 +16,7 @@ export type EcoCounter = {
 	idPdc: number;
 	name: string;
 	flowIds: string;
+	flows: { id: number; practice: number }[];
 	lat: number | null;
 	lon: number | null;
 	photos: string[];
@@ -47,6 +51,7 @@ export async function fetchEcoCounters(): Promise<EcoCounter[]> {
 		idPdc: item.idPdc,
 		name: item.nom,
 		flowIds: item.pratique.map((p) => p.id).join(';'),
+		flows: item.pratique.map((p) => ({ id: p.id, practice: p.pratique })),
 		lat: item.lat ?? null,
 		lon: item.lon ?? null,
 		photos: (item.photo ?? []).map((photo) => photo.lien),
