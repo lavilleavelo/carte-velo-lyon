@@ -15,7 +15,7 @@
 		VectorTileSource,
 	} from 'svelte-maplibre-gl';
 	import * as maplibregl from 'maplibre-gl';
-	import Filter from '@lucide/svelte/icons/filter';
+	import Layers from '@lucide/svelte/icons/layers';
 	import Settings from '@lucide/svelte/icons/settings';
 	import RotateCcw from '@lucide/svelte/icons/rotate-ccw';
 	import Ellipsis from '@lucide/svelte/icons/ellipsis';
@@ -1213,8 +1213,8 @@
 					<button
 						onclick={() => (showDesktopSidebar = !showDesktopSidebar)}
 						class="rounded-lg bg-white pl-1! text-gray-700 shadow-md hover:bg-gray-50 focus:ring-2 focus:ring-blue-500 focus:outline-none"
-						aria-label={showDesktopSidebar ? 'Masquer les filtres' : 'Afficher les filtres'}
-						title={showDesktopSidebar ? 'Masquer les filtres' : 'Afficher les filtres'}
+						aria-label={showDesktopSidebar ? 'Masquer les calques' : 'Afficher les calques'}
+						title={showDesktopSidebar ? 'Masquer les calques' : 'Afficher les calques'}
 					>
 						{#if showDesktopSidebar}
 							<PanelRightClose size={20} />
@@ -1433,14 +1433,14 @@
 		<div class="hidden h-full w-80 border-l bg-white shadow-xl md:flex md:flex-col">
 			<div class="flex items-center justify-between border-b p-3">
 				<h2 class="flex items-center gap-2 text-lg font-bold">
-					<Filter size={20} />
-					Filtres
+					<Layers size={20} />
+					Calques
 				</h2>
 				<div class="flex items-center gap-1">
 					<button
 						onclick={resetLayers}
 						class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-						title="Réinitialiser les filtres"
+						title="Réinitialiser les calques"
 					>
 						<RotateCcw size={18} />
 					</button>
@@ -1497,12 +1497,12 @@
 		<MobileDrawer bind:open={showMobileFilters} snapPoints={[0.4, 0.9]} initialSnapPoint={0}>
 			<div class="px-2 py-2">
 				<div class="mb-2 flex items-center justify-between">
-					<h2 class="text-base font-bold">Filtres</h2>
+					<h2 class="text-base font-bold">Calques</h2>
 					<div class="flex items-center gap-1">
 						<button
 							onclick={resetLayers}
 							class="rounded-full p-1.5 text-gray-400 transition-colors hover:bg-gray-100 hover:text-gray-600"
-							title="Réinitialiser les filtres"
+							title="Réinitialiser les calques"
 						>
 							<RotateCcw size={18} />
 						</button>
@@ -1771,7 +1771,7 @@
 			<div>
 				<h3 class="mb-2 text-sm font-semibold text-gray-900">Couches supplémentaires</h3>
 				<p class="mb-3 text-xs text-gray-500">
-					Affichez des catégories avancées dans le panneau de filtres.
+					Affichez des catégories avancées dans le panneau des calques.
 				</p>
 				<div class="flex flex-col gap-2">
 					{#each optionalCategories as category}

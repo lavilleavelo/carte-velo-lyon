@@ -6,8 +6,11 @@
 	import EyeOff from '@lucide/svelte/icons/eye-off';
 	import Info from '@lucide/svelte/icons/info';
 	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import Search from '@lucide/svelte/icons/search';
+	import X from '@lucide/svelte/icons/x';
 	import type { Snippet } from 'svelte';
 	import { layerInfo } from '$lib/config/layerInfo';
+	import { matchesAllTokens, tokenize } from '$lib/utils/textSearch';
 
 	let {
 		layersByCategory,
@@ -41,12 +44,76 @@
 	}
 
 	const infoData = $derived(infoDialogCategory ? layerInfo[infoDialogCategory] : null);
+
+	let query = $state('');
+	let searchInput = $state<HTMLInputElement | null>(null);
+	const tokens = $derived(tokenize(query));
+	const searching = $derived(tokens.length > 0);
+
+	// While searching, a layer matches on its own label or its category name,
+	// so "bus" keeps the whole Bus category and "voie 3" finds VL 3.
+	const entries = $derived(
+		[...layersByCategory.entries()].flatMap(([category, layers]) => {
+			const shown = searching
+				? layers.filter((l) => matchesAllTokens(`${category} ${l.label}`, tokens))
+				: layers;
+			return shown.length > 0 ? [{ category, layers, shown }] : [];
+		}),
+	);
+
+	function clearSearch() {
+		query = '';
+		searchInput?.focus();
+	}
 </script>
 
 <div class="flex flex-col" class:gap-2={compact} class:gap-6={!compact}>
-	{#each [...layersByCategory.entries()] as [category, layers]}
+	<div class="sticky top-0 z-10 bg-white">
+		<div class="relative">
+			<Search
+				size={14}
+				class="pointer-events-none absolute top-1/2 left-2.5 -translate-y-1/2 text-gray-400"
+			/>
+			<input
+				bind:this={searchInput}
+				bind:value={query}
+				type="search"
+				placeholder="Rechercher un calque…"
+				aria-label="Rechercher un calque"
+				autocomplete="off"
+				onkeydown={(e) => {
+					if (e.key === 'Escape' && query) {
+						e.preventDefault();
+						e.stopPropagation();
+						query = '';
+					}
+				}}
+				class="h-8 w-full rounded-lg border border-gray-200 bg-gray-50/50 pr-8 pl-8 text-base text-gray-700 placeholder:text-gray-400 focus:border-brand-navy focus:bg-white focus:ring-1 focus:ring-brand-navy focus:outline-none md:text-sm [&::-webkit-search-cancel-button]:hidden"
+			/>
+			{#if query}
+				<button
+					type="button"
+					onclick={clearSearch}
+					class="absolute top-1/2 right-1.5 -translate-y-1/2 rounded-full p-1 text-gray-400 transition-colors hover:bg-gray-200 hover:text-gray-600"
+					title="Effacer la recherche"
+					aria-label="Effacer la recherche"
+				>
+					<X size={12} />
+				</button>
+			{/if}
+		</div>
+	</div>
+
+	{#if searching && entries.length === 0}
+		<p class="px-1 py-4 text-center text-sm text-gray-500">
+			Aucun calque ne correspond à « {query.trim()} ».
+		</p>
+	{/if}
+
+	{#each entries as { category, layers, shown } (category)}
 		{@const allVisible = layers.every((l) => isLayerVisible(l.id))}
 		{@const info = layerInfo[category]}
+		{@const expanded = searching || !isCategoryCollapsed(category)}
 		<div
 			class="flex flex-col rounded-xl border border-gray-100 bg-gray-50/50 transition-all hover:bg-gray-50"
 			class:gap-1.5={compact}
@@ -59,12 +126,12 @@
 				class="group/header flex cursor-pointer items-center justify-between"
 				role="button"
 				tabindex="0"
-				aria-expanded={!isCategoryCollapsed(category)}
-				onclick={() => toggleCategoryCollapse(category)}
+				aria-expanded={expanded}
+				onclick={() => !searching && toggleCategoryCollapse(category)}
 				onkeydown={(e) => {
 					if (e.key === 'Enter' || e.key === ' ') {
 						e.preventDefault();
-						toggleCategoryCollapse(category);
+						if (!searching) toggleCategoryCollapse(category);
 					}
 				}}
 			>
@@ -77,7 +144,7 @@
 						>
 							<svg
 								class="h-3 w-3 transition-transform duration-200"
-								class:rotate-180={!isCategoryCollapsed(category)}
+								class:rotate-180={expanded}
 								fill="none"
 								stroke="currentColor"
 								viewBox="0 0 24 24"
@@ -123,11 +190,11 @@
 				</button>
 			</div>
 
-			{#if !isCategoryCollapsed(category)}
+			{#if expanded}
 				<div class="pl-1 transition-all duration-300">
 					{#if category === 'Voies Lyonnaises' || category === 'Voies Lyonnaises (OSM)'}
 						<div class="grid grid-cols-4 gap-2 sm:grid-cols-4">
-							{#each layers as layer}
+							{#each shown as layer}
 								<div class="flex items-center justify-center">
 									<label
 										for={layer.id}
@@ -152,7 +219,7 @@
 						</div>
 					{:else}
 						<div class="flex flex-col" class:gap-1={compact} class:gap-2.5={!compact}>
-							{#each layers as layer}
+							{#each shown as layer}
 								<div
 									class="flex items-center gap-3 rounded-lg p-1 transition-colors hover:bg-white/60"
 								>
