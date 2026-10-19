@@ -342,7 +342,6 @@
 			attributionControl={false}
 			minZoom={9}
 			maxZoom={17}
-			cooperativeGestures={!params.fullscreen}
 			{cursor}
 			onclick={handleClick}
 			onmousemove={handleMouseMove}
@@ -440,18 +439,22 @@
 		<div
 			class="pointer-events-none absolute top-2.5 left-2.5 flex max-w-[calc(100%-4.5rem)] flex-col gap-2"
 		>
-			<label class="pointer-events-auto lg:hidden">
+			<label class="pointer-events-auto relative block w-72 max-w-full lg:hidden">
 				<span class="sr-only">Choisir une commune</span>
 				<select
 					value={params.commune}
 					onchange={(e) => onSelect(e.currentTarget.value || null)}
-					class="w-full max-w-64 rounded-lg border-gray-300 bg-white/95 py-1.5 pr-8 pl-2.5 text-base font-medium text-brand-navy shadow"
+					class="w-full appearance-none truncate rounded-lg border border-gray-200 bg-white py-2 pr-9 pl-3 text-base font-semibold text-brand-navy shadow-md focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/30 focus:outline-none"
 				>
 					<option value="">Choisir une commune…</option>
 					{#each communes as c (c.slug)}
 						<option value={c.slug}>{c.name}</option>
 					{/each}
 				</select>
+				<ChevronDown
+					class="pointer-events-none absolute top-1/2 right-3 h-4 w-4 -translate-y-1/2 text-brand-navy"
+					aria-hidden="true"
+				/>
 			</label>
 
 			{#if !selected}
@@ -533,7 +536,7 @@
 					<label class="mt-2 flex cursor-pointer items-center gap-2 text-xs text-brand-navy">
 						<input
 							type="checkbox"
-							class="h-4 w-4 rounded border-gray-300 text-brand-navy focus:ring-brand-navy"
+							class="h-4 w-4 accent-brand-navy"
 							bind:checked={params.allSpeeds}
 						/>
 						Limitations de vitesse

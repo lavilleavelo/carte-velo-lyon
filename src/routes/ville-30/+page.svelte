@@ -286,7 +286,7 @@
 					bind:this={fullscreenEl}
 					class={fullscreen
 						? 'fixed inset-0 z-50 flex flex-col bg-white p-2 outline-none sm:p-3'
-						: ''}
+						: 'mx-[calc(50%-50vw)] px-4 outline-none sm:px-6 lg:px-8'}
 					role={fullscreen ? 'dialog' : undefined}
 					aria-modal={fullscreen ? 'true' : undefined}
 					aria-label={fullscreen ? 'Carte des communes en plein écran' : undefined}

@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Search from '@lucide/svelte/icons/search';
 	import X from '@lucide/svelte/icons/x';
+	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import Ville30SpeedBar from '$lib/components/ville30/Ville30SpeedBar.svelte';
 	import { matchesAllTokens, tokenize } from '$lib/utils/textSearch';
 	import type { Ville30CommuneRow, Ville30SearchParams } from '$lib/utils/ville30';
@@ -104,7 +105,7 @@
 				type="search"
 				placeholder="Rechercher une commune"
 				bind:value={params.q}
-				class="w-full rounded-md border border-gray-300 py-2 pr-8 pl-8 text-base focus:border-brand-navy focus:ring-brand-navy sm:text-sm"
+				class="w-full rounded-md border border-gray-300 py-2 pr-8 pl-8 text-base focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/30 focus:outline-none sm:text-sm"
 			/>
 			{#if params.q}
 				<button
@@ -137,14 +138,20 @@
 			</div>
 			<label class="flex items-center gap-1.5 text-xs text-gray-600">
 				Trier par
-				<select
-					bind:value={params.sort}
-					class="rounded-md border-gray-300 py-1 pr-7 pl-2 text-xs focus:border-brand-navy focus:ring-brand-navy"
-				>
-					{#each SORTS as s (s.id)}
-						<option value={s.id}>{s.label}</option>
-					{/each}
-				</select>
+				<span class="relative">
+					<select
+						bind:value={params.sort}
+						class="appearance-none rounded-md border border-gray-300 bg-white py-1 pr-7 pl-2 text-xs text-gray-800 focus:border-brand-navy focus:ring-2 focus:ring-brand-navy/30 focus:outline-none"
+					>
+						{#each SORTS as s (s.id)}
+							<option value={s.id}>{s.label}</option>
+						{/each}
+					</select>
+					<ChevronDown
+						class="pointer-events-none absolute top-1/2 right-2 h-3.5 w-3.5 -translate-y-1/2 text-gray-500"
+						aria-hidden="true"
+					/>
+				</span>
 			</label>
 		</div>
 	</div>
