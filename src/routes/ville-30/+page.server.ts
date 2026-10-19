@@ -2,6 +2,11 @@ import type { PageServerLoad } from './$types';
 import communeMetadataJson from '$lib/data/communeMetadata.json';
 import communesIndex from '$lib/data/communes/_index.json';
 import { LYON_INSEE, LYON_SLUG, isLyonArrondissementInsee } from '$lib/config/lyon';
+import { expandInsee, getCommuneBoundary } from '$lib/server/communeBoundary';
+import { countStreetInseesInCommune, getVille30StatsForCommune } from '$lib/server/ville30Stats';
+import { bboxOfGeom } from '$lib/utils/geoFilter';
+import { bucketForSpeed, emptyStats } from '$lib/utils/speedLimits';
+import type { Ville30CommuneRow, Ville30Status } from '$lib/utils/ville30';
 
 interface MetadataEntry {
 	insee: string;
@@ -9,84 +14,102 @@ interface MetadataEntry {
 	ville30?: { adoptedAt?: string; partial?: boolean; partialNote?: string };
 }
 
-export interface Ville30CommuneSummary {
-	insee: string;
-	slug: string | null;
-	name: string;
-	adoptedAt: string | null;
-	partial: boolean;
-}
-
-export interface CommuneLink {
-	insee: string;
-	slug: string;
-	name: string;
-}
-
 const metadataByInsee = communeMetadataJson as Record<string, MetadataEntry>;
-const slugByInsee = new Map<string, string>(
-	(communesIndex as { slug: string; insee: string }[]).map((c) => [c.insee, c.slug]),
-);
 
 export const prerender = true;
 
-export const load: PageServerLoad = async () => {
-	const ville30: Ville30CommuneSummary[] = [];
-	const fullInsees: string[] = [];
-	const partialInsees: string[] = [];
+const round = (n: number, digits = 2) => Math.round(n * 10 ** digits) / 10 ** digits;
 
-	for (const [insee, entry] of Object.entries(metadataByInsee)) {
-		if (!entry.ville30) continue;
-		if (isLyonArrondissementInsee(insee)) {
-			fullInsees.push(insee);
-			continue;
-		}
+function communeBbox(insee: string): [number, number, number, number] | null {
+	const boundary = getCommuneBoundary(insee);
+	if (!boundary) return null;
 
-		const partial = !!entry.ville30.partial;
-		if (partial) {
-			partialInsees.push(insee);
-		} else {
-			fullInsees.push(insee);
-		}
-
-		ville30.push({
-			insee,
-			slug: slugByInsee.get(insee) ?? (insee === LYON_INSEE ? LYON_SLUG : null),
-			name: entry.name,
-			adoptedAt: entry.ville30.adoptedAt ?? null,
-			partial,
-		});
+	const bbox: [number, number, number, number] = [Infinity, Infinity, -Infinity, -Infinity];
+	for (const feature of boundary.features) {
+		const [minX, minY, maxX, maxY] = bboxOfGeom(feature.geometry);
+		bbox[0] = Math.min(bbox[0], minX);
+		bbox[1] = Math.min(bbox[1], minY);
+		bbox[2] = Math.max(bbox[2], maxX);
+		bbox[3] = Math.max(bbox[3], maxY);
 	}
 
-	ville30.sort((a, b) => {
-		if (a.adoptedAt && b.adoptedAt) {
-			return a.adoptedAt.localeCompare(b.adoptedAt);
-		}
+	return bbox.map((v) => round(v, 5)) as [number, number, number, number];
+}
 
-		if (a.adoptedAt) return -1;
-		if (b.adoptedAt) return 1;
-		return a.name.localeCompare(b.name, 'fr');
-	});
+async function buildRow(
+	insee: string,
+	slug: string,
+	streetInsees: string[],
+): Promise<Ville30CommuneRow> {
+	const metadata = metadataByInsee[insee];
+	const ville30 = metadata?.ville30;
+	const status: Ville30Status = !ville30 ? 'none' : ville30.partial ? 'partial' : 'full';
 
-	const totalCommunes = Object.keys(metadataByInsee).filter(
-		(insee) => !isLyonArrondissementInsee(insee),
-	).length;
-
-	const allCommuneLinks: CommuneLink[] = (
-		communesIndex as { slug: string; insee: string; name: string }[]
-	).map((c) => ({ insee: c.insee, slug: c.slug, name: c.name }));
-	allCommuneLinks.push({ insee: LYON_INSEE, slug: LYON_SLUG, name: 'Lyon' });
+	const stats = await getVille30StatsForCommune(insee);
+	const kmByBucket = emptyStats();
+	for (const [speed, { km }] of Object.entries(stats?.bySpeedLimit ?? {})) {
+		kmByBucket[bucketForSpeed(speed)] += km;
+	}
 
 	return {
-		ville30,
-		ville30FullInsees: fullInsees,
-		ville30PartialInsees: partialInsees,
-		allCommuneLinks,
-		totalCommunes,
+		insee,
+		slug,
+		name: metadata?.name ?? slug,
+		status,
+		adoptedAt: ville30?.adoptedAt ?? null,
+		partialNote: ville30?.partialNote ?? null,
+		pct: stats && stats.eligibleKm > 0 ? round(stats.eligibleUnder30KmPercentage, 1) : null,
+		eligibleKm: round(stats?.eligibleKm ?? 0),
+		eligibleUnder30Km: round(stats?.eligibleUnder30Km ?? 0),
+		kmByBucket: Object.fromEntries(
+			Object.entries(kmByBucket).map(([k, v]) => [k, round(v)]),
+		) as Ville30CommuneRow['kmByBucket'],
+		bbox: communeBbox(insee),
+		featureInsees: [...expandInsee(insee)],
+		streetInsees,
+	};
+}
+
+export const load: PageServerLoad = async () => {
+	const entries = (communesIndex as { slug: string; insee: string }[])
+		.filter((c) => !isLyonArrondissementInsee(c.insee))
+		.map((c) => ({ insee: c.insee, slug: c.slug }));
+	entries.push({ insee: LYON_INSEE, slug: LYON_SLUG });
+
+	// Assign each street INSEE code to the commune holding most of its streets, so that streets
+	// still tagged with a former commune code are drawn with the commune they now belong to.
+	const streetCounts = await Promise.all(entries.map((e) => countStreetInseesInCommune(e.insee)));
+	const owners = new Map<string, { index: number; count: number }>();
+	streetCounts.forEach((counts, index) => {
+		for (const [code, count] of counts) {
+			const current = owners.get(code);
+			if (!current || count > current.count) owners.set(code, { index, count });
+		}
+	});
+	const streetInsees = entries.map(() => [] as string[]);
+	for (const [code, { index }] of owners) streetInsees[index].push(code);
+
+	const communes = await Promise.all(
+		entries.map((e, i) => buildRow(e.insee, e.slug, streetInsees[i].sort())),
+	);
+	communes.sort((a, b) => a.name.localeCompare(b.name, 'fr'));
+
+	const eligibleKm = communes.reduce((sum, c) => sum + c.eligibleKm, 0);
+	const eligibleUnder30Km = communes.reduce((sum, c) => sum + c.eligibleUnder30Km, 0);
+
+	return {
+		communes,
+		metropole: {
+			ville30Count: communes.filter((c) => c.status !== 'none').length,
+			partialCount: communes.filter((c) => c.status === 'partial').length,
+			totalCommunes: communes.length,
+			pct: eligibleKm > 0 ? round((eligibleUnder30Km / eligibleKm) * 100, 1) : null,
+			eligibleUnder30Km: Math.round(eligibleUnder30Km),
+		},
 		seo: {
 			title: 'Ville 30 dans la Métropole de Lyon – Carte vélo',
 			description:
-				'Carte des communes de la Métropole de Lyon ayant adopté le statut Ville 30 : la vitesse y est limitée à 30 km/h par défaut sur la majorité des rues.',
+				'Carte des communes de la Métropole de Lyon ayant adopté le statut Ville 30 et part des rues limitées à 30 km/h dans chaque commune.',
 		},
 	};
 };

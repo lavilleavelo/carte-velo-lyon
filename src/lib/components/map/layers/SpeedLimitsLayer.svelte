@@ -11,11 +11,14 @@
 		boundary,
 		selectedBuckets = [],
 		enabledBuckets,
+		insees,
 	}: {
 		isLayerVisible: (id: string) => boolean;
 		boundary?: FeatureCollection;
 		selectedBuckets?: SpeedBucket[];
 		enabledBuckets?: SpeedBucket[];
+		/** Only keep streets whose `insee1` or `insee2` attribute is in this list. */
+		insees?: readonly string[];
 	} = $props();
 
 	const enabled = $derived(isLayerVisible('speed-limits'));
@@ -78,9 +81,20 @@
 		selectedBuckets.length > 0 ? ['case', selectedExpr, 1, 0.15] : 0.8,
 	);
 
-	const layerFilter = $derived(
-		enabledBuckets === undefined ? undefined : bucketsToExpr(enabledBuckets),
-	);
+	const layerFilter = $derived.by(() => {
+		const parts: any[] = [];
+		if (enabledBuckets !== undefined) parts.push(bucketsToExpr(enabledBuckets));
+		if (insees !== undefined) {
+			const list = ['literal', [...insees]];
+			parts.push([
+				'any',
+				['in', ['coalesce', ['get', 'insee1'], ''], list],
+				['in', ['coalesce', ['get', 'insee2'], ''], list],
+			]);
+		}
+		if (parts.length === 0) return undefined;
+		return parts.length === 1 ? parts[0] : ['all', ...parts];
+	});
 </script>
 
 <GeoJSONSource id="speed-limits-source" maxzoom={14} data={sourceData}>

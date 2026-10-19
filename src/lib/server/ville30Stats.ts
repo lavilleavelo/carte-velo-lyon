@@ -49,3 +49,22 @@ export async function getVille30StatsForCommune(insee: string): Promise<Ville30S
 		return null;
 	}
 }
+
+/** Number of streets lying inside the commune, per `insee1` code of the street data. */
+export async function countStreetInseesInCommune(insee: string): Promise<Map<string, number>> {
+	const counts = new Map<string, number>();
+	const boundary = getCommuneBoundary(insee);
+	if (!boundary) {
+		return counts;
+	}
+
+	const data = await getSpeedLimitsData();
+	for (const feature of filterFeaturesInsideBoundary(data, boundary).features) {
+		const code = feature.properties?.insee1;
+		if (typeof code === 'string' && code) {
+			counts.set(code, (counts.get(code) ?? 0) + 1);
+		}
+	}
+
+	return counts;
+}

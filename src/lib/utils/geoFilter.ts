@@ -60,7 +60,7 @@ function walkPositions(coords: unknown, visit: (x: number, y: number) => boolean
 	return false;
 }
 
-function bboxOfGeom(geom: Geometry): [number, number, number, number] {
+export function bboxOfGeom(geom: Geometry): [number, number, number, number] {
 	let minX = Infinity;
 	let minY = Infinity;
 	let maxX = -Infinity;
