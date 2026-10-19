@@ -2,6 +2,8 @@
 	import Gauge from '@lucide/svelte/icons/gauge';
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
+	import { createQuery } from '@tanstack/svelte-query';
+	import { speedLimitPropertiesQueryOptions } from '$lib/queries/cyclewayQueries';
 	import { SPEED_BUCKET_COLORS, SPEED_BUCKET_LABELS, bucketForSpeed } from '$lib/utils/speedLimits';
 
 	let { properties } = $props();
@@ -32,8 +34,12 @@
 		return `${Math.round(lengthMeters).toLocaleString('fr-FR')} m`;
 	});
 
+	// The map only carries a few attributes: load the full set when it is expanded.
+	const gid = $derived(typeof properties?.gid === 'number' ? properties.gid : null);
+	const fullQuery = createQuery(() => speedLimitPropertiesQueryOptions(gid, showRaw));
+
 	const rawEntries = $derived(
-		Object.entries(properties ?? {})
+		Object.entries(fullQuery.data ?? properties ?? {})
 			.filter(([, v]) => v !== undefined && v !== null && v !== '' && typeof v !== 'object')
 			.sort((a, b) => a[0].localeCompare(b[0])),
 	);
@@ -94,11 +100,13 @@
 				{:else}
 					<ChevronRight size={14} />
 				{/if}
-				Attributs ({rawEntries.length})
+				Attributs{gid === null || fullQuery.data ? ` (${rawEntries.length})` : ''}
 			</span>
 		</button>
 
-		{#if showRaw}
+		{#if showRaw && fullQuery.isPending && gid !== null}
+			<p class="mt-2 text-xs text-gray-500">Chargement…</p>
+		{:else if showRaw}
 			<div class="mt-2 space-y-1">
 				{#each rawEntries as [k, v] (k)}
 					<div

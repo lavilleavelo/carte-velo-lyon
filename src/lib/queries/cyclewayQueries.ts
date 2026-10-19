@@ -35,7 +35,7 @@ export function speedLimitsQueryOptions(enabled = true) {
 	return queryOptions({
 		queryKey: ['speed-limits'],
 		queryFn: async (): Promise<FeatureCollection> => {
-			const response = await fetch('/api/grandlyon/speedLimits');
+			const response = await fetch('/api/speed-limits');
 			if (!response.ok) throw new Error('Failed to fetch speed limits data');
 			return response.json();
 		},
@@ -43,5 +43,20 @@ export function speedLimitsQueryOptions(enabled = true) {
 		refetchOnWindowFocus: false,
 		enabled,
 		meta: { loadingLabel: 'Limitations de vitesse' },
+	});
+}
+
+/** Full attribute set of one street segment (the map data only carries a few of them). */
+export function speedLimitPropertiesQueryOptions(gid: number | null, enabled = true) {
+	return queryOptions({
+		queryKey: ['speed-limit', gid],
+		queryFn: async (): Promise<Record<string, unknown>> => {
+			const response = await fetch(`/api/speed-limits/${gid}`);
+			if (!response.ok) throw new Error('Failed to fetch speed limit details');
+			return response.json();
+		},
+		staleTime: Infinity,
+		refetchOnWindowFocus: false,
+		enabled: enabled && gid !== null,
 	});
 }
