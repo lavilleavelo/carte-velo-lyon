@@ -8,7 +8,14 @@
 	import * as Dialog from '$lib/components/ui/dialog';
 	import MobileDrawer from '$lib/components/MobileDrawer.svelte';
 	import MapStylePreview from './MapStylePreview.svelte';
-	import type { MapStyle } from '$lib/utils/mapStyleToggle.svelte';
+	import {
+		AERIAL_SOURCES,
+		aerialSource,
+		isAerialStyle,
+		setAerialSource,
+		type AerialSource,
+		type MapStyle,
+	} from '$lib/utils/mapStyleToggle.svelte';
 
 	type Position = 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 
@@ -50,9 +57,9 @@
 			id: 'hybrid',
 			label: 'Satellite hybride',
 			shortLabel: 'Hybride',
-			description: 'Photos aériennes IGN + rues',
+			description: 'Photos aériennes + rues',
 		},
-		{ id: 'satellite', label: 'Satellite', description: 'Photos aériennes IGN seules' },
+		{ id: 'satellite', label: 'Satellite', description: 'Photos aériennes seules' },
 		{ id: 'cyclosm', label: 'CyclOSM', description: 'Style OpenStreetMap alternatif vélo' },
 	];
 
@@ -61,9 +68,16 @@
 		open = false;
 	}
 
+	// Picking a photo source from a plan style also switches to the aerial view.
+	function selectAerialSource(source: AerialSource) {
+		setAerialSource(source);
+		if (!isAerial) {
+			onSelect('hybrid');
+		}
+	}
+
 	// Thumbnail variant: the tile previews the style a click switches to (aerial <-> last plan).
-	const AERIAL_STYLES: MapStyle[] = ['hybrid', 'satellite'];
-	const isAerial = $derived(AERIAL_STYLES.includes(currentStyle));
+	const isAerial = $derived(isAerialStyle(currentStyle));
 	let lastPlanStyle = $state<MapStyle>('cyclopolis');
 	$effect(() => {
 		if (!isAerial) {
@@ -161,35 +175,40 @@
 			{#if expanded}
 				<div class="absolute {flyoutSide} {flyoutAlign}">
 					<div
-						role="group"
-						aria-label="Style de carte"
-						class="grid w-max grid-cols-4 gap-x-2.5 gap-y-3 rounded-xl bg-white p-3 shadow-lg ring-1 ring-black/5"
+						class="flex w-max flex-col gap-3 rounded-xl bg-white p-3 shadow-lg ring-1 ring-black/5"
 					>
-						{#each styles as style (style.id)}
-							{@const selected = currentStyle === style.id}
-							<button
-								type="button"
-								onclick={() => onSelect(style.id)}
-								aria-pressed={selected}
-								title={style.description}
-								class="group/item flex w-[104px] flex-col items-center gap-1.5 rounded-lg focus:outline-none"
-							>
-								<span
-									class="relative block h-[72px] w-[104px] overflow-hidden rounded-lg border-2 bg-gray-100 transition group-focus-visible/item:ring-2 group-focus-visible/item:ring-blue-500 {selected
-										? 'border-blue-600'
-										: 'border-transparent group-hover/item:border-gray-300'}"
+						<div
+							role="group"
+							aria-label="Style de carte"
+							class="grid grid-cols-4 gap-x-2.5 gap-y-3"
+						>
+							{#each styles as style (style.id)}
+								{@const selected = currentStyle === style.id}
+								<button
+									type="button"
+									onclick={() => onSelect(style.id)}
+									aria-pressed={selected}
+									title={style.description}
+									class="group/item flex w-[104px] flex-col items-center gap-1.5 rounded-lg focus:outline-none"
 								>
-									<MapStylePreview styleId={style.id} />
-								</span>
-								<span
-									class="w-full truncate text-center text-xs leading-tight {selected
-										? 'font-semibold text-blue-700'
-										: 'text-gray-700'}"
-								>
-									{style.shortLabel ?? style.label}
-								</span>
-							</button>
-						{/each}
+									<span
+										class="relative block h-[72px] w-[104px] overflow-hidden rounded-lg border-2 bg-gray-100 transition group-focus-visible/item:ring-2 group-focus-visible/item:ring-blue-500 {selected
+											? 'border-blue-600'
+											: 'border-transparent group-hover/item:border-gray-300'}"
+									>
+										<MapStylePreview styleId={style.id} />
+									</span>
+									<span
+										class="w-full truncate text-center text-xs leading-tight {selected
+											? 'font-semibold text-blue-700'
+											: 'text-gray-700'}"
+									>
+										{style.shortLabel ?? style.label}
+									</span>
+								</button>
+							{/each}
+						</div>
+						{@render aerialSourcePicker()}
 					</div>
 				</div>
 			{/if}
@@ -205,6 +224,28 @@
 		</button>
 	{/if}
 </CustomControl>
+
+{#snippet aerialSourcePicker()}
+	<div class="flex items-center justify-between gap-3 border-t border-gray-100 pt-3">
+		<span class="text-xs text-gray-500">Photo aérienne</span>
+		<div role="group" aria-label="Photo aérienne" class="flex gap-0.5 rounded-lg bg-gray-100 p-0.5">
+			{#each AERIAL_SOURCES as source (source.id)}
+				{@const selected = isAerial && aerialSource.id === source.id}
+				<button
+					type="button"
+					onclick={() => selectAerialSource(source.id)}
+					aria-pressed={selected}
+					title={source.description}
+					class="rounded-md px-2.5 py-1 text-xs transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 {selected
+						? 'bg-white font-semibold text-blue-700 shadow-sm'
+						: 'text-gray-600 hover:text-gray-900'}"
+				>
+					{source.label}
+				</button>
+			{/each}
+		</div>
+	</div>
+{/snippet}
 
 {#snippet grid()}
 	<div class="grid grid-cols-2 gap-3">
@@ -241,6 +282,9 @@
 	<MobileDrawer bind:open snapPoints={[0.7, 0.95]} initialSnapPoint={0}>
 		<h2 class="px-2 pb-3 text-base font-semibold text-gray-900">Style de carte</h2>
 		{@render grid()}
+		<div class="mt-3">
+			{@render aerialSourcePicker()}
+		</div>
 	</MobileDrawer>
 {:else if !showThumbnail}
 	<Dialog.Root bind:open>
@@ -256,6 +300,7 @@
 			</div>
 			<Dialog.Description class="sr-only">Choisir un style de carte</Dialog.Description>
 			{@render grid()}
+			{@render aerialSourcePicker()}
 		</Dialog.Content>
 	</Dialog.Root>
 {/if}

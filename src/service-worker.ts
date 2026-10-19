@@ -21,6 +21,7 @@ const mapHosts = [
 	'openmaptiles.data.gouv.fr',
 	'openmaptiles.geo.data.gouv.fr',
 	'data.geopf.fr',
+	'imagerie.data.grandlyon.com',
 ];
 
 function isMapHost(hostname: string) {
