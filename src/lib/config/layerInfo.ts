@@ -35,7 +35,7 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 		source: 'OpenMapTiles',
 		sourceUrl: 'https://openmaptiles.org/schema/',
 	},
-	'Infrastructures Cyclables': {
+	'Aménagements (Grand Lyon)': {
 		description:
 			'Aménagements cyclables de la Métropole de Lyon (pistes, bandes, voies vertes, etc.).',
 		source: 'Métropole de Lyon (data.grandlyon.com)',
@@ -85,12 +85,12 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 		sourceUrl: '/itineraires',
 		links: [],
 	},
-	'Infrastructures Cyclables (OSM)': {
+	'Infrastructures Cyclables': {
 		description:
 			'Aménagements cyclables issus d’OpenStreetMap (highway=cycleway, cycleway:lane/track, bicycle_road, etc.). © les contributeurs OpenStreetMap, licence ODbL.',
 		source: 'OpenStreetMap contributors (Overpass API)',
 		sourceUrl: 'https://overpass-turbo.eu/',
-		links: [],
+		links: [{ label: 'Légende : quels tags OSM pour quel type', url: '/legende' }],
 	},
 	'Voies Lyonnaises (OSM)': {
 		description:
