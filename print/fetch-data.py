@@ -3,6 +3,7 @@
   tram-stops.geojson         TCL tram stops (T1–T7), one feature per platform    data.grandlyon.com
   tram-lines.geojson         TCL tram lines, to find the end of each line          data.grandlyon.com
   pumps.geojson              self-service bike pumps of the Métropole              data.grandlyon.com
+  racks.geojson              free bike racks (arceaux) of the Métropole, with their places  data.grandlyon.com
   repair-stations.geojson    self-service bike repair stands (amenity=bicycle_repair_station)  OpenStreetMap
   dem/                       elevation (IGN RGE ALTI, 2.5 m), as EHdr .bil tiles in Lambert-93   data.geopf.fr
   roads.geojson              street sections with speed limit and slope (pvochausseetrottoir) data.grandlyon.com
@@ -114,6 +115,18 @@ def fetch_dem():
     print(f"dem: {count} tiles")
 
 
+def fetch_racks():
+    """Racks anyone can use: the vélostations and bike rooms come from the app (parkings.geojson)."""
+    racks = wfs("metropole-de-lyon", "pvo_patrimoine_voirie.pvostationnementvelo")
+    features = []
+    for f in racks["features"]:
+        p = f["properties"]
+        if (p["validite"] == "Validé" and p["tarification"] == "Accès libre"
+                and p["mobiliervelo"] in ("Arceaux Wilmotte", "Arceaux en U inversé", "Autre mobilier")):
+            features.append({**f, "properties": {"places": p["capacite"] or 0}})
+    save("racks.geojson", {"type": "FeatureCollection", "features": features})
+
+
 def fetch_arrondissements():
     url = ("https://geo.api.gouv.fr/communes?codeDepartement=69&type=arrondissement-municipal"
            "&format=geojson&geometry=contour&fields=nom,code")
@@ -171,6 +184,7 @@ def main():
     save("tram-lines.geojson", lines)
 
     save("pumps.geojson", wfs("metropole-de-lyon", "pvo_patrimoine_voirie.pvostationvelovpompe"))
+    fetch_racks()
 
     south, west, north, east = BBOX
     query = (f'[out:json][timeout:60];nwr["amenity"="bicycle_repair_station"]'

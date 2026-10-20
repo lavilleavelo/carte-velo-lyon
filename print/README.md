@@ -16,7 +16,7 @@ QT_QPA_PLATFORM=offscreen /Applications/QGIS*.app/Contents/MacOS/python print/bu
 
 - `export-layers.mjs` saves the GeoJSON the app renders (`print/out/data/`).
 - `fetch-tiles.py` downloads the OpenFreeMap z14 vector tiles of the area (`print/out/tiles/`).
-- `fetch-data.py` downloads tram stops and lines, Navigône stops and route, pumps (data.grandlyon.com) and repair stands
+- `fetch-data.py` downloads tram stops and lines, Navigône stops and route, pumps and free bike racks (data.grandlyon.com) and repair stands
   (OpenStreetMap, or the app's `.cache/overpassPOIs.json` when Overpass is down).
 - `build_map.py` merges the tiles into Lambert-93 basemap layers (first run only, ~3 min), styles
   everything in millimetres and exports `print/out/carte-velo-lyon-A0.pdf` (vector, for printing, ~60 MB),

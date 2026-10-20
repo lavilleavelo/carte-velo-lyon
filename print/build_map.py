@@ -700,9 +700,9 @@ def slope_layer(extent, frame, cycleways, hidden, blockers, min_slope=7, min_len
         return QgsMarkerSymbol([icon])
 
     out.setRenderer(rule_renderer([
-        (f"Montée de {min_slope} à 9 %|(la pointe indique le haut de la côte)", "\"chevrons\" = 1",
+        (f"Montée de {min_slope} à 9 % (pointe vers le haut)", "\"chevrons\" = 1",
          chevrons("uphill.svg")),
-        ("Montée de 10 % ou plus|(pente moyenne indiquée)", "\"chevrons\" = 2", chevrons("uphill2.svg")),
+        ("Montée de 10 % ou plus (pente indiquée)", "\"chevrons\" = 2", chevrons("uphill2.svg")),
     ]))
 
     def slope_labels(s):
@@ -721,8 +721,8 @@ def slope_layer(extent, frame, cycleways, hidden, blockers, min_slope=7, min_len
 PAVED = {"asphalt", "paved", "concrete", "concrete:plates", "paving_stones", "sett", "cobblestone",
          "unhewn_cobblestone", "metal"}
 # Most separated from traffic first: a lane running along a higher ranked one is not drawn.
-KINDS = ["piste2", "piste", "vv", "vv_unpaved", "pieton", "velorue", "bande", "bus", "dsc"]
-SIDE_KINDS = {"piste", "bande", "bus"}  # drawn on the side of the street they are on
+KINDS = ["piste2", "piste", "vv", "vv_unpaved", "pieton", "velorue", "bande", "cvcb", "bus", "dsc"]
+SIDE_KINDS = {"piste", "bande", "cvcb", "bus"}  # drawn on the side of the street they are on
 SIDE_OFFSET = 0.4  # mm
 
 
@@ -741,8 +741,18 @@ def is_null(value):
     return value is None or QgsVariantUtils.isNull(value)
 
 
+def advisory(f):
+    """A chaucidou (CVCB): OSM maps its side lanes as advisory, cars drive on them to pass each other."""
+    keys = ["cycleway:lane", "cycleway:both:lane"]
+    keys += [f"cycleway:{f['side']}:lane"] if f["side"] in ("left", "right") else ["cycleway:left:lane",
+                                                                                  "cycleway:right:lane"]
+    return any(f.fields().indexOf(k) >= 0 and f[k] == "advisory" for k in keys)
+
+
 def cycleway_kind(f):
     t = f["typeamenagement"]
+    if t == "Bande Cyclable" and advisory(f):
+        return "cvcb"
     if t == "Piste Cyclable":
         return "piste2" if not is_null(f["bidirectional"]) and f["bidirectional"] else "piste"
     if t == "Voie verte":
@@ -894,7 +904,7 @@ def contraflow_arrows(kept, min_length=70, spacing=6, same_street=25):
     mm from another arrow on the same street. A contraflow lane whose way also has a painted lane or
     a bus lane is not drawn as a line (the lane is), only its arrow."""
     u = unit()
-    lanes = {k["osm"] for k in kept if k["kind"] in ("bande", "bus")}
+    lanes = {k["osm"] for k in kept if k["kind"] in ("bande", "cvcb", "bus")}
     placed = []
     candidates = [k for k in kept if k["kind"] == "dsc"]
     for k in candidates:
@@ -941,7 +951,7 @@ def dsc_arrows(rendering_pass, size=3.2):
     return arrows
 
 
-DSC_LEGEND = ("Double sens cyclable|(flèche grise : sens des voitures,|flèche bleue : vélos à contresens)")
+DSC_LEGEND = "Double sens cyclable|(flèche bleue : vélos, grise : voitures)"
 
 
 def contraflow_line():
@@ -991,15 +1001,18 @@ def bike_layers(extent):
          line_symbol(line_layer(GREENWAY, 0.45, dash=[0.9, 0.6], cap="butt", rendering_pass=0))),
     ], symbol_levels=True))
 
-    shared = kind_layer("Partagés ou marqués au sol", ["pieton", "velorue", "bande", "bus", "dsc"])
+    shared = kind_layer("Partagés ou marqués au sol", ["pieton", "velorue", "bande", "cvcb", "bus", "dsc"])
     shared.setRenderer(rule_renderer([
-        ("Zone piétonne ou allée de parc|(piétons prioritaires, vélos à allure réduite)", "\"kind\" = 'pieton'",
+        ("Zone piétonne, allée de parc (vélos au pas)", "\"kind\" = 'pieton'",
          line_symbol(line_layer(GREENWAY, 0.4, dash=[0.05, 0.7], rendering_pass=1))),
         ("Vélorue", "\"kind\" = 'velorue'", line_symbol(
             line_layer(PAINTED, 0.8, cap="butt", rendering_pass=3),
             line_layer("#ffffff", 0.22, dash=[0.8, 0.8], cap="butt", rendering_pass=4))),
         ("Bande cyclable", "\"kind\" = 'bande'",
          line_symbol(line_layer(PAINTED, 0.38, dash=[1.6, 0.6], cap="butt", offset=side, rendering_pass=2))),
+        # Thinner and paler than a real lane: much less protection.
+        ("Chaucidou (CVCB) : les voitures roulent|sur le côté pour se croiser", "\"kind\" = 'cvcb'",
+         line_symbol(line_layer(CONTRAFLOW, 0.25, dash=[1.0, 0.9], cap="butt", offset=side, rendering_pass=1))),
         ("Couloir bus ouvert aux vélos", "\"kind\" = 'bus'",
          line_symbol(line_layer(PAINTED, 0.45, dash=[0.01, 0.9], offset=side, rendering_pass=1))),
         (DSC_LEGEND, "\"kind\" = 'dsc'", line_symbol(contraflow_line(), dsc_arrows(rendering_pass=4))),
@@ -1426,7 +1439,7 @@ def station_layer():
          square_symbol(colors, "A", data["lineColors"]["A"])),
         ("Arrêt de tramway principal (ligne)", "\"kind\" = 'tram'", square_symbol(colors, "T1", TRAM_COLORS["T1"])),
         ("Gare", "\"kind\" = 'train'", QgsMarkerSymbol([train])),
-        ("Arrêt de la navette fluviale Navigône (vélos admis)", "\"kind\" = 'boat'", QgsMarkerSymbol([boat])),
+        ("Navette fluviale Navigône (vélos admis)", "\"kind\" = 'boat'", QgsMarkerSymbol([boat])),
     ]))
     def station_labels(s):
         place_labels(s, priority=9)
@@ -1478,7 +1491,7 @@ def service_layer(merge=70):
     for g in pumps + repairs:
         if all(g.distance(k) > merge for k in kept):
             kept.append(g)
-    layer = QgsVectorLayer("Point?crs=EPSG:2154", "Pompe ou station de réparation en libre-service", "memory")
+    layer = QgsVectorLayer("Point?crs=EPSG:2154", "Pompe, station de réparation en libre-service", "memory")
     features = []
     for g in kept:
         feat = QgsFeature()
@@ -1547,6 +1560,65 @@ def velov_layer():
     dot.setStrokeWidth(0.25)
     dot.setStrokeWidthUnit(MM)
     layer.setRenderer(QgsSingleSymbolRenderer(QgsMarkerSymbol([dot])))
+    return layer
+
+
+RACK_COLOR, RACK_SIZES = "#3a3531", (0.5, 0.75)  # mm, the bigger from 20 places
+
+
+def rack_layer(frame, hidden, covers, merge=10):
+    """Free bike racks of the Métropole as tiny squares, a texture rather than symbols: there are ~5 500.
+    Racks closer than `merge` m make one square. Those under a panel or a point symbol, `covers`
+    [(point, radius in mm)], are left out rather than peeking out from under it."""
+    u = unit()
+    zones = [h.buffer(2 * u, 2) for h in hidden]
+    index, discs = QgsSpatialIndex(), {}
+    for i, (g, r) in enumerate(covers):
+        disc = QgsFeature(i)
+        disc.setGeometry(g.buffer((r + 0.3) * u, 8))
+        index.addFeature(disc)
+        discs[i] = disc.geometry()
+
+    groups, cells = [], {}  # [x sum, y sum, racks, places], groups by grid cell of their first rack
+    for f, g in to_lambert(geojson_layer("racks.geojson", "racks")):
+        p = g.asPoint()
+        if not frame.contains(p) or any(z.contains(g) for z in zones):
+            continue
+        cx, cy = int(p.x() // merge), int(p.y() // merge)
+        near = (i for dx in (-1, 0, 1) for dy in (-1, 0, 1) for i in cells.get((cx + dx, cy + dy), []))
+        group = next((groups[i] for i in near if math.dist(
+            (groups[i][0] / groups[i][2], groups[i][1] / groups[i][2]), (p.x(), p.y())) < merge), None)
+        if group is None:
+            cells.setdefault((cx, cy), []).append(len(groups))
+            groups.append([0, 0, 0, 0])
+            group = groups[-1]
+        group[0] += p.x()
+        group[1] += p.y()
+        group[2] += 1
+        group[3] += f["places"] or 0
+
+    layer = QgsVectorLayer("Point?crs=EPSG:2154&field=places:integer", "Arceaux vélo en accès libre", "memory")
+    features = []
+    for x, y, n, places in groups:
+        point = QgsGeometry.fromPointXY(QgsPointXY(x / n, y / n))
+        if any(discs[i].contains(point) for i in index.intersects(point.boundingBox())):
+            continue
+        feature = QgsFeature(layer.fields())
+        feature.setGeometry(point)
+        feature["places"] = places
+        features.append(feature)
+    layer.dataProvider().addFeatures(features)
+    print(f"racks: {len(features)} squares ({len(groups) - len(features)} under a symbol)")
+
+    square = QgsSimpleMarkerSymbolLayer(Qgis.MarkerShape.Square, RACK_SIZES[0])
+    square.setSizeUnit(MM)
+    square.setColor(QColor(RACK_COLOR))
+    square.setStrokeColor(QColor("#ffffff"))
+    square.setStrokeWidth(0.1)
+    square.setStrokeWidthUnit(MM)
+    square.setDataDefinedProperty(QgsSymbolLayer.Property.Size, QgsProperty.fromExpression(
+        f"CASE WHEN \"places\" >= 20 THEN {RACK_SIZES[1]} ELSE {RACK_SIZES[0]} END"))
+    layer.setRenderer(QgsSingleSymbolRenderer(QgsMarkerSymbol([square])))
     return layer
 
 
@@ -1674,7 +1746,7 @@ def street_name_layer(extent, vl, cycleways, skip=()):
     vl_geoms = {f.id(): f.geometry() for f in vl.getFeatures()}
     vl_index = QgsSpatialIndex(vl.getFeatures())
     tracks = {f.id(): f.geometry() for f in cycleways.getFeatures()
-              if f["kind"] in ("piste2", "piste", "vv", "vv_unpaved", "bande", "bus")}
+              if f["kind"] in ("piste2", "piste", "vv", "vv_unpaved", "bande", "cvcb", "bus")}
     track_index = QgsSpatialIndex()
     for i, g in tracks.items():
         feat = QgsFeature(i)
@@ -2060,7 +2132,7 @@ def panel(layout, x, y, w, h, color="#ffffff", opacity=1.0):
     return shape
 
 
-LEGEND_AREA = (340, 250)  # mm, the legend with a margin (the build prints its actual size)
+LEGEND_AREA = (275, 200)  # mm, the legend with a margin (the build prints its actual size)
 
 
 def panel_areas(center):
@@ -2157,20 +2229,20 @@ def build_layout(project, map_layers, legend_layers, center):
     title_panel.attemptResize(mm_size(content_w + 10 + qr_size + 2 * pad, 72))
 
     # Legend, bottom left.
-    pad = 9
+    pad = 7
     legend = QgsLayoutItemLegend(layout)
     legend.setLinkedMap(map_item)
     legend.setSyncMode(Qgis.LegendSyncMode.Manual)
     root = legend.model().rootGroup()
     root.removeAllChildren()
-    separated, shared, vl, shields, parkings, velov, services, stations, slopes, landmarks = legend_layers
+    separated, shared, vl, shields, parkings, velov, racks, services, stations, slopes, landmarks = legend_layers
     group = root.addGroup("Aménagements cyclables")
     group.addLayer(separated)
     shared_node = group.addLayer(shared)
     # The contraflow sample gets bigger arrows than on the map, so that they can be read there.
     dsc_index = next(i for i, r in enumerate(shared.renderer().rootRule().children()) if "'dsc'" in r.filterExpression())
     QgsMapLayerLegendUtils.setLegendNodeCustomSymbol(
-        shared_node, dsc_index, line_symbol(contraflow_line(), dsc_arrows(rendering_pass=4, size=8)))
+        shared_node, dsc_index, line_symbol(contraflow_line(), dsc_arrows(rendering_pass=4, size=6.5)))
     legend.model().refreshLayerLegend(shared_node)
     vl_group = root.addGroup("Voies Lyonnaises")
     vl_group.addLayer(legend_only(project, "Section réalisée (couleur de la ligne)", line_symbol(
@@ -2181,6 +2253,7 @@ def build_layout(project, map_layers, legend_layers, center):
     node = service_group.addLayer(parkings)
     QgsLegendRenderer.setNodeLegendStyle(node, QgsLegendStyle.Style.Hidden)
     service_group.addLayer(velov)
+    service_group.addLayer(racks)
     service_group.addLayer(services)
     transit_group = root.addGroup("Transports en commun")
     node = transit_group.addLayer(stations)
@@ -2198,21 +2271,21 @@ def build_layout(project, map_layers, legend_layers, center):
     # Two columns: the cycling items, then services, transport, places and relief.
     legend.setColumnCount(2)
     service_group.setCustomProperty("legend/column-break", "1")
-    legend.setSymbolWidth(22)
-    legend.setSymbolHeight(6.5)
+    legend.setSymbolWidth(18)
+    legend.setSymbolHeight(5.2)
     for style, fmt in [
         (QgsLegendStyle.Style.Title, text_format(30, INK, style="Demi Bold")),
-        (QgsLegendStyle.Style.Group, text_format(20, INK, style="Demi Bold")),
-        (QgsLegendStyle.Style.Subgroup, text_format(16, SEPARATED, style="Demi Bold")),
-        (QgsLegendStyle.Style.SymbolLabel, text_format(15, TEXT, style="Regular")),
+        (QgsLegendStyle.Style.Group, text_format(16, INK, style="Demi Bold")),
+        (QgsLegendStyle.Style.Subgroup, text_format(13, SEPARATED, style="Demi Bold")),
+        (QgsLegendStyle.Style.SymbolLabel, text_format(12, TEXT, style="Regular")),
     ]:
         legend.rstyle(style).setTextFormat(fmt)
     legend.rstyle(QgsLegendStyle.Style.Title).setMargin(QgsLegendStyle.Side.Bottom, 0)
-    legend.rstyle(QgsLegendStyle.Style.Group).setMargin(QgsLegendStyle.Side.Top, 8)
-    legend.rstyle(QgsLegendStyle.Style.Subgroup).setMargin(QgsLegendStyle.Side.Top, 7)
-    legend.rstyle(QgsLegendStyle.Style.Subgroup).setMargin(QgsLegendStyle.Side.Bottom, 1.5)
-    legend.rstyle(QgsLegendStyle.Style.Symbol).setMargin(QgsLegendStyle.Side.Top, 2.6)
-    legend.rstyle(QgsLegendStyle.Style.SymbolLabel).setMargin(QgsLegendStyle.Side.Left, 4)
+    legend.rstyle(QgsLegendStyle.Style.Group).setMargin(QgsLegendStyle.Side.Top, 6)
+    legend.rstyle(QgsLegendStyle.Style.Subgroup).setMargin(QgsLegendStyle.Side.Top, 5)
+    legend.rstyle(QgsLegendStyle.Style.Subgroup).setMargin(QgsLegendStyle.Side.Bottom, 1.2)
+    legend.rstyle(QgsLegendStyle.Style.Symbol).setMargin(QgsLegendStyle.Side.Top, 2)
+    legend.rstyle(QgsLegendStyle.Style.SymbolLabel).setMargin(QgsLegendStyle.Side.Left, 3)
     legend.setBackgroundEnabled(True)
     legend.setBackgroundColor(QColor("#ffffff"))
     legend.setFrameEnabled(True)
@@ -2303,7 +2376,7 @@ def main():
     project = QgsProject.instance()
     project.clear()
     project.setCrs(CRS)
-    project.setTitle(f"{TITLE} — impression")
+    project.setTitle(TITLE)
     project.setFilePathStorage(Qgis.FilePathType.Relative)
 
     to_l93 = QgsCoordinateTransform(QgsCoordinateReferenceSystem("EPSG:4326"), CRS, project)
@@ -2338,17 +2411,20 @@ def main():
     fixed += [(g, SHIELD_SIZE / 2) for _, g in to_lambert(shields)]
     # Vélo'v dots before the pumps: the pumps of the Métropole stand at Vélo'v stations, the red dot
     # stays where the station is and the pump goes beside it.
-    parkings, velov, services, landmarks = declutter(fixed, [
-        (parkings, lambda f: 2.75 if f["type"] == "velostation" else 2.0, OUT / "parkings.fgb"),
-        (velov, 0.7, OUT / "velov.fgb"),
-        (services, 1.8, OUT / "services.fgb"),
-        (landmarks, 1.8, OUT / "landmarks-placed.fgb"),
-    ], cycleways, basemap_layer("water", None, "water"))
+    symbols = [(parkings, lambda f: 2.75 if f["type"] == "velostation" else 2.0, OUT / "parkings.fgb"),
+               (velov, 0.7, OUT / "velov.fgb"),
+               (services, 1.8, OUT / "services.fgb"),
+               (landmarks, 1.8, OUT / "landmarks-placed.fgb")]
+    parkings, velov, services, landmarks = declutter(fixed, symbols, cycleways, basemap_layer("water", None, "water"))
     for layer in (parkings, services, landmarks, velov):
         hide_under_panels(layer, hidden, frame)
+    covers = fixed + [(g, radius(f) if callable(radius) else radius)
+                      for layer, (_, radius, _) in zip((parkings, velov, services, landmarks), symbols)
+                      for f, g in to_lambert(layer)]
+    racks = rack_layer(frame, hidden, covers)
     slopes = slope_layer(extent, frame, cycleways, hidden, [g for _, g in to_lambert(shields)])
     # The chevrons go above the Voies Lyonnaises bands and below the cycle lines.
-    order = [*labels, stations, landmarks, shields, parkings, services, velov, separated, shared, slopes, vl,
+    order = [*labels, stations, landmarks, shields, parkings, services, velov, separated, shared, slopes, racks, vl,
              navigone_route_layer(), arrondissement_layer(),
              *base[::-1]]  # top first
     root = project.layerTreeRoot()
@@ -2360,8 +2436,8 @@ def main():
     engine.setMaximumLineCandidatesPerCm(15)  # more positions tried along streets (bridges, short streets)
     project.setLabelingEngineSettings(engine)
 
-    layout = build_layout(project, order, [separated, shared, vl, shields, parkings, velov, services, stations,
-                                           slopes, landmarks], center)
+    layout = build_layout(project, order, [separated, shared, vl, shields, parkings, velov, racks, services,
+                                           stations, slopes, landmarks], center)
     project.layoutManager().addLayout(layout)
     project.write(str(OUT / "carte-velo-lyon.qgz"))
 
@@ -2421,6 +2497,8 @@ def main():
             "saone-nord": (290, 110),
             "saint-vincent": (360, 280),
             "rhone-ponts": (440, 260),
+            "suchet": (330, 420),
+            "levy": (540, 690),
             "title": (MARGIN, MARGIN),
             "qr": (MARGIN + 160, MARGIN),
             "legend": (MARGIN, PAGE_H - MARGIN - 200),
