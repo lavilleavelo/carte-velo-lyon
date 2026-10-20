@@ -1,3 +1,5 @@
+import type { ExpressionSpecification } from 'maplibre-gl';
+
 export const PISTE_BIDIR_LINE_WIDTH = [
 	'interpolate',
 	['exponential', 1.5],
@@ -58,3 +60,38 @@ export const NORMAL_LINE_OPACITY = 0.9;
 
 // Below this zoom the map is an overview: both sides of a street collapse into a single line
 export const CYCLEWAY_DETAIL_ZOOM = 13.8;
+
+export const GREENWAY_COLOR = '#237a45';
+export const GREENWAY_LINE_WIDTH: ExpressionSpecification = [
+	'interpolate',
+	['exponential', 1.5],
+	['zoom'],
+	8,
+	1,
+	11,
+	1.9,
+	14,
+	3,
+	17,
+	4.5,
+];
+export const GREENWAY_UNPAVED_DASHARRAY: [number, number] = [2, 1.3];
+export const PEDESTRIAN_ZONE_LINE_WIDTH: ExpressionSpecification = [
+	'interpolate',
+	['linear'],
+	['zoom'],
+	8,
+	0.6,
+	11,
+	1.2,
+	14,
+	2.2,
+	17,
+	3.2,
+];
+export const PEDESTRIAN_ZONE_DASHARRAY: [number, number] = [0, 2];
+
+export const CHAUCIDOU_COLOR = '#6aa9d8';
+export const CHAUCIDOU_DASHARRAY: [number, number] = [2, 1.6];
+
+export const CONTRAFLOW_COLOR = '#73b3e0';

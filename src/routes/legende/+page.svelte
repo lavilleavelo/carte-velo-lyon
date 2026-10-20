@@ -1,10 +1,9 @@
 <script lang="ts">
 	import type { LegendId } from '$lib/utils/cyclewayLegend';
 	import { PAVED_SURFACES } from '$lib/utils/osmCycleway';
+	import { CHAUCIDOU_COLOR, GREENWAY_COLOR } from '$lib/components/map/layers/cyclewayStyles';
 
-	const COLOR = '#166534';
-	const VOIE_VERTE_PAVED = '#0369a1';
-	const VOIE_VERTE_NON_PAVED = '#03527d';
+	const COLOR = '#0369a1';
 
 	type Render = 'solid' | 'solid-thin' | 'dashed' | 'dashed-thin' | 'dotted' | 'velorue' | 'arrow';
 
@@ -15,6 +14,7 @@
 		id: LegendId | string;
 		label: string;
 		render?: Render;
+		color?: string;
 		customSwatch?: 'voie-verte';
 		osm: Group[];
 		grandLyon?: string;
@@ -62,7 +62,7 @@
 			label: 'Voie verte',
 			customSwatch: 'voie-verte',
 			intro:
-				'Cette catégorie regroupe deux choses : les voies vertes officielles (panneau C115, infrastructure dédiée) et les pistes cyclables partagées avec les piétons sans séparation (highway=cycleway + foot=designated + segregated=no, ce que CyclOSM distingue sous le nom de "shared track"). Les deux sont rendues à l\'identique sur la carte.',
+				'Cette catégorie regroupe deux choses : les voies vertes officielles (panneau C115, infrastructure dédiée) et les pistes cyclables partagées avec les piétons sans séparation (highway=cycleway + foot=designated + segregated=no, ce que CyclOSM distingue sous le nom de "shared track"). Les deux sont rendues à l\'identique sur la carte. Sur une rue piétonne (highway=pedestrian), elles sont classées en zone piétonne.',
 			osm: [
 				{
 					all: ['traffic_sign=FR:C115', { or: ['bicycle=designated', 'bicycle=yes'] }],
@@ -70,13 +70,6 @@
 				},
 				{ all: ['highway=cycleway', 'foot=designated', 'segregated=no'] },
 				{ all: ['highway=path', 'bicycle=designated'] },
-				{
-					all: [
-						'highway=pedestrian',
-						{ or: ['bicycle=yes', 'bicycle=designated'] },
-						'sauf segregated=yes',
-					],
-				},
 				{
 					all: [
 						{ or: ['highway=service', 'highway=track', 'highway=unclassified'] },
@@ -96,18 +89,55 @@
 			grandLyon: 'typeamenagement=Voie verte',
 		},
 		{
+			id: 'zone-pietonne',
+			label: 'Zone piétonne, allée de parc',
+			render: 'dotted',
+			color: GREENWAY_COLOR,
+			intro:
+				'Rue piétonne ou allée de parc où les vélos sont admis : les piétons sont prioritaires et les vélos roulent à allure modérée (au pas dans une aire piétonne, panneau B54).',
+			osm: [
+				{
+					all: [
+						'highway=pedestrian',
+						{ or: ['bicycle=yes', 'bicycle=designated'] },
+						'sauf segregated=yes',
+					],
+				},
+			],
+		},
+		{
 			id: 'bande',
 			label: 'Bande cyclable',
 			render: 'dashed',
 			osm: [
 				{ all: [{ or: ['cycleway=lane', 'cycleway=opposite_lane'] }] },
 				{ all: [{ or: ['cycleway:left=lane', 'cycleway:right=lane', 'cycleway:both=lane'] }] },
-				{
-					all: ['cycleway:both:lane=advisory'],
-					note: 'bidirectionnelle (chaucidou)',
-				},
 			],
 			grandLyon: 'typeamenagement=Bande Cyclable',
+		},
+		{
+			id: 'chaucidou',
+			label: 'Chaucidou (CVCB)',
+			render: 'dashed-thin',
+			color: CHAUCIDOU_COLOR,
+			intro:
+				"Chaussée à voie centrale banalisée : une voie centrale pour les voitures dans les deux sens et une rive cyclable de chaque côté. Les voitures roulent sur la rive pour se croiser : beaucoup moins protecteur qu'une bande cyclable, d'où un trait plus fin et plus pâle.",
+			osm: [
+				{
+					all: [
+						{ or: ['cycleway=lane', 'cycleway:both=lane'] },
+						{ or: ['cycleway:lane=advisory', 'cycleway:both:lane=advisory'] },
+					],
+				},
+				{
+					all: [
+						{ or: ['cycleway:left=lane', 'cycleway:right=lane'] },
+						{ or: ['cycleway:left:lane=advisory', 'cycleway:right:lane=advisory'] },
+					],
+					note: 'du côté concerné',
+				},
+			],
+			grandLyon: 'typeamenagement=Bande Cyclable (non distinguée)',
 		},
 		{
 			id: 'bus-velo',
@@ -198,10 +228,9 @@
 									y1="6"
 									x2="48"
 									y2="6"
-									stroke={VOIE_VERTE_PAVED}
+									stroke={GREENWAY_COLOR}
 									stroke-width="4"
 									stroke-linecap="round"
-									stroke-dasharray="0.1 6"
 								/>
 							</svg>
 							<svg
@@ -215,10 +244,9 @@
 									y1="6"
 									x2="48"
 									y2="6"
-									stroke={VOIE_VERTE_NON_PAVED}
+									stroke={GREENWAY_COLOR}
 									stroke-width="4"
-									stroke-linecap="round"
-									stroke-dasharray="0.1 6"
+									stroke-dasharray="5 3"
 								/>
 							</svg>
 						</div>
@@ -235,7 +263,7 @@
 									y1="6"
 									x2="48"
 									y2="6"
-									stroke={COLOR}
+									stroke={row.color ?? COLOR}
 									stroke-width="4"
 									stroke-linecap="round"
 								/>
@@ -245,7 +273,7 @@
 									y1="6"
 									x2="48"
 									y2="6"
-									stroke={COLOR}
+									stroke={row.color ?? COLOR}
 									stroke-width="2"
 									stroke-linecap="round"
 								/>
@@ -255,7 +283,7 @@
 									y1="6"
 									x2="48"
 									y2="6"
-									stroke={COLOR}
+									stroke={row.color ?? COLOR}
 									stroke-width="3"
 									stroke-dasharray="5 3"
 								/>
@@ -265,7 +293,7 @@
 									y1="6"
 									x2="48"
 									y2="6"
-									stroke={COLOR}
+									stroke={row.color ?? COLOR}
 									stroke-width="1.5"
 									stroke-dasharray="3 3"
 								/>
@@ -275,7 +303,7 @@
 									y1="6"
 									x2="48"
 									y2="6"
-									stroke={COLOR}
+									stroke={row.color ?? COLOR}
 									stroke-width="3"
 									stroke-linecap="round"
 									stroke-dasharray="0.1 5"
@@ -286,7 +314,7 @@
 									y1="6"
 									x2="48"
 									y2="6"
-									stroke={COLOR}
+									stroke={row.color ?? COLOR}
 									stroke-width="4"
 									stroke-dasharray="8 4"
 								/>
@@ -307,9 +335,10 @@
 
 				{#if row.customSwatch === 'voie-verte'}
 					<p class="mb-3 text-xs text-gray-500">
-						Deux variantes de rendu : revêtue (clair) ou stabilisée (foncé), selon le tag
+						Deux variantes de rendu : revêtue (trait plein) ou non revêtue (tirets), selon le tag
 						<code class="rounded bg-gray-100 px-1 py-0.5 font-mono">surface</code>. Surfaces
-						revêtues : {pavedList}. Surface absente = considérée revêtue.
+						revêtues : {pavedList}. Surface absente = considérée revêtue ; valeur multiple (a;b) =
+						revêtue si toutes ses parties le sont.
 					</p>
 				{/if}
 

@@ -4,8 +4,7 @@
 	import Info from '@lucide/svelte/icons/info';
 	import Focus from '@lucide/svelte/icons/focus';
 	import type { LegendId } from '$lib/utils/cyclewayLegend';
-
-	const COLOR = '#166534';
+	import { CHAUCIDOU_COLOR, GREENWAY_COLOR } from './layers/cyclewayStyles';
 
 	type Render =
 		| 'solid'
@@ -19,11 +18,24 @@
 		| 'velorue'
 		| 'arrow';
 
-	const items: { id: LegendId; label: string; render: Render }[] = [
+	const items: { id: LegendId; label: string; render: Render; color?: string }[] = [
 		{ id: 'piste-bidir', label: 'Piste cyclable (bidir.)', render: 'solid' },
 		{ id: 'piste-unidir', label: 'Piste cyclable (unidir.)', render: 'solid-thin' },
-		{ id: 'voie-verte', label: 'Voie verte', render: 'dotted-bold' },
+		{ id: 'voie-verte', label: 'Voie verte', render: 'solid', color: GREENWAY_COLOR },
+		{
+			id: 'voie-verte-non-revetue',
+			label: 'Voie verte non revêtue',
+			render: 'dashed',
+			color: GREENWAY_COLOR,
+		},
+		{
+			id: 'zone-pietonne',
+			label: 'Zone piétonne, allée de parc',
+			render: 'dotted',
+			color: GREENWAY_COLOR,
+		},
 		{ id: 'bande', label: 'Bande cyclable', render: 'dashed' },
+		{ id: 'chaucidou', label: 'Chaucidou (CVCB)', render: 'dashed-thin', color: CHAUCIDOU_COLOR },
 		{ id: 'bus-velo', label: 'Voie bus-vélo', render: 'dotted' },
 		{ id: 'velorue', label: 'Vélorue', render: 'velorue' },
 		{ id: 'dsc', label: 'Double sens cyclable', render: 'arrow' },
@@ -46,6 +58,7 @@
 		onHoverSafety,
 		position = 'bottom-right',
 		initiallyOpen = true,
+		grandLyon = false,
 	}: {
 		activeIds?: string[];
 		onToggle?: (id: string) => void;
@@ -60,7 +73,19 @@
 		onHoverSafety?: (key: SafetyKey | null) => void;
 		position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 		initiallyOpen?: boolean;
+		grandLyon?: boolean;
 	} = $props();
+
+	const color = $derived(grandLyon ? '#166534' : '#0369a1');
+	const styledItems = $derived(
+		grandLyon
+			? items.map((item) => ({
+					...item,
+					color: undefined,
+					render: item.id === 'voie-verte' ? ('dotted-bold' as const) : item.render,
+				}))
+			: items,
+	);
 
 	let open = $state(initiallyOpen);
 
@@ -89,8 +114,8 @@
 	}
 
 	const visibleItems = $derived.by(() => {
-		if (!lengthByLegendId) return items;
-		return items.filter((item) => hasKm(item.id));
+		if (!lengthByLegendId) return styledItems;
+		return styledItems.filter((item) => hasKm(item.id));
 	});
 
 	const totalKm = $derived.by(() => {
@@ -264,7 +289,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="4"
 												stroke-linecap="round"
 											/>
@@ -274,20 +299,34 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="2"
 												stroke-linecap="round"
 											/>
 										{:else if item.render === 'double'}
-											<line x1="0" y1="3" x2="48" y2="3" stroke={COLOR} stroke-width="1.5" />
-											<line x1="0" y1="9" x2="48" y2="9" stroke={COLOR} stroke-width="1.5" />
+											<line
+												x1="0"
+												y1="3"
+												x2="48"
+												y2="3"
+												stroke={item.color ?? color}
+												stroke-width="1.5"
+											/>
+											<line
+												x1="0"
+												y1="9"
+												x2="48"
+												y2="9"
+												stroke={item.color ?? color}
+												stroke-width="1.5"
+											/>
 										{:else if item.render === 'dashed'}
 											<line
 												x1="0"
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="3"
 												stroke-dasharray="5 3"
 											/>
@@ -297,7 +336,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="3"
 												stroke-dasharray="6 6"
 											/>
@@ -307,7 +346,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="1.5"
 												stroke-dasharray="3 3"
 											/>
@@ -317,7 +356,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="3"
 												stroke-linecap="round"
 												stroke-dasharray="0.1 5"
@@ -328,7 +367,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="4"
 												stroke-linecap="round"
 												stroke-dasharray="0.1 6"
@@ -339,7 +378,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="4"
 												stroke-dasharray="8 4"
 											/>
@@ -388,7 +427,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="4"
 												stroke-linecap="round"
 											/>
@@ -398,20 +437,34 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="2"
 												stroke-linecap="round"
 											/>
 										{:else if item.render === 'double'}
-											<line x1="0" y1="3" x2="48" y2="3" stroke={COLOR} stroke-width="1.5" />
-											<line x1="0" y1="9" x2="48" y2="9" stroke={COLOR} stroke-width="1.5" />
+											<line
+												x1="0"
+												y1="3"
+												x2="48"
+												y2="3"
+												stroke={item.color ?? color}
+												stroke-width="1.5"
+											/>
+											<line
+												x1="0"
+												y1="9"
+												x2="48"
+												y2="9"
+												stroke={item.color ?? color}
+												stroke-width="1.5"
+											/>
 										{:else if item.render === 'dashed'}
 											<line
 												x1="0"
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="3"
 												stroke-dasharray="5 3"
 											/>
@@ -421,7 +474,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="3"
 												stroke-dasharray="6 6"
 											/>
@@ -431,7 +484,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="1.5"
 												stroke-dasharray="3 3"
 											/>
@@ -441,7 +494,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="3"
 												stroke-linecap="round"
 												stroke-dasharray="0.1 5"
@@ -452,7 +505,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="4"
 												stroke-linecap="round"
 												stroke-dasharray="0.1 6"
@@ -463,7 +516,7 @@
 												y1="6"
 												x2="48"
 												y2="6"
-												stroke={COLOR}
+												stroke={item.color ?? color}
 												stroke-width="4"
 												stroke-dasharray="8 4"
 											/>

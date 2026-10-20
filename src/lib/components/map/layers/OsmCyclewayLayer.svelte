@@ -5,7 +5,6 @@
 	import type * as maplibregl from 'maplibre-gl';
 	import { EMPTY_FEATURE_COLLECTION, filterFeaturesInsideBoundary } from '$lib/utils/geoFilter';
 	import { osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
-	import { PAVED_SURFACES } from '$lib/utils/osmCycleway';
 	import { osmCyclewaysQueryOptions } from '$lib/queries/cyclewayQueries';
 	import {
 		createDscArrowIconById,
@@ -17,18 +16,23 @@
 		BANDE_DASHARRAY,
 		BUS_VELO_DASHARRAY,
 		BUS_VELO_LINE_CAP,
+		CHAUCIDOU_COLOR,
+		CHAUCIDOU_DASHARRAY,
+		CONTRAFLOW_COLOR,
 		CYCLEWAY_DETAIL_ZOOM,
 		DSC_ARROW_SYMBOL_SPACING,
 		DSC_ARROW_TEXT_SIZE,
+		GREENWAY_COLOR,
+		GREENWAY_LINE_WIDTH,
+		GREENWAY_UNPAVED_DASHARRAY,
+		PEDESTRIAN_ZONE_DASHARRAY,
+		PEDESTRIAN_ZONE_LINE_WIDTH,
 		PISTE_BIDIR_LINE_WIDTH,
 		PISTE_UNIDIR_LINE_WIDTH,
 		TROTTOIR_DASHARRAY,
 		TROTTOIR_LINE_CAP,
 		VELORUE_DASHARRAY,
 		VELORUE_LINE_CAP,
-		VOIE_VERTE_DASHARRAY,
-		VOIE_VERTE_LINE_CAP,
-		VOIE_VERTE_LINE_WIDTH,
 	} from './cyclewayStyles';
 
 	let {
@@ -90,14 +94,16 @@
 	const opacityPisteBidir = $derived(opacityFor('piste-bidir'));
 	const opacityPisteUnidir = $derived(opacityFor('piste-unidir'));
 	const opacityVoieVerte = $derived(opacityFor('voie-verte'));
+	const opacityVoieVerteNonRevetue = $derived(opacityFor('voie-verte-non-revetue'));
+	const opacityZonePietonne = $derived(opacityFor('zone-pietonne'));
 	const opacityBande = $derived(opacityFor('bande'));
+	const opacityChaucidou = $derived(opacityFor('chaucidou'));
 	const opacityBusVelo = $derived(opacityFor('bus-velo'));
 	const opacityVelorue = $derived(opacityFor('velorue'));
 	const opacityDsc = $derived(opacityFor('dsc'));
 	const opacityTrottoir = $derived(opacityFor('trottoir'));
 
 	const COLOR = '#0369a1';
-	const COLOR_NON_PAVED = '#03527d';
 	const SAFETY_COLOR_SAFE = '#2563eb';
 	const SAFETY_COLOR_UNSAFE = '#dc2626';
 	const SAFETY_COLOR_PEDESTRIAN = '#ea580c';
@@ -113,7 +119,11 @@
 
 	const lineColor: any = $derived(safetyMode ? safetyLineColorExpr : COLOR);
 
-	const lineColorNonPaved: any = $derived(safetyMode ? safetyLineColorExpr : COLOR_NON_PAVED);
+	const greenwayColor: any = $derived(safetyMode ? safetyLineColorExpr : GREENWAY_COLOR);
+
+	const chaucidouColor: any = $derived(safetyMode ? safetyLineColorExpr : CHAUCIDOU_COLOR);
+
+	const contraflowColor: any = $derived(safetyMode ? safetyLineColorExpr : CONTRAFLOW_COLOR);
 
 	function ensureDscIcons(m: maplibregl.Map) {
 		for (const variant of Object.keys(DSC_ARROW_BIKE_COLORS) as DscArrowVariant[]) {
@@ -197,23 +207,36 @@
 		['==', ['get', 'typeamenagement'], 'Piste Cyclable'],
 		['!', isBidir],
 	];
-	const pavedSurfacesLiteral: any = ['literal', Array.from(PAVED_SURFACES)];
-	const isPavedSurface: any = [
-		'any',
-		['!', ['has', 'surface']],
-		['in', ['get', 'surface'], pavedSurfacesLiteral],
-	];
+	const isPavedSurface: any = ['!=', ['get', 'paved'], false];
+	const isPedestrianStreet: any = ['==', ['get', 'highway'], 'pedestrian'];
 	const filterVoieVertePaved: any = [
 		'all',
 		['==', ['get', 'typeamenagement'], 'Voie verte'],
+		['!', isPedestrianStreet],
 		isPavedSurface,
 	];
 	const filterVoieVerteStabilise: any = [
 		'all',
 		['==', ['get', 'typeamenagement'], 'Voie verte'],
+		['!', isPedestrianStreet],
 		['!', isPavedSurface],
 	];
-	const filterBande: any = ['==', ['get', 'typeamenagement'], 'Bande Cyclable'];
+	const filterZonePietonne: any = [
+		'all',
+		['==', ['get', 'typeamenagement'], 'Voie verte'],
+		isPedestrianStreet,
+	];
+	const isAdvisory: any = ['==', ['get', 'advisory'], true];
+	const filterBande: any = [
+		'all',
+		['==', ['get', 'typeamenagement'], 'Bande Cyclable'],
+		['!', isAdvisory],
+	];
+	const filterChaucidou: any = [
+		'all',
+		['==', ['get', 'typeamenagement'], 'Bande Cyclable'],
+		isAdvisory,
+	];
 	const filterBusVelo: any = ['==', ['get', 'typeamenagement'], 'Couloir bus vélo'];
 	const filterDsc: any = ['==', ['get', 'typeamenagement'], 'Double sens cyclable'];
 	const filterVelorue: any = ['==', ['get', 'typeamenagement'], 'Vélorue'];
@@ -240,7 +263,7 @@
 	// lighter so the structuring network leads. They keep full strength when the user is looking
 	// for them: safety mode (fading bandes would flatter the network), legend hover, or a legend
 	// selection without any structuring type.
-	const MINOR_LEGEND_IDS = ['bande', 'dsc', 'trottoir'];
+	const MINOR_LEGEND_IDS = ['bande', 'chaucidou', 'zone-pietonne', 'dsc', 'trottoir'];
 	const OVERVIEW_DIM = 0.55;
 	const dimMinorAtOverview = $derived.by(() => {
 		if (!declutterOverview || safetyMode) {
@@ -374,26 +397,38 @@
 		id="osm-cw-voie-verte"
 		filter={filterVoieVertePaved}
 		paint={{
-			'line-color': lineColor,
-			'line-width': VOIE_VERTE_LINE_WIDTH,
+			'line-color': greenwayColor,
+			'line-width': GREENWAY_LINE_WIDTH,
 			'line-opacity': ['*', opacityVoieVerte, safetyOpacityExpr],
-			'line-dasharray': VOIE_VERTE_DASHARRAY,
 			'line-offset': lineOffset,
 		}}
-		layout={{ 'line-cap': VOIE_VERTE_LINE_CAP, visibility }}
+		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
 	/>
 
 	<LineLayer
 		id="osm-cw-voie-verte-stabilise-base"
 		filter={filterVoieVerteStabilise}
 		paint={{
-			'line-color': lineColorNonPaved,
-			'line-width': VOIE_VERTE_LINE_WIDTH,
-			'line-opacity': ['*', opacityVoieVerte, safetyOpacityExpr],
-			'line-dasharray': VOIE_VERTE_DASHARRAY,
+			'line-color': greenwayColor,
+			'line-width': GREENWAY_LINE_WIDTH,
+			'line-opacity': ['*', opacityVoieVerteNonRevetue, safetyOpacityExpr],
+			'line-dasharray': GREENWAY_UNPAVED_DASHARRAY,
 			'line-offset': lineOffset,
 		}}
-		layout={{ 'line-cap': VOIE_VERTE_LINE_CAP, visibility }}
+		layout={{ 'line-cap': 'butt', 'line-join': 'round', visibility }}
+	/>
+
+	<LineLayer
+		id="osm-cw-zone-pietonne"
+		filter={filterZonePietonne}
+		paint={{
+			'line-color': greenwayColor,
+			'line-width': PEDESTRIAN_ZONE_LINE_WIDTH,
+			'line-opacity': minorOpacity(opacityZonePietonne),
+			'line-dasharray': PEDESTRIAN_ZONE_DASHARRAY,
+			'line-offset': lineOffset,
+		}}
+		layout={{ 'line-cap': 'round', visibility }}
 	/>
 
 	<LineLayer
@@ -404,6 +439,19 @@
 			'line-width': bandeWidth,
 			'line-opacity': minorOpacity(opacityBande),
 			'line-dasharray': BANDE_DASHARRAY,
+			'line-offset': zoomedOffset,
+		}}
+		layout={{ visibility }}
+	/>
+
+	<LineLayer
+		id="osm-cw-chaucidou"
+		filter={filterChaucidou}
+		paint={{
+			'line-color': chaucidouColor,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 8, 0.4, 11, 0.8, 14, 1.4, 17, 2.2],
+			'line-opacity': minorOpacity(opacityChaucidou),
+			'line-dasharray': CHAUCIDOU_DASHARRAY,
 			'line-offset': zoomedOffset,
 		}}
 		layout={{ visibility }}

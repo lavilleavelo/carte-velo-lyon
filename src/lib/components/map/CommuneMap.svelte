@@ -1276,6 +1276,7 @@
 					onSoloSafety={soloSafetyFilter}
 					onHoverSafety={(key) => (hoveredSafety = key)}
 					position="bottom-left"
+					grandLyon={!isLayerActive('osm-cycleways')}
 				/>
 
 				{#if isLayerActive('speed-limits')}
