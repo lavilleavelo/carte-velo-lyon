@@ -122,7 +122,7 @@ MAJOR_CASING = "#c4bcae"
 MOTORWAY = "#e6e1d9"
 RAIL = "#a9a39a"
 TEXT = "#24211e"
-TRAM = "#9b9286"
+TRAM, TRAM_WIDTH = "#9b9286", 0.2  # mm: thin, the tracks are background
 TEXT_SOFT = "#4d4842"
 QUARTER_TEXT = "#958d81"
 INK = "#14213d"
@@ -434,7 +434,7 @@ def basemap_layers(extent):
         line_layer(RAIL, 0.6, rendering_pass=2 + 2 * n),
         line_layer("#ffffff", 0.3, dash=[2.0, 2.0], cap="butt", rendering_pass=3 + 2 * n))))
     rules.append(("tramway", f"\"class\" = 'transit' AND \"subclass\" IN ('tram','light_rail') AND {surface}",
-                  line_symbol(line_layer(TRAM, 0.35, rendering_pass=3 + 2 * n))))
+                  line_symbol(line_layer(TRAM, TRAM_WIDTH, rendering_pass=3 + 2 * n))))
     transportation = QgsVectorLayer(str(mark_busy_roads(basemap_layer("transportation"), extent)), "Voirie", "ogr")
     transportation.setRenderer(rule_renderer(rules, symbol_levels=True))
     layers.append(transportation)
@@ -2185,8 +2185,7 @@ def build_layout(project, map_layers, legend_layers, center):
     transit_group = root.addGroup("Transports en commun")
     node = transit_group.addLayer(stations)
     QgsLegendRenderer.setNodeLegendStyle(node, QgsLegendStyle.Style.Hidden)
-    transit_group.addLayer(legend_only(project, "Tramway (rails dangereux pour les vélos)",
-                                       line_symbol(line_layer(TRAM, 0.35))))
+    transit_group.addLayer(legend_only(project, "Tramway", line_symbol(line_layer(TRAM, TRAM_WIDTH))))
     transit_group.addLayer(legend_only(project, "Voie ferrée", line_symbol(
         line_layer(RAIL, 0.6), line_layer("#ffffff", 0.3, dash=[2.0, 2.0], cap="butt"))))
     relief_group = root.addGroup("Relief et circulation")
