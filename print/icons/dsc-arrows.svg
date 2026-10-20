@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 40 22" width="40" height="22">
+  <!-- Contraflow street, drawn along the car direction (+x): bikes against the traffic (top, dark blue),
+       cars (bottom, light grey), like the two lanes of the street. -->
+  <g fill="#ffffff" stroke="#ffffff" stroke-width="2.6" stroke-linejoin="round">
+    <path d="M2 6 L10 1 V4.5 H37 V7.5 H10 V11 Z"/>
+    <path d="M38 16 L31 11.5 V14.8 H6 V17.2 H31 V20.5 Z"/>
+  </g>
+  <path fill="#0a5a94" d="M2 6 L10 1 V4.5 H37 V7.5 H10 V11 Z"/>
+  <path fill="#9aa0a6" d="M38 16 L31 11.5 V14.8 H6 V17.2 H31 V20.5 Z"/>
+</svg>

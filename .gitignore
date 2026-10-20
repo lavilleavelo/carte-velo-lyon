@@ -29,3 +29,6 @@ worktrees/
 
 # Counters database
 .data/
+
+# Print map build output
+/print/out/
