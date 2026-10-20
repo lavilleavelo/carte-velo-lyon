@@ -718,8 +718,9 @@ def slope_layer(extent, frame, cycleways, hidden, blockers, min_slope=7, min_len
 
 
 # --- cycling data ------------------------------------------------------------------------------
-PAVED = {"asphalt", "paved", "concrete", "concrete:plates", "paving_stones", "sett", "cobblestone",
-         "unhewn_cobblestone", "metal"}
+PAVED = {"asphalt", "paved", "chipseal", "concrete", "concrete:lanes", "concrete:plates", "concrete_plates",
+         "paving_stones", "paving_stones:lanes", "bricks", "sett", "cobblestone", "unhewn_cobblestone", "metal",
+         "metal_grid", "wood", "rubber", "tiles"}
 # Most separated from traffic first: a lane running along a higher ranked one is not drawn.
 KINDS = ["piste2", "piste", "vv", "vv_unpaved", "pieton", "velorue", "bande", "cvcb", "bus", "dsc"]
 SIDE_KINDS = {"piste", "bande", "cvcb", "bus"}  # drawn on the side of the street they are on
@@ -756,10 +757,10 @@ def cycleway_kind(f):
     if t == "Piste Cyclable":
         return "piste2" if not is_null(f["bidirectional"]) and f["bidirectional"] else "piste"
     if t == "Voie verte":
-        if f["highway"] in ("pedestrian", "footway"):
-            return "pieton"  # shared with pedestrians: bikes at walking pace
+        if f["highway"] == "pedestrian":
+            return "pieton"  # shared with pedestrians, who come first
         surface = f["surface"]
-        return "vv" if is_null(surface) or surface in PAVED else "vv_unpaved"
+        return "vv" if is_null(surface) or set(surface.split(";")) <= PAVED else "vv_unpaved"
     return {"Vélorue": "velorue", "Bande Cyclable": "bande", "Couloir bus vélo": "bus",
             "Double sens cyclable": "dsc"}.get(t)
 
@@ -1003,7 +1004,7 @@ def bike_layers(extent):
 
     shared = kind_layer("Partagés ou marqués au sol", ["pieton", "velorue", "bande", "cvcb", "bus", "dsc"])
     shared.setRenderer(rule_renderer([
-        ("Zone piétonne, allée de parc (vélos au pas)", "\"kind\" = 'pieton'",
+        ("Zone piétonne, allée de parc", "\"kind\" = 'pieton'",
          line_symbol(line_layer(GREENWAY, 0.4, dash=[0.05, 0.7], rendering_pass=1))),
         ("Vélorue", "\"kind\" = 'velorue'", line_symbol(
             line_layer(PAINTED, 0.8, cap="butt", rendering_pass=3),
