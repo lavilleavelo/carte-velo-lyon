@@ -8,6 +8,7 @@
 	import OverpassOnewayArrowsLayer from '$lib/components/map/layers/OverpassOnewayArrowsLayer.svelte';
 	import MetroLayer from '$lib/components/map/layers/MetroLayer.svelte';
 	import TramLayer from '$lib/components/map/layers/TramLayer.svelte';
+	import NavigoneLayer from '$lib/components/map/layers/NavigoneLayer.svelte';
 	import BusLayer from '$lib/components/map/layers/BusLayer.svelte';
 	import ToiletLayer from '$lib/components/map/layers/ToiletLayer.svelte';
 	import SchoolLayer from '$lib/components/map/layers/SchoolLayer.svelte';
@@ -65,6 +66,9 @@
 {/if}
 {#if visible.has('tram')}
 	<TramLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {map} {boundary} />
+{/if}
+{#if visible.has('navigone')}
+	<NavigoneLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {boundary} />
 {/if}
 <BusLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {map} {boundary} />
 <ToiletLayer {isLayerVisible} handleMouseEnter={noop} handleMouseLeave={noop} {map} {boundary} />

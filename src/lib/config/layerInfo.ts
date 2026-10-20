@@ -109,7 +109,8 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 		],
 	},
 	'Métro / Tram': {
-		description: 'Lignes de métro, tramway et tram-bus du réseau TCL.',
+		description:
+			'Lignes de métro, tramway et tram-bus du réseau TCL, et la navette fluviale Navigône sur la Saône (vélos admis à bord).',
 		source: 'Sytral / Métropole de Lyon',
 		sourceUrl: 'https://data.grandlyon.com',
 		links: [
@@ -120,6 +121,10 @@ export const layerInfo: Record<string, LayerInfoEntry> = {
 			{
 				label: 'Lignes de tramway — data.grandlyon.com',
 				url: 'https://data.grandlyon.com/portail/fr/jeux-de-donnees/lignes-tramway-reseau-transports-commun-lyonnais/info',
+			},
+			{
+				label: 'Ligne fluviale Navigône — data.grandlyon.com',
+				url: 'https://data.grandlyon.com/portail/fr/jeux-de-donnees/ligne-de-transport-fluvial-navigone-du-reseau-transports-en-commun-lyonnais/info',
 			},
 		],
 	},

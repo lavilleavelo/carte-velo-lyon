@@ -164,6 +164,12 @@ export const availableLayers: readonly LayerCatalogEntry[] = [
 		category: 'Métro / Tram',
 	},
 	{
+		id: 'navigone',
+		label: 'Navigône (navette fluviale)',
+		color: '#00A3A6',
+		category: 'Métro / Tram',
+	},
+	{
 		id: 'bus-main',
 		label: 'Bus (lignes C)',
 		color: '#E0C233',

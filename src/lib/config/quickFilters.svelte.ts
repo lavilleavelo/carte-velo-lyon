@@ -30,7 +30,7 @@ export const presetQuickFilters: QuickFilter[] = [
 		id: 'qf-transport',
 		label: 'Transport',
 		color: '#933591',
-		layerIds: ['metro', 'tram', 'bus-tb'],
+		layerIds: ['metro', 'tram', 'bus-tb', 'navigone'],
 	},
 	{
 		id: 'qf-pumps',
@@ -68,6 +68,7 @@ const shortLabels: Record<string, string> = {
 	metro: 'Métro',
 	tram: 'Tram',
 	'bus-tb': 'Tram-Bus',
+	navigone: 'Navigône',
 	'bus-main': 'Bus C',
 	'bus-other': 'Autres bus',
 	pumps: 'Pompes',

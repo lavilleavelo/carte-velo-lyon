@@ -86,6 +86,7 @@
 
 	import MetroLayer from '$lib/components/map/layers/MetroLayer.svelte';
 	import TramLayer from '$lib/components/map/layers/TramLayer.svelte';
+	import NavigoneLayer from '$lib/components/map/layers/NavigoneLayer.svelte';
 	import BusLayer from '$lib/components/map/layers/BusLayer.svelte';
 	import ParkingLayer from '$lib/components/map/layers/ParkingLayer.svelte';
 	import VelovLayer from '$lib/components/map/layers/VelovLayer.svelte';
@@ -1400,6 +1401,8 @@
 			<MetroLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
 
 			<TramLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} {map} />
+
+			<NavigoneLayer {isLayerVisible} {handleMouseEnter} {handleMouseLeave} />
 
 			<VoiesLyonnaisesShields {isLayerVisible} {map} />
 

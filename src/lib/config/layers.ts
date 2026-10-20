@@ -294,6 +294,21 @@ export const layerConfigs: LayerConfig[] = [
 		},
 	},
 	{
+		id: 'navigone',
+		label: 'Navigône (navette fluviale)',
+		category: 'transport',
+		interactableLayerIds: ['navigone-stops', 'navigone-route-hitarea'],
+		featureType: 'navigone',
+		formatPopup: (p) => {
+			const title = p.nom ? `Navigône · ${p.nom}` : 'Navigône';
+			return `
+				<div class="flex flex-col">
+					<span class="font-bold text-sm" style="color: #00777a">${title}</span>
+					<span class="text-xs text-gray-600">Navette fluviale TCL sur la Saône, vélos admis à bord</span>
+				</div>`;
+		},
+	},
+	{
 		id: 'bus-tb',
 		label: 'Tram-Bus (BHNS)',
 		category: 'transport',

@@ -4,6 +4,7 @@
 	import VoieLyonnaiseDetails from './details/VoieLyonnaiseDetails.svelte';
 	import CyclewayDetails from './details/CyclewayDetails.svelte';
 	import OsmCyclewayDetails from './details/OsmCyclewayDetails.svelte';
+	import NavigoneDetails from './details/NavigoneDetails.svelte';
 	import SpeedLimitDetails from './details/SpeedLimitDetails.svelte';
 	import PumpDetails from './details/PumpDetails.svelte';
 	import WaterFountainDetails from './details/WaterFountainDetails.svelte';
@@ -60,6 +61,7 @@
 		if (type === 'speed-limit') return SpeedLimitDetails;
 		if (type === 'counter') return CounterDetails;
 		if (type === 'pump') return PumpDetails;
+		if (type === 'navigone') return NavigoneDetails;
 		if (type === 'water-fountain') return WaterFountainDetails;
 		if (type === 'toilet') return ToiletDetails;
 		if (type === 'accident') return AccidentDetails;
