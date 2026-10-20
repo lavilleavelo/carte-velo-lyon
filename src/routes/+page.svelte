@@ -1035,6 +1035,10 @@
 		document.documentElement.style.overflow = 'hidden';
 		document.documentElement.classList.remove('settings-loading');
 
+		if (window.matchMedia('(min-width: 1024px)').matches) {
+			showCyclewayLegend = true;
+		}
+
 		const geoBtn = document.querySelector('.maplibregl-ctrl-geolocate');
 		if (geoBtn) {
 			const observer = new MutationObserver(() => {
