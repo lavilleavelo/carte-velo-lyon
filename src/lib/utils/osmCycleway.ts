@@ -81,8 +81,14 @@ export function classifyValue(value?: string): string | null {
 	return null;
 }
 
+const NOT_ROADS = new Set(['pedestrian', 'footway', 'path', 'steps', 'corridor', 'bridleway']);
+
 export function classifyOsmCycleway(tags: Record<string, any>): Classification[] {
 	const results: Classification[] = [];
+
+	if (tags.area === 'yes') {
+		return results;
+	}
 
 	const trafficSign = String(tags.traffic_sign ?? '');
 	const hasC115 = /(^|;|\s)FR:C115(\b|$)/i.test(trafficSign) || trafficSign.includes('C115');
@@ -147,6 +153,10 @@ export function classifyOsmCycleway(tags: Record<string, any>): Classification[]
 		(motorRestricted || tags.foot === 'designated')
 	) {
 		results.push({ typeamenagement: 'Voie verte', side: 'center', bidirectional: true });
+		return results;
+	}
+
+	if (NOT_ROADS.has(tags.highway) && (tags.bicycle === 'no' || tags.bicycle === 'dismount')) {
 		return results;
 	}
 
