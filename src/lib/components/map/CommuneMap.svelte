@@ -674,7 +674,7 @@
 					continue;
 				}
 
-				const key = `${props?.osmId}:${props?.typeamenagement}`;
+				const key = `${props?.osmId}:${id}`;
 				if (seen.has(key)) {
 					continue;
 				}
