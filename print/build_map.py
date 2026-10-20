@@ -16,6 +16,7 @@ Run with the Python of QGIS, e.g.:
   QT_QPA_PLATFORM=offscreen /Applications/QGIS*.app/Contents/MacOS/python print/build_map.py
 """
 
+import itertools
 import json
 import math
 import os
@@ -401,6 +402,9 @@ def basemap_layers(extent):
     road_classes = [
         # label, filter, casing width, fill width, casing color, fill color
         ("rues piétonnes", "\"class\" = 'path' AND \"subclass\" = 'pedestrian'", 0.7, 0.5, CASING, "#fbfaf7"),
+        # Footbridges as a narrow deck rather than a dashed path, so they show over the water.
+        ("passerelles", "\"class\" = 'path' AND \"brunnel\" = 'bridge' AND \"subclass\" <> 'pedestrian'",
+         0.65, 0.42, CASING, "#fbfaf7"),
         ("dessertes", "\"class\" IN ('service','track')", 0.55, 0.36, CASING, "#ffffff"),
         ("rues", "\"class\" IN ('minor','busway')", 0.95, 0.72, CASING, "#ffffff"),
         ("rues principales", "\"class\" = 'tertiary'", 1.3, 1.02, CASING, "#ffffff"),
@@ -1647,12 +1651,12 @@ def share_near(geometry, others, distance, step=8):
     return sum(any(o.distance(p) <= distance for o in others) for p in points) / len(points)
 
 
-def street_name_layer(extent, vl, cycleways):
+def street_name_layer(extent, vl, cycleways, skip=()):
     """The street names to print, with the distance (`clear`, mm) at which they go from their street so
     as not to cover the cycle network: beside a Voie Lyonnaise band, or a track or lane.
 
-    Left out: motorway junctions, ramps, tunnels (also streets mostly in a tunnel), toll lanes, and
-    names that are lists."""
+    Left out: motorway junctions, ramps, tunnels (also streets mostly in a tunnel), toll lanes, names
+    that are lists, and the `skip` names (bridges named in the water)."""
     names = basemap_layer(
         "transportation_name",
         "\"name\" IS NOT NULL AND (\"class\" IN ('primary','secondary','trunk','tertiary','minor','busway') "
@@ -1685,7 +1689,7 @@ def street_name_layer(extent, vl, cycleways):
     features = []
     for f in names.getFeatures():
         g = f.geometry()
-        if not g.boundingBox().intersects(extent):
+        if not g.boundingBox().intersects(extent) or clean_name(f["name"]) in skip:
             continue
         box = g.boundingBox().buffered(10)
         near_tunnels = [tunnel_geoms[i] for i in tunnel_index.intersects(box)]
@@ -1721,8 +1725,143 @@ def street_name_layer(extent, vl, cycleways):
     return save_layer(out, OUT / "street-names.fgb")
 
 
-def label_layers(stations, extent, vl, cycleways):
-    """Returned top first. `stations`: the station layer, whose names win over quarters of the same name."""
+BRIDGE_SIZES, BRIDGE_TEXT = (7, 6.3), "#2b2724"  # pt: like the main streets, smaller on the narrow Saône
+BRIDGE_LINE_ENDS = ("de", "du", "des", "la", "le", "les", "l’", "d’")  # no line ends with these words
+
+
+def bridge_name_layer(extent, blockers, gap=0.9, margin=0.8):
+    """Names of the bridges set in the water beside their bridge, horizontal and on two lines (or three,
+    or one), above the bridge when there is room, as on the official plan. A name goes where its box
+    stays in the river (`margin` mm over the bank at most), at least `gap` mm from any bridge, and off
+    the `blockers` (geometries in Lambert-93: VL numbers, stations, panels); in full when it fits,
+    a little smaller if need be, else with the titles shortened. A name that fits nowhere keeps its place
+    along its bridge with the street names. Returns the layer and the names placed."""
+    u = unit()
+    font = QFont(FONT_CONDENSED)
+    font.setStyleName(STREET_FONT_STYLES[0])
+    font.setPixelSize(1000)
+    metrics = QFontMetricsF(font)
+
+    def box_size(lines, size):
+        em = size * 25.4 / 72 * u / 1000  # metres on the ground per font unit
+        width = max(metrics.horizontalAdvance(line) for line in lines)
+        height = metrics.ascent() + metrics.descent() + (len(lines) - 1) * metrics.lineSpacing() * 0.85
+        return width * em, height * em
+
+    def wraps(name):
+        """Two lines first (the most even cut, no line ending with "de"…), then three, then one. Lines
+        break at spaces and after hyphens."""
+        pieces = [p for p in re.split(r"(?<=[ -])", name) if p]
+        options = []
+        for count in (2, 3, 1):
+            cuts = [["".join(pieces[a:b]).strip() for a, b in zip((0, *c), (*c, len(pieces)))]
+                    for c in itertools.combinations(range(1, len(pieces)), count - 1)]
+            if cuts:
+                options.append(min(cuts, key=lambda lines: (
+                    any(line.split(" ")[-1] in BRIDGE_LINE_ENDS for line in lines[:-1]),
+                    box_size(lines, BRIDGE_SIZES[0])[0])))
+        return options
+
+    water_layer = basemap_layer("water", None, "water")
+    water = {f.id(): g for f, g in to_lambert(water_layer)}
+    water_index = QgsSpatialIndex()
+    for i, g in water.items():
+        feat = QgsFeature(i)
+        feat.setGeometry(g)
+        water_index.addFeature(feat)
+    # Every bridge, named or not (railways, footbridges): the names keep off them.
+    decks = [g for _, g in to_lambert(basemap_layer("transportation", "\"brunnel\" = 'bridge'"))
+             if g.boundingBox().intersects(extent)]
+    deck_index = QgsSpatialIndex()
+    for i, g in enumerate(decks):
+        feat = QgsFeature(i)
+        feat.setGeometry(g)
+        deck_index.addFeature(feat)
+
+    bridges, full_names = {}, {}
+    for f, g in to_lambert(basemap_layer("transportation_name", "\"name\" LIKE 'Pont %' OR \"name\" LIKE 'Passerelle %' "
+                                                        "OR \"name\" LIKE 'Viaduc %'")):
+        if g.boundingBox().intersects(extent):
+            bridges.setdefault(clean_name(f["name"]), []).append(g)
+            full_names[clean_name(f["name"])] = f["name"].replace(" - ", " – ").replace("'", "’")
+
+    rows, placed, boxes = [], set(), []
+    for name, parts in sorted(bridges.items()):
+        g = QgsGeometry.unaryUnion(parts)
+        # The water around the bridge only: the Rhône in one piece is far too slow to buffer.
+        window = g.boundingBox().buffered(400)
+        near = [water[i].clipped(window) for i in water_index.intersects(window)]
+        if not near:
+            continue
+        river = QgsGeometry.unaryUnion(near)
+        spans = [part for part in g.intersection(river).asGeometryCollection()
+                 if part.type() == Qgis.GeometryType.Line and part.length() > 20]
+        if not spans:
+            continue
+        span = max(spans, key=lambda part: part.length())
+        length = span.length()
+        mid = span.interpolate(length / 2).asPoint()
+        a, b = span.interpolate(0).asPoint(), span.interpolate(length).asPoint()
+        norm = math.hypot(b.x() - a.x(), b.y() - a.y()) or 1
+        tx, ty = (b.x() - a.x()) / norm, (b.y() - a.y()) / norm
+        nx, ny = (ty, -tx) if tx < 0 else (-ty, tx)  # the normal that points up
+        water_area = river.buffer(margin * u, 4)
+        # The decks of this bridge (carriageways, footpaths side by side) and those of the others.
+        window_decks = [decks[i] for i in deck_index.intersects(window)]
+        own = [d for d in window_decks if d.distance(g) < 15]
+        others = [d for d in window_decks if d.distance(g) >= 15]
+        found = None
+        texts = list(dict.fromkeys((full_names[name], name)))
+        tries = [(size, lines) for text in texts for size in BRIDGE_SIZES for lines in wraps(text)]
+        for (size, lines), side, shift, extra in itertools.product(tries, (1, -1), (0, 0.15, -0.15, 0.3, -0.3),
+                                                                   (0, 0.6, 1.2, 2, 3)):
+            w, h = box_size(lines, size)
+            reach = abs(nx) * w / 2 + abs(ny) * h / 2 + (gap + extra) * u
+            cx = mid.x() + side * nx * reach + shift * length * tx
+            cy = mid.y() + side * ny * reach + shift * length * ty
+            box = QgsGeometry.fromRect(QgsRectangle(cx - w / 2, cy - h / 2, cx + w / 2, cy + h / 2))
+            if water_area.contains(box) and all(d.distance(box) >= gap * u for d in own + others) and not any(
+                    box.intersects(other) for other in boxes + blockers):
+                found = (QgsPointXY(cx, cy), lines, size, box)
+                break
+        if found:
+            point, lines, size, box = found
+            boxes.append(box.buffer(gap * u, 2))
+            placed.add(name)
+            rows.append((point, "|".join(lines), size))
+
+    layer = QgsVectorLayer("Point?crs=EPSG:2154", "Noms des ponts", "memory")
+    layer.dataProvider().addAttributes([QgsField("name", QMetaType.Type.QString),
+                                        QgsField("size", QMetaType.Type.Double)])
+    layer.updateFields()
+    features = []
+    for point, label, size in rows:
+        feat = QgsFeature(layer.fields())
+        feat.setGeometry(QgsGeometry.fromPointXY(point))
+        feat.setAttributes([label, size])
+        features.append(feat)
+    layer.dataProvider().addFeatures(features)
+    layer.setRenderer(QgsSingleSymbolRenderer(invisible_point()))
+
+    def bridge_extra(s):
+        s.wrapChar = "|"
+        s.multilineAlign = Qgis.LabelMultiLineAlignment.Center
+        s.dist = 0
+        s.obstacleSettings().setIsObstacle(True)
+        s.dataDefinedProperties().setProperty(QgsPalLayerSettings.Property.Size, QgsProperty.fromField("size"))
+
+    # Centred on the computed point, which keeps the name in the water. Priority 9 (from 10 on, a label
+    # may cover the symbols of other layers).
+    set_labels(layer, "name", text_format(BRIDGE_SIZES[0], BRIDGE_TEXT, family=FONT_CONDENSED, style=STREET_FONT_STYLES[0],
+                                          buffer=0.3, buffer_color=WATER),
+               Qgis.LabelPlacement.OverPoint, priority=9, extra=bridge_extra)
+    print(f"bridge names: {len(placed)} in the water, {len(bridges) - len(placed)} along their bridge")
+    return save_layer(layer, OUT / "bridge-names.fgb"), placed
+
+
+def label_layers(stations, extent, vl, cycleways, blockers=()):
+    """Returned top first. `stations`: the station layer, whose names win over quarters of the same name.
+    `blockers`: what the bridge names in the water keep off (Lambert-93 geometries)."""
     layers = []
 
     towns = basemap_layer("place", "\"class\" IN ('town','village')", "Communes")  # no "Lyon": it is the title
@@ -1839,9 +1978,12 @@ def label_layers(stations, extent, vl, cycleways):
                Qgis.LabelPlacement.AroundPoint, priority=6, extra=park_extra)
     layers.append(save_layer(parks, OUT / "parks.fgb"))
 
+    bridges, in_water = bridge_name_layer(extent, list(blockers))
+    layers.append(bridges)
+
     # Street names in one layer so lines merge across class changes; bold for the main roads, like the
     # official plan.
-    streets = street_name_layer(extent, vl, cycleways)
+    streets = street_name_layer(extent, vl, cycleways, skip=in_water)
     streets.setRenderer(QgsSingleSymbolRenderer(invisible_line()))
     bold, regular, italic = STREET_FONT_STYLES
     major, main = "\"class\" IN ('primary','secondary','trunk')", "\"class\" = 'tertiary'"
@@ -2185,7 +2327,11 @@ def main():
     block_labels(velov, 0.8)
     for layer in (vl, separated, shared):
         block_labels(layer, 0.4)
-    labels = label_layers(stations, extent, vl, cycleways)
+    # Bridge names in the water keep off the VL numbers, the stations (the Navigône stops are on the
+    # water) and the panels.
+    blockers = [g.buffer((SHIELD_SIZE / 2 + 0.5) * u, 8) for _, g in to_lambert(shields)]
+    blockers += [g.buffer(2.5 * u, 8) for _, g in to_lambert(stations)] + list(hidden)
+    labels = label_layers(stations, extent, vl, cycleways, blockers)
 
     # Stations and VL numbers stay; the other symbols move aside when they would cover one.
     # Radius of a station: its row of squares, or the train or boat pictogram (3.8 mm).
@@ -2275,6 +2421,7 @@ def main():
             "valmy": (220, 240),
             "saone-nord": (290, 110),
             "saint-vincent": (360, 280),
+            "rhone-ponts": (440, 260),
             "title": (MARGIN, MARGIN),
             "qr": (MARGIN + 160, MARGIN),
             "legend": (MARGIN, PAGE_H - MARGIN - 200),
