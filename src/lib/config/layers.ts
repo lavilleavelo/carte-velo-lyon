@@ -1,6 +1,8 @@
 import { Icons } from './icons';
 import { vlColors } from '$lib/utils/mapUtils';
-import { isPavedSurface } from '$lib/utils/osmCycleway';
+import { isPavedSurface, surfaceLabel } from '$lib/utils/osmCycleway';
+import { osmCyclewayTitle, osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
+import { CHAUCIDOU_COLOR, GREENWAY_COLOR } from '$lib/components/map/layers/cyclewayStyles';
 import { SPEED_BUCKET_COLORS, bucketForSpeed } from '$lib/utils/speedLimits';
 import {
 	getItineraires,
@@ -81,23 +83,27 @@ export const layerConfigs: LayerConfig[] = [
 				: '';
 			const isPiste = p.typeamenagement === 'Piste Cyclable';
 			const isVoieVerte = p.typeamenagement === 'Voie verte';
+			const legendId = osmFeatureToLegendId(p);
 			const label = isPiste
 				? `${p.typeamenagement} (${p.bidirectional ? 'bidir.' : 'unidir.'})`
-				: p.typeamenagement || 'Aménagement cyclable';
+				: osmCyclewayTitle(p);
+			const iconColor = isVoieVerte
+				? GREENWAY_COLOR
+				: legendId === 'chaucidou'
+					? CHAUCIDOU_COLOR
+					: '#0369a1';
+			const rawSurface = typeof p.surface === 'string' ? p.surface : '';
+			const paved = isPavedSurface(rawSurface);
 			let surfaceLine = '';
-			if (isVoieVerte) {
-				const rawSurface = typeof p.surface === 'string' ? p.surface : '';
-				if (rawSurface) {
-					const paved = isPavedSurface(rawSurface);
-					const tone = paved ? 'text-emerald-700' : 'text-amber-700';
-					surfaceLine = `<span class="text-xs ${tone}"><span class="text-gray-400">(${rawSurface})</span></span>`;
-				} else {
-					surfaceLine = `<span class="text-xs text-gray-500">Revêtement non renseigné</span>`;
-				}
+			if (rawSurface && (isVoieVerte || !paved)) {
+				const tone = paved ? 'text-emerald-700' : 'text-amber-700';
+				surfaceLine = `<span class="text-xs text-gray-500">Revêtement : <span class="${tone}">${surfaceLabel(rawSurface)}</span></span>`;
+			} else if (isVoieVerte) {
+				surfaceLine = `<span class="text-xs text-gray-500">Revêtement non renseigné</span>`;
 			}
 			return `
 				<div class="flex items-start gap-2">
-					<div class="mt-0.5 shrink-0">${Icons.bike('#0369a1')}</div>
+					<div class="mt-0.5 shrink-0">${Icons.bike(iconColor)}</div>
 					<div class="flex flex-col">
 						<span class="font-bold text-sm">${label}</span>
 						${name}

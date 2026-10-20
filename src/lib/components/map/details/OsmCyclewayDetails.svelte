@@ -6,8 +6,18 @@
 	import ShieldCheck from '@lucide/svelte/icons/shield-check';
 	import ShieldAlert from '@lucide/svelte/icons/shield-alert';
 	import Footprints from '@lucide/svelte/icons/footprints';
+	import { osmCyclewayTitle, osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
+	import { isPavedSurface, surfaceLabel } from '$lib/utils/osmCycleway';
 
 	let { properties } = $props();
+
+	const legendId = $derived(osmFeatureToLegendId(properties));
+	const title = $derived(osmCyclewayTitle(properties));
+	const isGreenway = $derived(
+		legendId === 'voie-verte' ||
+			legendId === 'voie-verte-non-revetue' ||
+			legendId === 'zone-pietonne',
+	);
 
 	let showRaw = $state(false);
 
@@ -16,6 +26,8 @@
 		'typeamenagement',
 		'side',
 		'bidirectional',
+		'advisory',
+		'paved',
 		'offset',
 		'osmId',
 		'osmType',
@@ -52,17 +64,19 @@
 
 <div class="flex flex-col gap-3">
 	<div class="flex items-center gap-2 text-brand-navy">
-		<div class="flex h-8 w-8 items-center justify-center rounded-full bg-sky-100 text-sky-700">
+		<div
+			class="flex h-8 w-8 items-center justify-center rounded-full {isGreenway
+				? 'bg-green-100 text-green-800'
+				: 'bg-sky-100 text-sky-700'}"
+		>
 			<Route size={18} />
 		</div>
-		<h3 class="text-sm font-bold tracking-wide uppercase">
-			{properties?.typeamenagement || 'Aménagement cyclable'}
-		</h3>
+		<h3 class="text-sm font-bold tracking-wide uppercase">{title}</h3>
 	</div>
 
 	<div class="flex flex-col gap-1">
 		<div class="flex flex-wrap gap-1.5 text-xs">
-			{#if properties?.bidirectional}
+			{#if properties?.bidirectional && legendId !== 'chaucidou'}
 				<span
 					class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-800"
 				>
@@ -80,6 +94,17 @@
 					class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-700"
 				>
 					{sideLabel(properties.side)}
+				</span>
+			{/if}
+			{#if typeof properties?.surface === 'string' && properties.surface}
+				<span
+					class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium {isPavedSurface(
+						properties.surface,
+					)
+						? 'bg-gray-100 text-gray-700'
+						: 'bg-amber-100 text-amber-800'}"
+				>
+					Revêtement : {surfaceLabel(properties.surface)}
 				</span>
 			{/if}
 		</div>
