@@ -14,7 +14,7 @@
 	import DefaultDetails from './details/DefaultDetails.svelte';
 	import ChevronLeft from '@lucide/svelte/icons/chevron-left';
 	import ChevronRight from '@lucide/svelte/icons/chevron-right';
-	import ExternalLink from '@lucide/svelte/icons/external-link';
+	import Maximize2 from '@lucide/svelte/icons/maximize-2';
 	import Loader2 from '@lucide/svelte/icons/loader-2';
 	import Camera from '@lucide/svelte/icons/camera';
 	import NavigationButtons from './NavigationButtons.svelte';
@@ -134,7 +134,7 @@
 			<div class="absolute inset-0 bg-linear-to-t from-black/50 to-transparent opacity-60"></div>
 			<div class="absolute bottom-2 left-3 flex items-center gap-1.5 text-white/90">
 				<span class="text-xs font-bold tracking-wider uppercase">Panoramax</span>
-				<ExternalLink size={12} />
+				<Maximize2 size={12} />
 			</div>
 		</button>
 	{:else}
