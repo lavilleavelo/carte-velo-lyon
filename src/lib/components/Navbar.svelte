@@ -1,8 +1,12 @@
 <script lang="ts">
+	import Download from '@lucide/svelte/icons/download';
 	import Menu from '@lucide/svelte/icons/menu';
 	import X from '@lucide/svelte/icons/x';
 	import CommandPalette from './CommandPalette.svelte';
+	import * as DropdownMenu from '$lib/components/ui/dropdown-menu';
+	import { printMaps } from '$lib/config/printMaps';
 	import CommuneSearch from './CommuneSearch.svelte';
+	import PrintMapDialog from './PrintMapDialog.svelte';
 
 	let { currentPath = '/', compact = false }: { currentPath?: string; compact?: boolean } =
 		$props();
@@ -15,6 +19,8 @@
 	];
 
 	let mobileMenuOpen = $state(false);
+	// On mobile, the PDF versions are offered in a dialog rather than a dropdown.
+	let printDialogOpen = $state(false);
 
 	$effect(() => {
 		currentPath;
@@ -46,7 +52,7 @@
 				{@const active = link.match(currentPath)}
 				<a
 					href={link.href}
-					class="rounded-md px-3 py-1.5 text-sm font-medium transition-colors hover:text-brand-teal {active
+					class="rounded-md px-2 py-1.5 text-sm font-medium transition-colors hover:text-brand-teal lg:px-3 {active
 						? 'bg-gray-100 text-brand-navy'
 						: 'text-gray-700'}"
 				>
@@ -54,6 +60,32 @@
 				</a>
 			{/each}
 		</div>
+
+		<DropdownMenu.Root>
+			<DropdownMenu.Trigger
+				title="Télécharger la carte A0 en PDF"
+				aria-label="Télécharger la carte A0 en PDF"
+				class="hidden shrink-0 items-center gap-1.5 rounded-md border border-gray-200 px-2 py-1.5 text-sm font-medium text-gray-700 transition-colors hover:border-brand-teal hover:text-brand-teal md:inline-flex lg:px-3"
+			>
+				<Download class="h-4 w-4" />
+				<span class="hidden lg:inline">Carte PDF</span>
+			</DropdownMenu.Trigger>
+			<DropdownMenu.Content align="end" class="w-56">
+				{#each printMaps as map (map.href)}
+					<DropdownMenu.Item class="cursor-pointer">
+						{#snippet child({ props })}
+							<a {...props} href={map.href} target="_blank" rel="noopener">
+								<Download class="h-4 w-4" />
+								<span class="flex flex-col">
+									<span class="font-medium text-brand-navy">{map.label}</span>
+									<span class="text-xs text-gray-500">PDF A0 {map.detail}</span>
+								</span>
+							</a>
+						{/snippet}
+					</DropdownMenu.Item>
+				{/each}
+			</DropdownMenu.Content>
+		</DropdownMenu.Root>
 
 		<div class="hidden md:block md:w-64 lg:w-72">
 			<CommuneSearch />
@@ -99,7 +131,22 @@
 						</a>
 					</li>
 				{/each}
+				<li>
+					<button
+						type="button"
+						onclick={() => {
+							mobileMenuOpen = false;
+							printDialogOpen = true;
+						}}
+						class="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm font-medium text-gray-700 transition-colors hover:bg-gray-50 hover:text-brand-teal"
+					>
+						<Download class="h-4 w-4" />
+						Carte PDF à télécharger
+					</button>
+				</li>
 			</ul>
 		</div>
 	{/if}
 </nav>
+
+<PrintMapDialog bind:open={printDialogOpen} />
