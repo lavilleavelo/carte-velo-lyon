@@ -1,23 +1,30 @@
 export function createLineShieldIcon(label: string | number, color: string): HTMLCanvasElement {
 	const canvas = document.createElement('canvas');
 	const size = 64;
-
-	canvas.width = size;
-	canvas.height = size;
+	const font = 'bold 28px sans-serif';
+	const text = String(label);
 
 	const ctx = canvas.getContext('2d');
 	if (!ctx) {
 		return canvas;
 	}
 
-	const centerX = size / 2;
+	ctx.font = font;
+	const width = Math.max(size, Math.ceil(ctx.measureText(text).width + 28));
+	canvas.width = width;
+	canvas.height = size;
+
 	const centerY = size / 2;
 	const radius = size / 2 - 4;
+	const left = 4 + radius;
+	const right = width - 4 - radius;
 
-	// circle background
+	// background
 	ctx.fillStyle = color;
 	ctx.beginPath();
-	ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI);
+	ctx.arc(left, centerY, radius, Math.PI / 2, (3 * Math.PI) / 2);
+	ctx.arc(right, centerY, radius, -Math.PI / 2, Math.PI / 2);
+	ctx.closePath();
 	ctx.fill();
 
 	// white border
@@ -25,12 +32,12 @@ export function createLineShieldIcon(label: string | number, color: string): HTM
 	ctx.lineWidth = 3;
 	ctx.stroke();
 
-	// label
+	// label (resizing the canvas reset the font)
 	ctx.fillStyle = '#ffffff';
-	ctx.font = 'bold 28px sans-serif';
+	ctx.font = font;
 	ctx.textAlign = 'center';
 	ctx.textBaseline = 'middle';
-	ctx.fillText(String(label), centerX, centerY + 3);
+	ctx.fillText(text, width / 2, centerY + 3);
 
 	return canvas;
 }
