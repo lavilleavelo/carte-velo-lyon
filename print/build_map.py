@@ -2232,6 +2232,17 @@ def main():
         pdf.textRenderFormat = Qgis.TextRenderFormat.AlwaysOutlines
         print("pdf", exporter.exportToPdf(str(OUT / "carte-velo-lyon-A0.pdf"), pdf))
 
+        # A light version to download and read on screen: the page as one JPEG at 200 dpi, ~10 MB rather
+        # than ~60 MB (below 200 dpi the small street names blur).
+        web_dpi, web_png = 200, OUT / "web.png"
+        image = QgsLayoutExporter.ImageExportSettings()
+        image.dpi = web_dpi
+        print("web image", exporter.exportToImage(str(web_png), image))
+        gdal.UseExceptions()
+        gdal.Translate(str(OUT / "carte-velo-lyon-A0-web.pdf"), str(web_png), format="PDF", bandList=[1, 2, 3],
+                       creationOptions=["COMPRESS=JPEG", "JPEG_QUALITY=75", f"DPI={web_dpi}"])
+        web_png.unlink()
+
     image = QgsLayoutExporter.ImageExportSettings()
     image.dpi = 50
     print("preview", exporter.exportToImage(str(OUT / "preview.png"), image))

@@ -19,8 +19,9 @@ QT_QPA_PLATFORM=offscreen /Applications/QGIS*.app/Contents/MacOS/python print/bu
 - `fetch-data.py` downloads tram stops and lines, Navigône stops and route, pumps (data.grandlyon.com) and repair stands
   (OpenStreetMap, or the app's `.cache/overpassPOIs.json` when Overpass is down).
 - `build_map.py` merges the tiles into Lambert-93 basemap layers (first run only, ~3 min), styles
-  everything in millimetres and exports `print/out/carte-velo-lyon-A0.pdf` and the QGIS project
-  `print/out/carte-velo-lyon.qgz`. `--no-pdf` skips the PDF, `--crops` writes 300 dpi detail images.
+  everything in millimetres and exports `print/out/carte-velo-lyon-A0.pdf` (vector, for printing, ~60 MB),
+  `print/out/carte-velo-lyon-A0-web.pdf` (one 200 dpi JPEG, for screens, ~10 MB) and the QGIS project
+  `print/out/carte-velo-lyon.qgz`. `--no-pdf` skips both PDFs, `--crops` writes 300 dpi detail images.
 
 Text uses Avenir Next and Avenir Next Condensed, which come with macOS.
 
