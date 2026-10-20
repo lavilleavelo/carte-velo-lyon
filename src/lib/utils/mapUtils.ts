@@ -224,14 +224,12 @@ export function createOnewayArrowIcon(color: string, reverse = false): HTMLCanva
 }
 
 /**
- * Draws a horizontal double-arrow icon split into two colored halves.
- * Used on DSC (double sens cyclable) streets: one half = bike contraflow direction,
- * the other half = car direction.
- *
- * @param leftColor color of the left-pointing arrow (left half)
- * @param rightColor color of the right-pointing arrow (right half)
+ * Contraflow icon: bike arrow against the line direction (OSM oneway=yes), car arrow along it.
+ * `reverse` for lines drawn the other way.
  */
-const DSC_CAR_COLOR = '#000000';
+const DSC_CAR_COLOR = '#6b7280';
+const DSC_BIKE_ARROW = 'M2 6 L10 1 V4.5 H37 V7.5 H10 V11 Z';
+const DSC_CAR_ARROW = 'M38 16 L31 11.5 V14.8 H6 V17.2 H31 V20.5 Z';
 
 export const DSC_ARROW_BIKE_COLORS = {
 	default: '#0369a1',
@@ -248,66 +246,46 @@ export function dscArrowIconId(variant: DscArrowVariant, reverse: boolean): stri
 
 export function createDscArrowIconById(id: string): HTMLCanvasElement | null {
 	for (const variant of Object.keys(DSC_ARROW_BIKE_COLORS) as DscArrowVariant[]) {
-		const bikeColor = DSC_ARROW_BIKE_COLORS[variant];
-		if (id === dscArrowIconId(variant, false)) {
-			return createDscArrowIcon(bikeColor, DSC_CAR_COLOR);
-		}
-
-		if (id === dscArrowIconId(variant, true)) {
-			return createDscArrowIcon(DSC_CAR_COLOR, bikeColor);
+		for (const reverse of [false, true]) {
+			if (id === dscArrowIconId(variant, reverse)) {
+				return createDscArrowIcon(DSC_ARROW_BIKE_COLORS[variant], reverse);
+			}
 		}
 	}
 	return null;
 }
 
-export function createDscArrowIcon(leftColor: string, rightColor: string): HTMLCanvasElement {
+export function createDscArrowIcon(bikeColor: string, reverse: boolean): HTMLCanvasElement {
 	const canvas = document.createElement('canvas');
 	const dpr = typeof window !== 'undefined' ? window.devicePixelRatio || 1 : 1;
-	const width = 14;
-	const height = 7;
+	const width = 20;
+	const height = 11;
 
 	canvas.width = width * dpr;
 	canvas.height = height * dpr;
 
 	const ctx = canvas.getContext('2d');
 	if (!ctx) return canvas;
-	ctx.scale(dpr, dpr);
+	ctx.scale(dpr / 2, dpr / 2);
+	if (reverse) {
+		ctx.translate(40, 22);
+		ctx.rotate(Math.PI);
+	}
 
-	const midY = height / 2;
-	const midX = width / 2;
-	const headLen = 2.5;
-	const headHalf = 2.5;
-	const lineWidth = 1.2;
-
-	// left half: arrow pointing left
-	ctx.strokeStyle = leftColor;
-	ctx.fillStyle = leftColor;
-	ctx.lineWidth = lineWidth;
-	ctx.lineCap = 'butt';
-	ctx.beginPath();
-	ctx.moveTo(midX, midY);
-	ctx.lineTo(headLen, midY);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.moveTo(0, midY);
-	ctx.lineTo(headLen, midY - headHalf);
-	ctx.lineTo(headLen, midY + headHalf);
-	ctx.closePath();
-	ctx.fill();
-
-	// right half: arrow pointing right
-	ctx.strokeStyle = rightColor;
-	ctx.fillStyle = rightColor;
-	ctx.beginPath();
-	ctx.moveTo(midX, midY);
-	ctx.lineTo(width - headLen, midY);
-	ctx.stroke();
-	ctx.beginPath();
-	ctx.moveTo(width, midY);
-	ctx.lineTo(width - headLen, midY - headHalf);
-	ctx.lineTo(width - headLen, midY + headHalf);
-	ctx.closePath();
-	ctx.fill();
+	const bike = new Path2D(DSC_BIKE_ARROW);
+	const car = new Path2D(DSC_CAR_ARROW);
+	ctx.fillStyle = '#ffffff';
+	ctx.strokeStyle = '#ffffff';
+	ctx.lineWidth = 2.6;
+	ctx.lineJoin = 'round';
+	for (const arrow of [bike, car]) {
+		ctx.fill(arrow);
+		ctx.stroke(arrow);
+	}
+	ctx.fillStyle = bikeColor;
+	ctx.fill(bike);
+	ctx.fillStyle = DSC_CAR_COLOR;
+	ctx.fill(car);
 
 	return canvas;
 }

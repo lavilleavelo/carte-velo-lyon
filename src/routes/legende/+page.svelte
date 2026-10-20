@@ -172,6 +172,8 @@
 			id: 'dsc',
 			label: 'Double sens cyclable',
 			render: 'arrow',
+			intro:
+				'Rue à sens unique pour les voitures, ouverte aux vélos dans les deux sens. Flèche bleue : vélos à contresens ; flèche grise : sens des voitures.',
 			osm: [
 				{ all: ['oneway=yes', 'oneway:bicycle=no'], note: 'tagging recommandé' },
 				{
@@ -319,10 +321,15 @@
 									stroke-dasharray="8 4"
 								/>
 							{:else if row.render === 'arrow'}
-								<line x1="8" y1="6" x2="24" y2="6" stroke="#000000" stroke-width="2" />
-								<polygon points="0,6 8,2 8,10" fill="#000000" />
-								<line x1="24" y1="6" x2="40" y2="6" stroke="#0369a1" stroke-width="2" />
-								<polygon points="48,6 40,2 40,10" fill="#0369a1" />
+								<line x1="0" y1="6" x2="48" y2="6" stroke="#73b3e0" stroke-width="1.5" />
+								<g transform="translate(14 0.5) scale(0.5)">
+									<g fill="#ffffff" stroke="#ffffff" stroke-width="2.6" stroke-linejoin="round">
+										<path d="M2 6 L10 1 V4.5 H37 V7.5 H10 V11 Z" />
+										<path d="M38 16 L31 11.5 V14.8 H6 V17.2 H31 V20.5 Z" />
+									</g>
+									<path fill="#0369a1" d="M2 6 L10 1 V4.5 H37 V7.5 H10 V11 Z" />
+									<path fill="#6b7280" d="M38 16 L31 11.5 V14.8 H6 V17.2 H31 V20.5 Z" />
+								</g>
 							{/if}
 						</svg>
 					{/if}

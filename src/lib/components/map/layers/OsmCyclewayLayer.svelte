@@ -512,18 +512,39 @@
 		layout={{ visibility: dimMinorAtOverview ? visibility : 'none' }}
 	/>
 
+	<LineLayer
+		id="osm-cw-dsc"
+		filter={filterDsc}
+		minzoom={15.5}
+		paint={{
+			'line-color': contraflowColor,
+			'line-width': ['interpolate', ['linear'], ['zoom'], 15.5, 1, 17, 2],
+			'line-opacity': [
+				'interpolate',
+				['linear'],
+				['zoom'],
+				15.5,
+				0,
+				16.5,
+				['*', opacityDsc, safetyOpacityExpr],
+			],
+		}}
+		layout={{ 'line-cap': 'round', 'line-join': 'round', visibility }}
+	/>
+
+	<!-- Not kept upright: a flipped icon would point the wrong way. -->
 	<SymbolLayer
 		id="osm-cw-dsc-arrows"
 		filter={filterDsc}
 		minzoom={dimMinorAtOverview ? CYCLEWAY_DETAIL_ZOOM : 13}
 		layout={{
 			'symbol-placement': 'line',
-			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 11, 80, 14, 50, 17, 35],
-			'icon-size': ['interpolate', ['exponential', 1.4], ['zoom'], 11, 0.4, 14, 0.8, 17, 1.2],
+			'symbol-spacing': ['interpolate', ['linear'], ['zoom'], 13, 200, 15, 250, 17, 300],
+			'icon-size': ['interpolate', ['linear'], ['zoom'], 13, 0.7, 15, 0.9, 17, 1.2],
 			'icon-image': dscIconImage,
 			'icon-rotation-alignment': 'map',
 			'icon-pitch-alignment': 'map',
-			'icon-keep-upright': true,
+			'icon-keep-upright': false,
 			'icon-allow-overlap': true,
 			'icon-ignore-placement': true,
 			visibility,
