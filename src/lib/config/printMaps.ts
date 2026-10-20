@@ -1,6 +1,6 @@
 // A0 map built by print/build_map.py (print-map branch): a light version to read on screen,
 // a vector one to print.
-const version = '2026-10-20-2';
+const version = '2026-10-20-3';
 
 export const printMaps: {
 	kind: 'web' | 'print';
