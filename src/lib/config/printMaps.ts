@@ -1,6 +1,6 @@
 // A0 map built by print/build_map.py (print-map branch): a light version to read on screen,
 // a vector one to print.
-const version = '2026-10-20';
+const version = '2026-10-20-2';
 
 export const printMaps: {
 	kind: 'web' | 'print';
@@ -21,6 +21,6 @@ export const printMaps: {
 		href: `https://cyclopolis.lavilleavelo.org/carte-velo-lyon/carte-velo-lyon-A0.pdf?v=${version}`,
 		label: 'Version impression',
 		use: 'Pour imprimer en grand format',
-		detail: 'vectorielle, 61 Mo',
+		detail: 'vectorielle, 62 Mo',
 	},
 ];
