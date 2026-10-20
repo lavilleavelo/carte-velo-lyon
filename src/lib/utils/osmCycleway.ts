@@ -4,13 +4,22 @@ import { isSafePath } from '$lib/utils/safePath';
 export const PAVED_SURFACES = new Set([
 	'asphalt',
 	'paved',
+	'chipseal',
 	'concrete',
+	'concrete:lanes',
 	'concrete:plates',
+	'concrete_plates',
 	'paving_stones',
+	'paving_stones:lanes',
+	'bricks',
 	'sett',
 	'cobblestone',
 	'unhewn_cobblestone',
 	'metal',
+	'metal_grid',
+	'wood',
+	'rubber',
+	'tiles',
 ]);
 
 export function isPavedSurface(surface: string | undefined | null): boolean {
@@ -18,7 +27,48 @@ export function isPavedSurface(surface: string | undefined | null): boolean {
 		return true;
 	}
 
-	return PAVED_SURFACES.has(surface);
+	return surface.split(';').every((s) => PAVED_SURFACES.has(s.trim()));
+}
+
+const SURFACE_LABELS: Record<string, string> = {
+	asphalt: 'enrobé',
+	paved: 'revêtu',
+	chipseal: 'enduit gravillonné',
+	concrete: 'béton',
+	'concrete:plates': 'dalles de béton',
+	concrete_plates: 'dalles de béton',
+	'concrete:lanes': 'béton',
+	paving_stones: 'pavés',
+	sett: 'pavés',
+	cobblestone: 'pavés',
+	unhewn_cobblestone: 'pavés bruts',
+	metal: 'métal',
+	metal_grid: 'grille métallique',
+	wood: 'bois',
+	rubber: 'caoutchouc',
+	plastic: 'plastique',
+	tartan: 'tartan',
+	compacted: 'stabilisé',
+	fine_gravel: 'gravier fin',
+	gravel: 'gravier',
+	pebblestone: 'galets',
+	unpaved: 'non revêtu',
+	ground: 'terre',
+	dirt: 'terre',
+	earth: 'terre',
+	clay: 'argile',
+	mud: 'boue',
+	sand: 'sable',
+	grass: 'herbe',
+	grass_paver: 'dalles engazonnées',
+	rock: 'roche',
+	woodchips: 'copeaux de bois',
+};
+
+export function surfaceLabel(surface: string): string {
+	return [...new Set(surface.split(';').map((s) => SURFACE_LABELS[s.trim()] ?? s.trim()))].join(
+		' / ',
+	);
 }
 
 export type Side = 'left' | 'right' | 'center';
@@ -27,6 +77,7 @@ export type Classification = {
 	typeamenagement: string;
 	side: Side;
 	bidirectional?: boolean;
+	advisory?: boolean;
 };
 
 function sideOffset(side: Side): number {
@@ -46,7 +97,7 @@ export function overpassToGeoJSON(data: any): FeatureCollection {
 		const coordinates = element.geometry.map((p: { lon: number; lat: number }) => [p.lon, p.lat]);
 
 		for (const c of classifications) {
-			const safety = isSafePath(tags, c.typeamenagement);
+			const safety = isSafePath(tags, c.typeamenagement, c.advisory);
 			features.push({
 				type: 'Feature',
 				properties: {
@@ -57,6 +108,8 @@ export function overpassToGeoJSON(data: any): FeatureCollection {
 					typeamenagement: c.typeamenagement,
 					side: c.side,
 					bidirectional: c.bidirectional ?? false,
+					advisory: c.advisory ?? false,
+					paved: isPavedSurface(tags.surface),
 					offset: sideOffset(c.side),
 					isSafe: safety.isSafe,
 					safetyReason: safety.reason,
@@ -224,6 +277,15 @@ export function classifyOsmCycleway(tags: Record<string, any>): Classification[]
 				results.push({ typeamenagement: type, side: 'left', bidirectional: bidir });
 				results.push({ typeamenagement: type, side: 'right', bidirectional: bidir });
 			}
+		}
+	}
+
+	for (const r of results) {
+		if (
+			r.typeamenagement === 'Bande Cyclable' &&
+			(isAdvisory || (r.side !== 'center' && tags[`cycleway:${r.side}:lane`] === 'advisory'))
+		) {
+			r.advisory = true;
 		}
 	}
 

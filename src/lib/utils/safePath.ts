@@ -29,13 +29,27 @@ const unsafeRoad: Record<string, string> = {
 	trunk_link: 'bretelle de voie rapide',
 };
 
-export function isSafePath(tags: Record<string, string>, typeamenagement?: string): SafetyReason {
+export function isSafePath(
+	tags: Record<string, string>,
+	typeamenagement?: string,
+	advisory = false,
+): SafetyReason {
 	if (typeamenagement === 'Piste Cyclable') {
 		return {
 			isSafe: true,
 			reason: 'Piste cyclable séparée',
 			relevantTags: [],
 			condition: 'typeamenagement=Piste Cyclable',
+		};
+	}
+
+	if (typeamenagement === 'Voie verte' && tags['highway'] === 'pedestrian') {
+		return {
+			isSafe: true,
+			reason: 'Zone piétonne ou allée de parc',
+			relevantTags: ['highway'],
+			condition: 'typeamenagement=Voie verte, highway=pedestrian',
+			caveat: 'Piétons prioritaires : allure modérée (au pas dans une aire piétonne)',
 		};
 	}
 
@@ -55,6 +69,17 @@ export function isSafePath(tags: Record<string, string>, typeamenagement?: strin
 			reason: 'Rue cyclable (vélorue)',
 			relevantTags: [],
 			condition: 'typeamenagement=Vélorue',
+		};
+	}
+
+	if (typeamenagement === 'Bande Cyclable' && advisory) {
+		const road = unsafeRoad[tags['highway']] || 'la rue';
+		return {
+			isSafe: false,
+			reason: `Chaucidou (CVCB) sur ${road}`,
+			relevantTags: ['highway', 'cycleway'],
+			condition: 'typeamenagement=Bande Cyclable, cycleway:*:lane=advisory',
+			caveat: 'Les voitures roulent sur la rive cyclable pour se croiser',
 		};
 	}
 

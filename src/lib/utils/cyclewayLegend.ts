@@ -1,8 +1,13 @@
+import { isPavedSurface } from '$lib/utils/osmCycleway';
+
 export type LegendId =
 	| 'piste-bidir'
 	| 'piste-unidir'
 	| 'voie-verte'
+	| 'voie-verte-non-revetue'
+	| 'zone-pietonne'
 	| 'bande'
+	| 'chaucidou'
 	| 'bus-velo'
 	| 'velorue'
 	| 'dsc'
@@ -12,7 +17,10 @@ export const ALL_LEGEND_IDS: LegendId[] = [
 	'piste-bidir',
 	'piste-unidir',
 	'voie-verte',
+	'voie-verte-non-revetue',
+	'zone-pietonne',
 	'bande',
+	'chaucidou',
 	'bus-velo',
 	'velorue',
 	'dsc',
@@ -37,13 +45,29 @@ export function osmFeatureToLegendId(properties: any): LegendId | null {
 	const type = properties?.typeamenagement as string | undefined;
 	const bidir = properties?.bidirectional === true;
 	if (type === 'Piste Cyclable') return bidir ? 'piste-bidir' : 'piste-unidir';
-	if (type === 'Voie verte') return 'voie-verte';
-	if (type === 'Bande Cyclable') return 'bande';
+	if (type === 'Voie verte') {
+		if (properties?.highway === 'pedestrian') {
+			return 'zone-pietonne';
+		}
+		return isPavedSurface(properties?.surface) ? 'voie-verte' : 'voie-verte-non-revetue';
+	}
+	if (type === 'Bande Cyclable') return properties?.advisory === true ? 'chaucidou' : 'bande';
 	if (type === 'Couloir bus vélo') return 'bus-velo';
 	if (type === 'Vélorue') return 'velorue';
 	if (type === 'Double sens cyclable') return 'dsc';
 	if (type === 'Voie piétonne (vélos autorisés)') return 'trottoir';
 	return null;
+}
+
+const OSM_TITLES: Partial<Record<LegendId, string>> = {
+	'voie-verte-non-revetue': 'Voie verte non revêtue',
+	'zone-pietonne': 'Zone piétonne, allée de parc',
+	chaucidou: 'Bande cyclable (chaucidou)',
+};
+
+export function osmCyclewayTitle(properties: any): string {
+	const id = osmFeatureToLegendId(properties);
+	return (id && OSM_TITLES[id]) || properties?.typeamenagement || 'Aménagement cyclable';
 }
 
 /**
