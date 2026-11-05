@@ -20,6 +20,8 @@
 	import YearRangeFilter from '$lib/components/map/YearRangeFilter.svelte';
 	import FeatureInfo from '$lib/components/map/FeatureInfo.svelte';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
+	import MapLabels from '$lib/components/map/labels/MapLabels.svelte';
+	import { STYLE_LABEL_SUPPORT } from '$lib/components/map/labels/labelLayers';
 	import { createMapStyleState, MAP_STYLE_IDS } from '$lib/utils/mapStyleToggle.svelte';
 	import { stableDerived } from '$lib/utils/stableDerived.svelte';
 	import OsmCyclewayLayer from '$lib/components/map/layers/OsmCyclewayLayer.svelte';
@@ -90,6 +92,7 @@
 		showVL: type('boolean').default(() => false),
 		showCounters: type('boolean').default(() => false),
 		dimOverlay: type('boolean').default(() => true),
+		showStreetNames: type('boolean').default(() => false),
 		safety: type('boolean').default(() => false),
 		mapStyle: type.enumerated(...MAP_STYLE_IDS).default(() => 'positron'),
 		zoom: type('number').default(() => 0),
@@ -109,6 +112,10 @@
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
 		params.mapStyle = style;
 	});
+
+	const streetNamesAvailable = $derived(
+		STYLE_LABEL_SUPPORT[mapStyleState.mapStyle]?.includes('roads') ?? false,
+	);
 
 	$effect(() => {
 		const pMapStyle = params.mapStyle;
@@ -721,6 +728,8 @@
 					bind:showVL={params.showVL}
 					bind:showCounters={params.showCounters}
 					bind:dimOverlay={params.dimOverlay}
+					bind:showStreetNames={params.showStreetNames}
+					{streetNamesAvailable}
 				/>
 
 				{#if accidentsQuery.isLoading}
@@ -826,6 +835,13 @@
 							/>
 						{/each}
 					</GeoJSONSource>
+
+					{#if params.showStreetNames && streetNamesAvailable}
+						<MapLabels
+							show={{ places: false, roads: true, transit: false, pois: false, water: false }}
+							beforeId={`accidents-${GRAVITIES[0].slug}-layer`}
+						/>
+					{/if}
 
 					{#if hoverPopup && !selectedFeatures.length}
 						<Popup lnglat={hoverPopup.lngLat} closeButton={false} closeOnClick={false} offset={14}>

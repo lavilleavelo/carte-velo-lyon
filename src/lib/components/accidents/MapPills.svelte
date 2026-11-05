@@ -4,11 +4,15 @@
 		showVL = $bindable(),
 		showCounters = $bindable(),
 		dimOverlay = $bindable(),
+		showStreetNames = $bindable(),
+		streetNamesAvailable = true,
 	}: {
 		showCycleways: boolean;
 		showVL: boolean;
 		showCounters: boolean;
 		dimOverlay: boolean;
+		showStreetNames: boolean;
+		streetNamesAvailable?: boolean;
 	} = $props();
 
 	const dimVisible = $derived(showCycleways || showVL);
@@ -55,6 +59,24 @@
 	>
 		<span class="sm:hidden">Compteurs</span>
 		<span class="hidden sm:inline">Compteurs vélo</span>
+	</button>
+	<button
+		type="button"
+		aria-pressed={showStreetNames && streetNamesAvailable}
+		disabled={!streetNamesAvailable}
+		onclick={() => (showStreetNames = !showStreetNames)}
+		title={streetNamesAvailable
+			? 'Noms de rues'
+			: 'Noms de rues indisponibles avec ce fond de carte'}
+		class="pointer-events-auto cursor-pointer rounded-full px-2.5 py-1 text-xs font-semibold whitespace-nowrap shadow-sm transition-all active:scale-95 disabled:cursor-not-allowed disabled:opacity-50 disabled:active:scale-100"
+		style="background-color: {showStreetNames && streetNamesAvailable
+			? '#374151'
+			: 'white'}; color: {showStreetNames && streetNamesAvailable
+			? 'white'
+			: '#374151'}; border: 1.5px solid #374151;"
+	>
+		<span class="sm:hidden">Rues</span>
+		<span class="hidden sm:inline">Noms de rues</span>
 	</button>
 	{#if dimVisible}
 		<label
