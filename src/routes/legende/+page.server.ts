@@ -4,7 +4,8 @@ export const load: PageServerLoad = async () => {
 	return {
 		seo: {
 			title: 'Légende – Carte vélo de la Métropole de Lyon',
-			description: 'Documentation des aménagements cyclables affichés sur la carte / légende',
+			description:
+				'Les aménagements cyclables de la carte : définitions et largeurs recommandées dans la Métropole de Lyon',
 		},
 	};
 };
