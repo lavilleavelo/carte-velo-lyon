@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Build src/lib/data/accidents-velo.json from the official BAAC dataset on data.gouv.fr.
 //
-//   https://www.data.gouv.fr/datasets/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2024
+//   https://www.data.gouv.fr/datasets/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2025
 //
 // Output is a GeoJSON FeatureCollection of bicycle-involved accidents whose
 // commune INSEE code is in the carte-velo-lyon perimeter (Métropole de Lyon
@@ -36,7 +36,7 @@ const YEARS = yearsArg
 			.split(',')
 			.map((s) => Number(s.trim()))
 			.filter((n) => Number.isFinite(n))
-	: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024];
+	: [2017, 2018, 2019, 2020, 2021, 2022, 2023, 2024, 2025];
 
 // Resource URLs sourced from the data.gouv.fr API on 2026-04-29.
 const RESOURCES = {
@@ -119,6 +119,16 @@ const RESOURCES = {
 			'https://static.data.gouv.fr/resources/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2024/20251021-115506/usagers-2024.csv',
 		vehicules:
 			'https://static.data.gouv.fr/resources/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2024/20251107-100240/vehicules-2024.csv',
+	},
+	2025: {
+		caract:
+			'https://static.data.gouv.fr/resources/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2025/20261030-141517/caract-2025.csv',
+		lieux:
+			'https://static.data.gouv.fr/resources/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2025/20261030-141502/lieux-2025.csv',
+		usagers:
+			'https://static.data.gouv.fr/resources/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2025/20261030-141441/usagers-2025.csv',
+		vehicules:
+			'https://static.data.gouv.fr/resources/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2025/20261030-141410/vehicules-2025.csv',
 	},
 };
 

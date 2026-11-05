@@ -69,9 +69,9 @@ export const VELO_INTENSITY: Record<number, number> = {
 	2022: 147.5,
 	2023: 160.8,
 	2024: 167.0,
-	// 2025: 180.2,
+	2025: 180.2,
 };
-export const VELO_INTENSITY_AXIS_MAX = 180;
+export const VELO_INTENSITY_AXIS_MAX = 190;
 
 export type Breakdown = Record<GravityKey, number>;
 

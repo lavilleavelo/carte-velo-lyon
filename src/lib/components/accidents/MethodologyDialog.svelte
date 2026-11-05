@@ -17,7 +17,7 @@
 				<h3 class="mb-1 text-xs font-semibold tracking-wide text-gray-500 uppercase">Source</h3>
 				<p>
 					<a
-						href="https://www.data.gouv.fr/datasets/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2024"
+						href="https://www.data.gouv.fr/datasets/bases-de-donnees-annuelles-des-accidents-corporels-de-la-circulation-routiere-annees-de-2005-a-2025"
 						target="_blank"
 						rel="noopener"
 						class="underline hover:text-brand-navy"
