@@ -58,6 +58,7 @@
 }
 
 @theme {
+	--font-lack: 'Lack', ui-sans-serif, system-ui, sans-serif;
 	--color-brand-navy: #23356b;
 	--color-brand-pink: #db3e79;
 	--color-brand-teal: #79c2be;

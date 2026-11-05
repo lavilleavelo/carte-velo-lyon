@@ -37,14 +37,28 @@
 			? 'h-11 md:h-16'
 			: 'h-16'}"
 	>
-		<a
-			href="/"
-			class="shrink-0 font-bold tracking-tight transition-colors hover:text-brand-teal lg:text-lg {compact
-				? 'text-sm md:text-base'
-				: 'text-base'}"
-			aria-label="Retour à la carte"
-		>
-			Carte Velo Lyon
+		<a href="/" class="group flex shrink-0 items-center gap-2" aria-label="Retour à la carte">
+			<img
+				src="/logo_lvv_mark.png"
+				alt=""
+				width="172"
+				height="96"
+				class="w-auto {compact ? 'h-5 md:h-8' : 'h-8'}"
+			/>
+			<span class="flex flex-col items-end font-lack">
+				<span
+					class="leading-none font-bold transition-colors group-hover:text-brand-teal {compact
+						? 'text-base md:text-lg'
+						: 'text-lg'}"
+				>
+					Carte Velo Lyon
+				</span>
+				<span
+					class="mt-1 text-xs leading-none whitespace-nowrap {compact ? 'hidden md:block' : ''}"
+				>
+					<span class="text-[0.85em]">par</span> la ville à vélo
+				</span>
+			</span>
 		</a>
 
 		<div class="hidden flex-1 items-center gap-1 md:flex">
