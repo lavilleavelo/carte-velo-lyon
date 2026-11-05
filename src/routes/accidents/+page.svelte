@@ -64,6 +64,8 @@
 	import CollapsibleSection from '$lib/components/accidents/CollapsibleSection.svelte';
 
 	const DEFAULT_VICTIM_VEHICLES = VICTIM_VEHICLES.slice() as string[];
+	const GRAVITY_DRAW_ORDER = [...GRAVITIES].reverse();
+	const MINOR_GRAVITIES = new Set(['Blessé léger', 'Indemne']);
 
 	// Default range starts at 2019: there are issues before that for BH
 	const MIN_YEAR_DEFAULT = 2019;
@@ -812,13 +814,24 @@
 
 					<!-- Accidents drawn LAST so they sit on top of cycleways/VL lines. -->
 					<GeoJSONSource id="accidents-page-source" data={filteredFC}>
-						{#each GRAVITIES as g (g.slug)}
+						{#each GRAVITY_DRAW_ORDER as g (g.slug)}
+							{@const r = MINOR_GRAVITIES.has(g.id) ? 0.75 : 1}
 							<CircleLayer
 								id={`accidents-${g.slug}-layer`}
 								filter={['==', ['get', 'gravite'], g.id]}
 								paint={{
 									'circle-color': g.color,
-									'circle-radius': ['interpolate', ['linear'], ['zoom'], 10, 2.5, 14, 4.5, 17, 7],
+									'circle-radius': [
+										'interpolate',
+										['linear'],
+										['zoom'],
+										10,
+										2.5 * r,
+										14,
+										4.5 * r,
+										17,
+										7 * r,
+									],
 									'circle-stroke-color': '#ffffff',
 									'circle-stroke-width': 1,
 									'circle-opacity': 0.9,
@@ -839,7 +852,7 @@
 					{#if params.showStreetNames && streetNamesAvailable}
 						<MapLabels
 							show={{ places: false, roads: true, transit: false, pois: false, water: false }}
-							beforeId={`accidents-${GRAVITIES[0].slug}-layer`}
+							beforeId={`accidents-${GRAVITY_DRAW_ORDER[0].slug}-layer`}
 						/>
 					{/if}
 
