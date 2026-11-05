@@ -525,12 +525,13 @@
 <div
 	class={infoExpanded
 		? 'flex flex-col gap-6 pb-6'
-		: 'fixed inset-x-0 top-16 bottom-0 flex flex-col overflow-hidden'}
+		: 'fixed inset-x-0 top-11 bottom-0 flex flex-col overflow-hidden md:top-16'}
 >
 	<section class={infoExpanded ? '-mx-4 sm:-mx-6 lg:-mx-8' : ''}>
 		<div
-			class="relative overflow-hidden bg-gray-100 shadow transition-[height] duration-300 ease-out"
-			style="height: {infoExpanded ? '55svh' : 'calc(100svh - 64px)'}; min-height: 360px;"
+			class="relative min-h-[360px] overflow-hidden bg-gray-100 shadow transition-[height] duration-300 ease-out {infoExpanded
+				? 'h-[55svh]'
+				: 'h-[calc(100svh-2.75rem)] md:h-[calc(100svh-4rem)]'}"
 		>
 			{#if liveQuery.isLoading || staticQuery.isLoading}
 				<div

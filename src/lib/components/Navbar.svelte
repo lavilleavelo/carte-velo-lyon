@@ -8,8 +8,7 @@
 	import CommuneSearch from './CommuneSearch.svelte';
 	import PrintMapDialog from './PrintMapDialog.svelte';
 
-	let { currentPath = '/', compact = false }: { currentPath?: string; compact?: boolean } =
-		$props();
+	let { currentPath = '/' }: { currentPath?: string } = $props();
 
 	const links: { href: string; label: string; match: (p: string) => boolean }[] = [
 		{ href: '/', label: 'Aménagements', match: (p) => p === '/' },
@@ -32,30 +31,16 @@
 	class="sticky top-0 z-40 border-b border-gray-100 bg-white/95 text-brand-navy backdrop-blur-sm"
 	style="view-transition-name: navbar;"
 >
-	<div
-		class="mx-auto flex max-w-7xl items-center gap-3 px-4 sm:px-6 lg:px-8 {compact
-			? 'h-11 md:h-16'
-			: 'h-16'}"
-	>
+	<div class="mx-auto flex h-11 max-w-7xl items-center gap-3 px-4 sm:px-6 md:h-16 lg:px-8">
 		<a href="/" class="group flex shrink-0 items-center gap-2" aria-label="Retour à la carte">
-			<img
-				src="/logo_lvv_mark.png"
-				alt=""
-				width="172"
-				height="96"
-				class="w-auto {compact ? 'h-5 md:h-8' : 'h-8'}"
-			/>
+			<img src="/logo_lvv_mark.png" alt="" width="172" height="96" class="h-5 w-auto md:h-8" />
 			<span class="flex flex-col items-end font-lack">
 				<span
-					class="leading-none font-bold transition-colors group-hover:text-brand-teal {compact
-						? 'text-base md:text-lg'
-						: 'text-lg'}"
+					class="text-base leading-none font-bold transition-colors group-hover:text-brand-teal md:text-lg"
 				>
 					Carte Velo Lyon
 				</span>
-				<span
-					class="mt-1 text-xs leading-none whitespace-nowrap {compact ? 'hidden md:block' : ''}"
-				>
+				<span class="mt-1 hidden text-xs leading-none whitespace-nowrap md:block">
 					<span class="text-[0.85em]">par</span> la ville à vélo
 				</span>
 			</span>
