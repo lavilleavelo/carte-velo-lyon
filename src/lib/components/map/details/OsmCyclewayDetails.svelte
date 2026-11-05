@@ -8,6 +8,7 @@
 	import Footprints from '@lucide/svelte/icons/footprints';
 	import { osmCyclewayTitle, osmFeatureToLegendId } from '$lib/utils/cyclewayLegend';
 	import { isPavedSurface, surfaceLabel } from '$lib/utils/osmCycleway';
+	import LegendSummary from './LegendSummary.svelte';
 
 	let { properties } = $props();
 
@@ -152,6 +153,8 @@
 			</div>
 		</div>
 	{/if}
+
+	<LegendSummary {legendId} />
 
 	<div class="border-t border-gray-100 pt-3">
 		<button

@@ -1,12 +1,16 @@
 <script lang="ts">
 	import Route from '@lucide/svelte/icons/route';
 	import type { CyclableFeature } from '$lib/utils/cyclableUtils.ts';
+	import { voirieFeatureToLegendId } from '$lib/utils/cyclewayLegend';
+	import LegendSummary from './LegendSummary.svelte';
 
 	let {
 		properties,
 	}: {
 		properties: CyclableFeature['properties'];
 	} = $props();
+
+	const legendId = $derived(voirieFeatureToLegendId(properties));
 </script>
 
 <div class="flex flex-col gap-2">
@@ -32,4 +36,6 @@
 			<span class="font-semibold text-gray-900">{properties.localisation}</span>
 		</div>
 	{/if}
+
+	<LegendSummary {legendId} />
 </div>

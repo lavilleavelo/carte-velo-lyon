@@ -69,6 +69,30 @@ const OSM_TITLES: Partial<Record<LegendId, string>> = {
 	chaucidou: 'Bande cyclable (chaucidou)',
 };
 
+export const LEGEND_SUMMARIES: Record<LegendId, string> = {
+	'piste-bidir':
+		'Réservée aux vélos et séparée physiquement des autres usagers, dans les deux sens.',
+	'piste-unidir':
+		'Réservée aux vélos et séparée physiquement des autres usagers, dans un seul sens.',
+	'voie-verte': 'Voie partagée entre piétons et vélos, interdite aux véhicules motorisés.',
+	'voie-verte-non-revetue':
+		'Voie partagée entre piétons et vélos, interdite aux véhicules motorisés, sans revêtement (terre, gravier).',
+	'zone-pietonne': 'Espace piéton où les vélos sont admis à allure modérée, piétons prioritaires.',
+	bande:
+		'Voie réservée aux vélos sur la chaussée, séparée des voitures par un simple marquage au sol.',
+	chaucidou:
+		'Voie centrale pour les voitures et rive cyclable de chaque côté, que les voitures empruntent pour se croiser. Aménagement de dernier recours.',
+	'bus-velo': 'Couloir de bus ouvert aux vélos.',
+	velorue:
+		'Rue partagée avec les voitures, où le trafic motorisé est très faible et le flux vélo fort.',
+	dsc: 'Rue à sens unique pour les voitures, ouverte aux vélos dans les deux sens.',
+	trottoir: 'Cheminement piéton où les vélos sont autorisés, sans aménagement dédié.',
+};
+
+export function legendPageHref(id: LegendId): string {
+	return `/legende#${id === 'voie-verte-non-revetue' ? 'voie-verte' : id}`;
+}
+
 export function osmCyclewayTitle(properties: any): string {
 	const id = osmFeatureToLegendId(properties);
 	return (id && OSM_TITLES[id]) || properties?.typeamenagement || 'Aménagement cyclable';
