@@ -1281,6 +1281,7 @@
 					onHoverSafety={(key) => (hoveredSafety = key)}
 					onReset={resetLegendFilters}
 					position="bottom-left"
+					initiallyOpen={isDesktop}
 					grandLyon={!isLayerActive('osm-cycleways')}
 				/>
 
