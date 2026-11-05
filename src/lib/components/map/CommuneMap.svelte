@@ -588,6 +588,10 @@
 		params.cyclewayTypes = soloInclusion(params.cyclewayTypes ?? [], id);
 	}
 
+	function resetLegendFilters() {
+		params.update({ cyclewayTypes: [...DEFAULT_LEGEND_IDS], safetyFilter: [] });
+	}
+
 	function toggleCyclewayReseau(value: string) {
 		const current = [...(params.cyclewayReseau ?? [])];
 		const i = current.indexOf(value);
@@ -1275,6 +1279,7 @@
 					onToggleSafety={toggleSafetyFilter}
 					onSoloSafety={soloSafetyFilter}
 					onHoverSafety={(key) => (hoveredSafety = key)}
+					onReset={resetLegendFilters}
 					position="bottom-left"
 					grandLyon={!isLayerActive('osm-cycleways')}
 				/>

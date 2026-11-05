@@ -3,7 +3,7 @@
 	import ChevronDown from '@lucide/svelte/icons/chevron-down';
 	import Info from '@lucide/svelte/icons/info';
 	import Focus from '@lucide/svelte/icons/focus';
-	import type { LegendId } from '$lib/utils/cyclewayLegend';
+	import { DEFAULT_LEGEND_IDS, type LegendId } from '$lib/utils/cyclewayLegend';
 	import { CHAUCIDOU_COLOR, GREENWAY_COLOR } from './layers/cyclewayStyles';
 
 	type Render =
@@ -56,6 +56,7 @@
 		onToggleSafety,
 		onSoloSafety,
 		onHoverSafety,
+		onReset,
 		position = 'bottom-right',
 		initiallyOpen = true,
 		grandLyon = false,
@@ -71,6 +72,7 @@
 		onToggleSafety?: (key: SafetyKey) => void;
 		onSoloSafety?: (key: SafetyKey) => void;
 		onHoverSafety?: (key: SafetyKey | null) => void;
+		onReset?: () => void;
 		position?: 'top-left' | 'top-right' | 'bottom-left' | 'bottom-right';
 		initiallyOpen?: boolean;
 		grandLyon?: boolean;
@@ -165,15 +167,24 @@
 
 		return activeSafety.includes(key);
 	}
+
+	const hiddenLabels = $derived([
+		...(safetyRows ?? []).filter((row) => !isSafetyActive(row.key)).map((row) => row.label),
+		...visibleItems
+			.filter((item) => DEFAULT_LEGEND_IDS.includes(item.id) && !isActive(item.id))
+			.map((item) => item.label),
+	]);
 </script>
 
 {#if visibleItems.length > 0 || safetyRows}
 	<CustomControl {position}>
 		<div
-			class="cycleway-legend-control rounded-lg bg-white/85 shadow-md ring-1 ring-black/5 backdrop-blur-sm"
+			class="cycleway-legend-control rounded-lg bg-white/85 shadow-md backdrop-blur-sm {hiddenLabels.length
+				? 'ring-2 ring-amber-400'
+				: 'ring-1 ring-black/5'}"
 			data-open={open}
 		>
-			<div class="flex items-center gap-2 rounded-lg p-2 text-left">
+			<div class="flex flex-wrap items-center gap-2 rounded-lg p-2 text-left">
 				<span class="text-xs font-semibold tracking-wide text-brand-navy uppercase">Légende</span>
 				<a
 					href="/legende"
@@ -183,6 +194,22 @@
 				>
 					<Info size={14} />
 				</a>
+				{#if hiddenLabels.length}
+					<span
+						class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 text-[11px] font-medium whitespace-nowrap text-amber-900"
+						title="Masqué{hiddenLabels.length > 1 ? 's' : ''} : {hiddenLabels.join(', ')}"
+					>
+						Filtrée · {hiddenLabels.length} masqué{hiddenLabels.length > 1 ? 's' : ''}
+						{#if onReset}
+							<button
+								type="button"
+								onclick={onReset}
+								class="font-semibold underline hover:no-underline"
+								title="Réafficher les types masqués">Tout afficher</button
+							>
+						{/if}
+					</span>
+				{/if}
 				{#if totalKm}
 					<span class="ml-auto text-xs font-semibold text-gray-700 tabular-nums">{totalKm}</span>
 				{/if}

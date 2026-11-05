@@ -117,6 +117,7 @@
 		toggleLegendId,
 		soloInclusion,
 		voirieFeatureToLegendId,
+		isLegendFiltered,
 		DEFAULT_LEGEND_IDS,
 		type LegendId,
 	} from '$lib/utils/cyclewayLegend';
@@ -290,6 +291,12 @@
 	function soloLegendType(id: string) {
 		params.cyclewayTypes = soloInclusion(params.cyclewayTypes ?? [], id);
 	}
+
+	function resetLegendTypes() {
+		params.cyclewayTypes = [...DEFAULT_LEGEND_IDS];
+	}
+
+	const legendFiltered = $derived(isLegendFiltered(cyclewayTypesParam.current));
 
 	const mapStyleState = createMapStyleState(params.mapStyle, (style) => {
 		params.mapStyle = style;
@@ -1203,14 +1210,24 @@
 					<CustomControl position="top-right">
 						<button
 							onclick={() => (showCyclewayLegend = !showCyclewayLegend)}
-							class="rounded-lg pl-1! shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none {showCyclewayLegend
+							class="relative rounded-lg pl-1! shadow-md focus:ring-2 focus:ring-blue-500 focus:outline-none {showCyclewayLegend
 								? 'bg-brand-navy! text-white! hover:bg-brand-navy/90!'
 								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
 							aria-pressed={showCyclewayLegend}
 							aria-label={showCyclewayLegend ? 'Masquer la légende' : 'Afficher la légende'}
-							title={showCyclewayLegend ? 'Masquer la légende' : 'Afficher la légende'}
+							title={showCyclewayLegend
+								? 'Masquer la légende'
+								: legendFiltered
+									? 'Afficher la légende (filtre actif)'
+									: 'Afficher la légende'}
 						>
 							<Info size={20} />
+							{#if legendFiltered}
+								<span
+									class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white"
+									aria-hidden="true"
+								></span>
+							{/if}
 						</button>
 					</CustomControl>
 				{/if}
@@ -1271,14 +1288,24 @@
 					<CustomControl position="bottom-left">
 						<button
 							onclick={() => (showCyclewayLegend = !showCyclewayLegend)}
-							class="m-1! rounded-lg p-1! focus:ring-2 focus:ring-blue-500 focus:outline-none {showCyclewayLegend
+							class="relative m-1! rounded-lg p-1! focus:ring-2 focus:ring-blue-500 focus:outline-none {showCyclewayLegend
 								? 'bg-brand-navy! text-white! hover:bg-brand-navy/90!'
 								: 'bg-white! text-gray-700! hover:bg-gray-50!'}"
 							aria-pressed={showCyclewayLegend}
 							aria-label={showCyclewayLegend ? 'Masquer la légende' : 'Afficher la légende'}
-							title={showCyclewayLegend ? 'Masquer la légende' : 'Afficher la légende'}
+							title={showCyclewayLegend
+								? 'Masquer la légende'
+								: legendFiltered
+									? 'Afficher la légende (filtre actif)'
+									: 'Afficher la légende'}
 						>
 							<Info size={20} />
+							{#if legendFiltered}
+								<span
+									class="absolute -top-1 -right-1 h-2.5 w-2.5 rounded-full bg-amber-500 ring-2 ring-white"
+									aria-hidden="true"
+								></span>
+							{/if}
 						</button>
 					</CustomControl>
 				{/if}
@@ -1391,6 +1418,7 @@
 					onToggle={toggleLegendType}
 					onSolo={soloLegendType}
 					onHover={(id) => (hoveredLegendId = id)}
+					onReset={resetLegendTypes}
 					position="bottom-right"
 					initiallyOpen={true}
 				/>
