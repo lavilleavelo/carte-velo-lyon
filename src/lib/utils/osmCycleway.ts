@@ -95,6 +95,8 @@ export function overpassToGeoJSON(data: any): FeatureCollection {
 		if (classifications.length === 0) continue;
 
 		const coordinates = element.geometry.map((p: { lon: number; lat: number }) => [p.lon, p.lat]);
+		const onSide = (type: string, side: Side) =>
+			classifications.some((c) => c.typeamenagement === type && c.side === side);
 
 		for (const c of classifications) {
 			const safety = isSafePath(tags, c.typeamenagement, c.advisory);
@@ -107,6 +109,7 @@ export function overpassToGeoJSON(data: any): FeatureCollection {
 					osmType: element.type,
 					typeamenagement: c.typeamenagement,
 					side: c.side,
+					bothSides: onSide(c.typeamenagement, 'left') && onSide(c.typeamenagement, 'right'),
 					bidirectional: c.bidirectional ?? false,
 					advisory: c.advisory ?? false,
 					paved: isPavedSurface(tags.surface),

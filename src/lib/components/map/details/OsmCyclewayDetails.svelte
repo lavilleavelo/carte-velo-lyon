@@ -26,6 +26,7 @@
 		'id',
 		'typeamenagement',
 		'side',
+		'bothSides',
 		'bidirectional',
 		'advisory',
 		'paved',
@@ -37,11 +38,21 @@
 		'safetyCaveat',
 	]);
 
-	const sideLabel = (side?: string) => {
-		if (side === 'left') return 'Côté gauche';
-		if (side === 'right') return 'Côté droit';
-		return 'Au centre';
-	};
+	const direction = $derived(
+		properties?.bidirectional && legendId !== 'chaucidou'
+			? 'bidir'
+			: properties?.typeamenagement === 'Piste Cyclable'
+				? 'unidir'
+				: null,
+	);
+	const unpavedSurface = $derived(
+		typeof properties?.surface === 'string' &&
+			properties.surface &&
+			!isPavedSurface(properties.surface)
+			? surfaceLabel(properties.surface)
+			: null,
+	);
+	const hasChips = $derived(!!direction || !!properties?.bothSides || !!unpavedSurface);
 
 	const rawEntries = $derived(
 		Object.entries(properties ?? {})
@@ -75,44 +86,41 @@
 		<h3 class="text-sm font-bold tracking-wide uppercase">{title}</h3>
 	</div>
 
-	<div class="flex flex-col gap-1">
+	{#if properties?.name}
+		<p class="-mt-1 text-base leading-tight font-semibold text-gray-900">{properties.name}</p>
+	{/if}
+
+	{#if hasChips}
 		<div class="flex flex-wrap gap-1.5 text-xs">
-			{#if properties?.bidirectional && legendId !== 'chaucidou'}
+			{#if direction === 'bidir'}
 				<span
 					class="inline-flex items-center gap-1 rounded-full bg-emerald-100 px-2 py-0.5 font-medium text-emerald-800"
 				>
 					↔ Bidirectionnel
 				</span>
-			{:else if properties?.typeamenagement === 'Piste Cyclable'}
+			{:else if direction === 'unidir'}
 				<span
 					class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-700"
 				>
 					→ Unidirectionnel
 				</span>
 			{/if}
-			{#if properties?.side}
+			{#if properties?.bothSides}
 				<span
 					class="inline-flex items-center gap-1 rounded-full bg-gray-100 px-2 py-0.5 font-medium text-gray-700"
 				>
-					{sideLabel(properties.side)}
+					Des deux côtés de la rue
 				</span>
 			{/if}
-			{#if typeof properties?.surface === 'string' && properties.surface}
+			{#if unpavedSurface}
 				<span
-					class="inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-medium {isPavedSurface(
-						properties.surface,
-					)
-						? 'bg-gray-100 text-gray-700'
-						: 'bg-amber-100 text-amber-800'}"
+					class="inline-flex items-center gap-1 rounded-full bg-amber-100 px-2 py-0.5 font-medium text-amber-800"
 				>
-					Revêtement : {surfaceLabel(properties.surface)}
+					Revêtement : {unpavedSurface}
 				</span>
 			{/if}
 		</div>
-		{#if properties?.name}
-			<p class="mt-1 text-sm text-gray-600">{properties.name}</p>
-		{/if}
-	</div>
+	{/if}
 
 	{#if properties?.isSafe !== undefined}
 		{@const isPedestrianShared =
