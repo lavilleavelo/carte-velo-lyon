@@ -175,15 +175,18 @@
 				<h3 class="mt-4 text-base font-semibold text-brand-navy">Pourquoi 30 km/h ?</h3>
 				<ul class="list-disc pl-5">
 					<li>
-						<strong>Distance de freinage divisée par deux.</strong> 13 m à 30 km/h contre 27 m à 50 km/h.
+						<strong>Distance d'arrêt divisée par deux.</strong> 13 m à 30 km/h contre 27 m à 50 km/h,
+						temps de réaction compris, sur chaussée sèche.
 					</li>
 					<li>
-						<strong>Risque de décès d'un piéton heurté.</strong> Environ 10 % à 30 km/h, 80 % à 50 km/h,
-						et 100 % à 70 km/h.
+						<strong>Risque de décès d'un piéton heurté.</strong> Environ 6 fois plus élevé à 50 km/h
+						qu'à 30 km/h, selon les données nationales françaises. Ce risque augmente aussi fortement
+						avec l'âge&nbsp;: à 50 km/h, il est 7 fois plus élevé pour une personne de 75 ans ou plus
+						que pour un adulte de 15 à 59 ans.
 					</li>
 					<li>
 						<strong>Bruit routier.</strong> Réduction d'environ 2,5 dB(A) entre une zone 50 et une zone
-						30, soit presque une division par deux du niveau de bruit perçu.
+						30, un effet proche de celui d'une division par deux du trafic.
 					</li>
 					<li>
 						<strong>Apaisement et partage.</strong> Une vitesse réduite facilite la cohabitation entre
@@ -200,12 +203,33 @@
 					Le bilan à un an du passage de Lyon en Ville 30 (mars 2022), publié par le Cerema à partir
 					des données officielles TRAXY, compare 2019 (année de référence pré-Covid) à 2022&nbsp;:
 				</p>
+				<table>
+					<thead>
+						<tr>
+							<th>Évolution 2019 → 2022</th>
+							<th>Lyon (Ville 30)</th>
+							<th>Reste de l'agglomération</th>
+						</tr>
+					</thead>
+					<tbody>
+						<tr>
+							<td>Accidents corporels</td>
+							<td>−19 %</td>
+							<td>−17 %</td>
+						</tr>
+						<tr>
+							<td>Tués</td>
+							<td>−54 %</td>
+							<td>−48 %</td>
+						</tr>
+						<tr>
+							<td>Blessés hospitalisés</td>
+							<td>−32 %</td>
+							<td>−21 %</td>
+						</tr>
+					</tbody>
+				</table>
 				<ul class="list-disc pl-5">
-					<li>
-						<strong>−19 %</strong> d'accidents corporels à Lyon (contre −17 % sur le reste de l'agglomération)
-					</li>
-					<li><strong>−54 %</strong> de tués sur la voie publique</li>
-					<li><strong>−32 %</strong> de blessés hospitalisés</li>
 					<li>
 						Pour les <strong>piétons</strong> spécifiquement&nbsp;: −29 % d'accidents, −52 % de
 						blessés graves, et <strong>aucun tué en 2022</strong>
@@ -215,6 +239,11 @@
 						% de tués, −20 % de blessés graves
 					</li>
 				</ul>
+				<p>
+					Ce bilan porte sur une seule année. Les effectifs de tués sont faibles et varient beaucoup
+					d'une année sur l'autre, d'autres facteurs ont joué, et l'effet propre du 30 km/h reste à
+					confirmer sur plusieurs années.
+				</p>
 
 				<h3 class="mt-4 text-base font-semibold text-brand-navy">D'où viennent les chiffres ?</h3>
 				<p>
@@ -251,6 +280,44 @@
 						<span class="text-sm text-gray-500"
 							>(bilan et données accidentologiques utilisés ci-dessus)</span
 						>
+					</li>
+					<li>
+						<a
+							href="https://www.onisr.securite-routiere.gouv.fr/sites/default/files/2019-07/CNSR%20-%20Comit%C3%A9%20des%20experts%20-%20note%20pi%C3%A9tons%20-%20VF.pdf"
+							target="_blank"
+							rel="noopener"
+							class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
+						>
+							Comité des experts du CNSR, note sur les piétons (2019, ONISR)
+							<ExternalLink class="h-3 w-3" />
+						</a>
+						<span class="text-sm text-gray-500"
+							>(risque ×6 entre 30 et 50 km/h, effet de l'âge)</span
+						>
+					</li>
+					<li>
+						<a
+							href="https://pubmed.ncbi.nlm.nih.gov/28557669/"
+							target="_blank"
+							rel="noopener"
+							class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
+						>
+							Martin &amp; Wu (2018), Pedestrian fatality and impact speed squared, données
+							nationales françaises
+							<ExternalLink class="h-3 w-3" />
+						</a>
+					</li>
+					<li>
+						<a
+							href="https://pubmed.ncbi.nlm.nih.gov/31176144/"
+							target="_blank"
+							rel="noopener"
+							class="inline-flex items-center gap-1 font-semibold text-brand-navy hover:underline"
+						>
+							Hussain et al. (2019), méta-analyse sur la vitesse de choc et le risque de décès des
+							piétons
+							<ExternalLink class="h-3 w-3" />
+						</a>
 					</li>
 				</ul>
 			</section>
