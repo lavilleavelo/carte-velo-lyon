@@ -11,6 +11,7 @@ import type { Ville30CommuneRow, Ville30Status } from '$lib/utils/ville30';
 interface MetadataEntry {
 	insee: string;
 	name: string;
+	population?: number;
 	ville30?: { adoptedAt?: string; partial?: boolean; partialNote?: string };
 }
 
@@ -96,6 +97,10 @@ export const load: PageServerLoad = async () => {
 
 	const eligibleKm = communes.reduce((sum, c) => sum + c.eligibleKm, 0);
 	const eligibleUnder30Km = communes.reduce((sum, c) => sum + c.eligibleUnder30Km, 0);
+	const sumPopulation = (rows: Ville30CommuneRow[]) =>
+		rows.reduce((sum, c) => sum + (metadataByInsee[c.insee]?.population ?? 0), 0);
+	const population = sumPopulation(communes);
+	const ville30Population = sumPopulation(communes.filter((c) => c.status === 'full'));
 
 	return {
 		communes,
@@ -105,6 +110,7 @@ export const load: PageServerLoad = async () => {
 			totalCommunes: communes.length,
 			pct: eligibleKm > 0 ? round((eligibleUnder30Km / eligibleKm) * 100, 1) : null,
 			eligibleUnder30Km: Math.round(eligibleUnder30Km),
+			populationPct: population > 0 ? round((ville30Population / population) * 100, 1) : null,
 		},
 		seo: {
 			title: 'Ville 30 dans la Métropole de Lyon – Carte vélo',
