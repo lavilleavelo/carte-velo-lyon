@@ -328,8 +328,10 @@
 						{/if}
 					</li>
 					<li>
-						<strong>Une rue mieux partagée.</strong> À 30 km/h, voitures, vélos et piétons se côtoient
-						plus facilement.
+						<strong>Une rue mieux partagée.</strong> À 30 km/h, les voitures roulent à une vitesse plus
+						proche de celle des vélos&nbsp;: ils peuvent partager la même chaussée dans de bonnes conditions
+						de sécurité. À 50 km/h, rouler à côté des voitures est dangereux et intimidant, surtout pour
+						les enfants et les cyclistes débutants. Les piétons traversent aussi plus facilement.
 					</li>
 					<li>
 						<strong>Peu de temps perdu.</strong> À Lyon, la vitesse moyenne a baissé d'environ 1
