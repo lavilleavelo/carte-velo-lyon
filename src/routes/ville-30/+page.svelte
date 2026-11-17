@@ -208,7 +208,9 @@
 <div class="space-y-6 py-4 md:py-6">
 	<header class="space-y-4">
 		<div class="space-y-2">
-			<h1 class="text-2xl font-bold text-brand-navy md:text-3xl">Ville 30 dans la Métropole</h1>
+			<h1 class="text-2xl font-bold text-brand-navy md:text-3xl">
+				Ville 30 dans la Métropole de Lyon
+			</h1>
 			<p class="max-w-3xl text-gray-600">
 				Rouler moins vite en ville, c'est des rues plus sûres et plus calmes. Dans une <strong
 					>Ville 30</strong
