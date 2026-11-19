@@ -14,4 +14,11 @@ export type Station = {
 };
 
 export type StationStatusFilter = 'all' | 'open' | 'closed';
-export type StationSortKey = 'bikes' | 'elec' | 'mech' | 'stands' | 'capacity' | 'name';
+export type StationSortKey =
+	| 'bikes'
+	| 'elec'
+	| 'mech'
+	| 'stands'
+	| 'capacity'
+	| 'name'
+	| 'distance';
