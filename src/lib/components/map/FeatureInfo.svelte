@@ -35,6 +35,8 @@
 
 	let currentIndex = $state(0);
 	let selectedFeature = $derived(features[currentIndex]);
+	const tall = $derived(selectedFeature?.type === 'velov');
+	const photoHeight = $derived(tall ? 'h-28' : 'h-40');
 	const navPrimaryOverride = $derived.by(() => {
 		if (selectedFeature?.type === 'counter' && selectedFeature.properties?.cyclopolisUrl) {
 			return {
@@ -117,16 +119,20 @@
 </script>
 
 <div
-	class="flex w-full flex-col overflow-hidden bg-white/95 backdrop-blur-sm md:w-80 md:rounded-xl md:border md:border-gray-100 md:shadow-xl"
+	class="flex w-full flex-col overflow-hidden bg-white/95 backdrop-blur-sm md:w-80 md:rounded-xl md:border md:border-gray-100 md:shadow-xl {tall
+		? 'feature-info-tall'
+		: ''}"
 >
 	{#if panoramaxQuery.isLoading}
-		<div class="flex h-40 w-full shrink-0 items-center justify-center bg-gray-100 text-gray-500">
+		<div
+			class="flex {photoHeight} w-full shrink-0 items-center justify-center bg-gray-100 text-gray-500"
+		>
 			<Loader2 class="h-6 w-6 animate-spin" />
 		</div>
 	{:else if panoramaxQuery.data}
 		<button
 			onclick={onOpenPanoramax}
-			class="group relative h-40 w-full shrink-0 overflow-hidden bg-gray-100"
+			class="group relative {photoHeight} w-full shrink-0 overflow-hidden bg-gray-100"
 		>
 			<img
 				src={panoramaxQuery.data.thumbPicture}
@@ -141,7 +147,7 @@
 		</button>
 	{:else}
 		<div
-			class="flex h-40 w-full shrink-0 flex-col items-center justify-center bg-gray-100 text-sm text-gray-500"
+			class="flex {photoHeight} w-full shrink-0 flex-col items-center justify-center bg-gray-100 text-sm text-gray-500"
 		>
 			<Camera class="mb-2 h-6 w-6" />
 			<span>Aucune photo</span>
@@ -189,7 +195,11 @@
 		</button>
 	</div>
 
-	<div class="flex max-h-[50vh] flex-col overflow-y-auto md:max-h-[350px]">
+	<div
+		class="flex max-h-[50vh] flex-col overflow-y-auto {tall
+			? 'md:max-h-[max(350px,calc(100svh-17.5rem))]'
+			: 'md:max-h-[350px]'}"
+	>
 		<div class="p-4">
 			{#if selectedFeature}
 				{@const Component = getComponent(selectedFeature.type)}
@@ -210,3 +220,11 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	@media (min-width: 768px) {
+		:global(*:has(> * > .feature-info-tall) > .maplibregl-map .maplibregl-ctrl-bottom-left) {
+			left: 21.5rem;
+		}
+	}
+</style>

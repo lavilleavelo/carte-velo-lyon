@@ -4,10 +4,14 @@
 	import MapPin from '@lucide/svelte/icons/map-pin';
 	import CircleX from '@lucide/svelte/icons/circle-x';
 	import Zap from '@lucide/svelte/icons/zap';
+	import VelovForecast from '$lib/components/velov/VelovForecast.svelte';
+	import { velovPalettePreference } from '$lib/utils/mapPreferences.svelte';
 
-	let { properties } = $props();
+	let { properties, showForecast = true } = $props();
 
+	const palette = $derived(velovPalettePreference.colors);
 	const isClosed = $derived(properties.status === 'CLOSED');
+	const stationId = $derived(Number(properties.idstation) || 0);
 	const capacity = $derived(properties.capacity ?? properties.bike_stands ?? null);
 	const elec = $derived(properties.electrical_bikes ?? 0);
 	const mech = $derived(properties.mechanical_bikes ?? 0);
@@ -54,17 +58,23 @@
 			{#if hasBreakdown && !isClosed}
 				<div class="flex items-center gap-1">
 					<span
-						class="inline-flex items-center gap-0.5 rounded border border-red-100 bg-red-50 px-1 py-0.5 text-[10px] font-medium text-red-700"
+						class="inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[10px] font-medium"
+						style:border-color={palette.mech.border}
+						style:background-color={palette.mech.tint}
+						style:color={palette.mech.text}
 						title="Vélos mécaniques"
 					>
 						<Bike size={10} />
 						<span class="tabular-nums">{mech}</span>
 					</span>
 					<span
-						class="inline-flex items-center gap-0.5 rounded border border-green-100 bg-green-50 px-1 py-0.5 text-[10px] font-medium text-green-700"
+						class="inline-flex items-center gap-0.5 rounded border px-1 py-0.5 text-[10px] font-medium"
+						style:border-color={palette.elec.border}
+						style:background-color={palette.elec.tint}
+						style:color={palette.elec.text}
 						title="Vélos électriques"
 					>
-						<Zap size={10} class="fill-green-500 text-green-600" />
+						<Zap size={10} color={palette.elec.fill} fill={palette.elec.fill} />
 						<span class="tabular-nums">{elec}</span>
 					</span>
 				</div>
@@ -75,7 +85,7 @@
 		</div>
 	</div>
 
-	<div class="flex items-center justify-between gap-3 rounded-md bg-gray-50 px-3 py-2">
+	<div class="-mt-2 flex items-center justify-between gap-3 rounded-md bg-gray-50 px-3 py-2">
 		<span class="flex items-center gap-2 text-xs font-semibold text-gray-600 uppercase">
 			<CircleParking size={14} />
 			Places libres
@@ -95,5 +105,9 @@
 			<CircleX size={12} class="text-gray-400" />
 			{outOfService} borne{outOfService > 1 ? 's' : ''} hors service
 		</p>
+	{/if}
+
+	{#if showForecast && stationId > 0 && !isClosed}
+		<VelovForecast {stationId} />
 	{/if}
 </div>
