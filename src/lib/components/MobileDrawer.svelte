@@ -10,7 +10,11 @@
 		initialSnapPoint = 0,
 		backdrop = true,
 		closeButton = false,
+		closeLabel = 'Fermer',
 		dismissible = true,
+		peek = false,
+		fit = false,
+		header,
 		children,
 		class: className,
 		onClose,
@@ -20,22 +24,29 @@
 		initialSnapPoint?: number;
 		backdrop?: boolean;
 		closeButton?: boolean;
+		closeLabel?: string;
 		dismissible?: boolean;
+		peek?: boolean;
+		fit?: boolean;
+		header?: Snippet;
 		children?: Snippet;
 		class?: string;
 		onClose?: () => void;
 	} = $props();
 
-	const MIN_HEIGHT = 100;
+	const GRABBER_HEIGHT = 28;
+	const BODY_PADDING = 24;
 	const TAP_SLOP = 6;
 	const FLICK_VELOCITY = 0.5;
 	const FLICK_MAX_PAUSE_MS = 100;
 	const CLICK_SUPPRESS_MS = 350;
 
-	let drawerHeight = $state(0);
-	let isDragging = $state(false);
 	let windowHeight = $state(0);
-	let contentElement: HTMLDivElement | undefined = $state();
+	let headerHeight = $state(0);
+	let bodyHeight = $state(0);
+	let snapIndex = $state(0);
+	let dragHeight: number | null = $state(null);
+	let sheetElement: HTMLDivElement | undefined = $state();
 	let startY = 0;
 	let startHeight = 0;
 	let lastY = 0;
@@ -43,17 +54,35 @@
 	let velocity = 0;
 	let moved = false;
 	let suppressClickUntil = 0;
+	let wasOpen = false;
 
-	const snapHeights = $derived(snapPoints.map((p) => p * windowHeight));
-	const maxSnap = $derived(Math.max(...snapHeights));
-	const expanded = $derived(drawerHeight >= maxSnap - 1);
+	const hasPeek = $derived(peek && !!header);
+	const snapHeights = $derived.by(() => {
+		const contentHeight = GRABBER_HEIGHT + headerHeight + bodyHeight + BODY_PADDING;
+		const heights = snapPoints
+			.map((point) => point * windowHeight)
+			.map((height) => (fit && bodyHeight > 0 ? Math.min(height, contentHeight) : height))
+			.sort((a, b) => a - b);
+
+		return hasPeek ? [GRABBER_HEIGHT + headerHeight, ...heights] : heights;
+	});
+	const settledHeight = $derived(snapHeights[Math.min(snapIndex, snapHeights.length - 1)] ?? 0);
+	const drawerHeight = $derived(dragHeight ?? settledHeight);
+	const expanded = $derived(drawerHeight >= (snapHeights[snapHeights.length - 1] ?? 0) - 1);
+
+	$effect(() => {
+		if (open && !wasOpen) {
+			snapIndex = initialSnapPoint + (hasPeek ? 1 : 0);
+		}
+		wasOpen = open;
+	});
 
 	function beginDrag(clientY: number) {
-		isDragging = true;
+		dragHeight = settledHeight;
 		moved = false;
 		startY = clientY;
 		lastY = clientY;
-		startHeight = drawerHeight;
+		startHeight = settledHeight;
 		lastTime = performance.now();
 		velocity = 0;
 	}
@@ -68,37 +97,55 @@
 		if (Math.abs(clientY - startY) > TAP_SLOP) {
 			moved = true;
 		}
-		drawerHeight = Math.max(MIN_HEIGHT, Math.min(startHeight + startY - clientY, windowHeight));
+
+		const lowest = dismissible ? Math.min(60, snapHeights[0] ?? 60) : (snapHeights[0] ?? 0) - 16;
+		dragHeight = Math.max(lowest, Math.min(startHeight + startY - clientY, windowHeight));
 	}
 
 	function endDrag() {
-		if (!isDragging) {
+		const height = dragHeight;
+		if (height === null) {
 			return;
 		}
 
-		isDragging = false;
+		dragHeight = null;
 		if (!moved) {
-			drawerHeight = startHeight;
 			return;
 		}
 
 		suppressClickUntil = performance.now() + CLICK_SUPPRESS_MS;
 		const speed = performance.now() - lastTime > FLICK_MAX_PAUSE_MS ? 0 : velocity;
-		const sorted = [...snapHeights].sort((a, b) => a - b);
+		const last = snapHeights.length - 1;
 
 		if (speed > FLICK_VELOCITY) {
-			drawerHeight = sorted.find((h) => h > drawerHeight + 1) ?? sorted[sorted.length - 1];
-		} else if (speed < -FLICK_VELOCITY) {
-			const below = sorted.filter((h) => h < drawerHeight - 1);
-			if (below.length > 0) {
-				drawerHeight = below[below.length - 1];
+			const above = snapHeights.findIndex((snap) => snap > height + 1);
+			snapIndex = above < 0 ? last : above;
+			return;
+		}
+
+		if (speed < -FLICK_VELOCITY) {
+			const below = snapHeights.findLastIndex((snap) => snap < height - 1);
+			if (below >= 0) {
+				snapIndex = below;
 			} else if (dismissible) {
 				close();
 			} else {
-				drawerHeight = sorted[0];
+				snapIndex = 0;
 			}
+			return;
+		}
+
+		let nearest = 0;
+		for (let index = 1; index <= last; index += 1) {
+			if (Math.abs(snapHeights[index] - height) < Math.abs(snapHeights[nearest] - height)) {
+				nearest = index;
+			}
+		}
+
+		if (dismissible && height < snapHeights[nearest] / 2) {
+			close();
 		} else {
-			snapToNearest();
+			snapIndex = nearest;
 		}
 	}
 
@@ -112,16 +159,13 @@
 	}
 
 	function handlePointerMove(e: PointerEvent) {
-		if (isDragging && (e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) {
+		if (dragHeight !== null && (e.currentTarget as HTMLElement).hasPointerCapture(e.pointerId)) {
 			drag(e.clientY);
 		}
 	}
 
 	export function snapTo(index: number) {
-		if (open && windowHeight > 0) {
-			const sorted = [...snapHeights].sort((a, b) => a - b);
-			drawerHeight = sorted[Math.min(Math.max(index, 0), sorted.length - 1)];
-		}
+		snapIndex = Math.min(Math.max(index, 0), snapHeights.length - 1);
 	}
 
 	function toggle() {
@@ -129,8 +173,8 @@
 			return;
 		}
 
-		const sorted = [...snapHeights].sort((a, b) => a - b);
-		drawerHeight = sorted.find((h) => h > drawerHeight + 1) ?? sorted[0];
+		const above = snapHeights.findIndex((snap) => snap > settledHeight + 1);
+		snapIndex = above < 0 ? 0 : above;
 	}
 
 	function isScrolled(target: EventTarget | null, root: HTMLElement): boolean {
@@ -148,7 +192,7 @@
 	}
 
 	$effect(() => {
-		const element = contentElement;
+		const element = sheetElement;
 		if (!element) {
 			return;
 		}
@@ -158,7 +202,8 @@
 		let y0 = 0;
 
 		const onStart = (e: TouchEvent) => {
-			mode = e.touches.length === 1 ? 'pending' : 'native';
+			const onGrabber = (e.target as HTMLElement | null)?.closest('[data-drawer-grabber]');
+			mode = e.touches.length === 1 && !onGrabber ? 'pending' : 'native';
 			x0 = e.touches[0].clientX;
 			y0 = e.touches[0].clientY;
 		};
@@ -207,64 +252,32 @@
 		};
 	});
 
-	function snapToNearest() {
-		const currentH = drawerHeight;
-		const thresholds = dismissible ? [0, ...snapHeights] : snapHeights;
-
-		let closest = thresholds[0];
-		let minDiff = Math.abs(currentH - closest);
-
-		for (const h of thresholds) {
-			const diff = Math.abs(currentH - h);
-			if (diff < minDiff) {
-				minDiff = diff;
-				closest = h;
-			}
+	let scrollElement: HTMLDivElement | undefined = $state();
+	$effect(() => {
+		if (!expanded && dragHeight === null && scrollElement) {
+			scrollElement.scrollTop = 0;
 		}
-
-		if (closest < MIN_HEIGHT) {
-			close();
-		} else {
-			drawerHeight = closest;
-		}
-	}
-
-	function openDrawer() {
-		if (windowHeight > 0) {
-			drawerHeight = snapPoints[Math.min(initialSnapPoint, snapPoints.length - 1)] * windowHeight;
-		}
-	}
+	});
 
 	function close() {
 		open = false;
 		onClose?.();
 	}
-
-	$effect(() => {
-		if (!expanded && !isDragging && contentElement) {
-			contentElement.scrollTop = 0;
-		}
-	});
-
-	$effect(() => {
-		if (open) {
-			if (drawerHeight === 0 && windowHeight > 0) {
-				openDrawer();
-			}
-		} else {
-			drawerHeight = 0;
-		}
-	});
-
-	function updateWindowHeight() {
-		windowHeight = window.innerHeight;
-		if (open && drawerHeight > 0) {
-			snapToNearest();
-		}
-	}
 </script>
 
-<svelte:window onresize={updateWindowHeight} bind:innerHeight={windowHeight} />
+<svelte:window bind:innerHeight={windowHeight} />
+
+{#snippet closeControl(extraClass: string)}
+	<button
+		type="button"
+		onclick={close}
+		aria-label={closeLabel}
+		title={closeLabel}
+		class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 {extraClass}"
+	>
+		<X size={16} />
+	</button>
+{/snippet}
 
 {#if open}
 	{#if backdrop}
@@ -277,17 +290,20 @@
 	{/if}
 
 	<div
+		bind:this={sheetElement}
 		class={cn(
-			'fixed right-0 bottom-0 left-0 z-50 flex flex-col overflow-hidden rounded-t-2xl bg-white transition-all duration-300 ease-out will-change-[height]',
+			'fixed right-0 bottom-0 left-0 z-50 flex flex-col overflow-hidden rounded-t-2xl bg-white transition-[height] duration-300 ease-out will-change-[height]',
 			backdrop ? 'shadow-2xl' : 'border-t border-gray-200 shadow-[0_-6px_24px_rgba(0,0,0,0.18)]',
 			className,
 		)}
-		style="height: {drawerHeight}px; {isDragging ? 'transition: none;' : ''}"
+		style="height: {drawerHeight}px; {dragHeight !== null ? 'transition: none;' : ''}"
 	>
 		<button
 			type="button"
-			class="flex h-9 w-full shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
-			aria-label={snapPoints.length < 2
+			data-drawer-grabber
+			class="flex w-full shrink-0 cursor-grab touch-none items-center justify-center active:cursor-grabbing"
+			style="height: {GRABBER_HEIGHT}px"
+			aria-label={snapHeights.length < 2
 				? 'Déplacer le panneau'
 				: expanded
 					? 'Réduire le panneau'
@@ -298,22 +314,27 @@
 			onpointercancel={endDrag}
 			onclick={toggle}
 		>
-			<span class="h-1.5 w-12 rounded-full bg-gray-300"></span>
+			<span class="h-1.5 w-10 rounded-full bg-gray-300"></span>
 		</button>
 
-		{#if closeButton}
-			<button
-				type="button"
-				onclick={close}
-				aria-label="Fermer"
-				class="absolute top-1 right-1.5 z-10 inline-flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
-			>
-				<X size={14} />
-			</button>
+		{#if header}
+			<div bind:clientHeight={headerHeight} class="flex shrink-0 items-center gap-3 px-4 pb-3">
+				<div class="min-w-0 flex-1">{@render header()}</div>
+				{#if closeButton}
+					{@render closeControl('')}
+				{/if}
+			</div>
+		{:else if closeButton}
+			{@render closeControl('absolute top-1 right-1.5 z-10')}
 		{/if}
 
-		<div bind:this={contentElement} class="flex-1 overflow-y-auto overscroll-contain px-2 pb-6">
-			{@render children?.()}
+		<div
+			bind:this={scrollElement}
+			class="min-h-0 flex-1 overflow-y-auto overscroll-contain px-2 pb-6"
+		>
+			<div bind:clientHeight={bodyHeight}>
+				{@render children?.()}
+			</div>
 		</div>
 	</div>
 {/if}
