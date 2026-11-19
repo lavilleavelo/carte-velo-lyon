@@ -1,5 +1,6 @@
 import { mkdir, readFile, rename, writeFile } from 'node:fs/promises';
 import { join } from 'node:path';
+import type { VelovForecastBundle, VelovForecastIndex } from './velovForecastModel';
 
 const store = new Map<string, unknown>();
 const fetchers = new Map<string, () => Promise<unknown>>();
@@ -188,6 +189,44 @@ for (const type of Object.keys(GRAND_LYON_URLS) as GrandLyonDataType[]) {
 
 export async function getCachedGrandLyonData(type: GrandLyonDataType): Promise<unknown> {
 	return getCached(`grandlyon:${type}`);
+}
+
+export async function getCachedVelovStations(): Promise<{ data: unknown; fetchedAt: number }> {
+	const key = 'grandlyon:velov';
+	const data = lastFetched.has(key) ? await getCached(key) : await fetchAndStore(key);
+	return { data, fetchedAt: lastFetched.get(key) ?? Date.now() };
+}
+
+const VELOV_FORECAST_URL = 'https://raw.githubusercontent.com/solal3105/alerte-tcl/velov-prevision';
+const VELOV_FORECAST_KEY = 'velov-forecast';
+const VELOV_FORECAST_TTL_MS = 6 * 60 * 60 * 1000;
+
+export type VelovForecastFiles = { index: VelovForecastIndex; model: VelovForecastBundle };
+
+async function fetchVelovForecastFile<T>(file: string): Promise<T> {
+	const response = await fetch(`${VELOV_FORECAST_URL}/${file}`);
+	if (!response.ok) {
+		throw new Error(`Failed to fetch velov forecast ${file}: ${response.statusText}`);
+	}
+	return (await response.json()) as T;
+}
+
+registerEntry(
+	VELOV_FORECAST_KEY,
+	async (): Promise<VelovForecastFiles> => {
+		const index = await fetchVelovForecastFile<VelovForecastIndex>('index.json');
+		const held = store.get(VELOV_FORECAST_KEY) as VelovForecastFiles | undefined;
+		const model =
+			held?.model.version === index.version
+				? held.model
+				: await fetchVelovForecastFile<VelovForecastBundle>('modele.json');
+		return { index, model };
+	},
+	VELOV_FORECAST_TTL_MS,
+);
+
+export async function getCachedVelovForecastFiles(): Promise<VelovForecastFiles> {
+	return getCached<VelovForecastFiles>(VELOV_FORECAST_KEY);
 }
 
 const TREES_WFS_URL =
