@@ -28,6 +28,9 @@
 	import VelovStats from '$lib/components/velov/VelovStats.svelte';
 	import VelovForecast from '$lib/components/velov/VelovForecast.svelte';
 	import VelovSimulationControls from '$lib/components/velov/VelovSimulationControls.svelte';
+	import VelovSimulationTime from '$lib/components/velov/VelovSimulationTime.svelte';
+	import VelovForecastKindToggle from '$lib/components/velov/VelovForecastKindToggle.svelte';
+	import VelovLegend from '$lib/components/velov/VelovLegend.svelte';
 	import type { Station } from '$lib/components/velov/types';
 	import MapStyleToggle from '$lib/components/map/MapStyleToggle.svelte';
 	import NavigationButtons from '$lib/components/map/NavigationButtons.svelte';
@@ -53,11 +56,11 @@
 	const REFRESH_INTERVAL_MS = 60_000;
 	const MOBILE_DRAWER_SNAP = 0.48;
 	const MOBILE_DRAWER_MIN_HEIGHT = 372;
-	const MOBILE_DRAWER_PEEK_HEIGHT = 104;
+	const MOBILE_SHEET_INSET = 96;
+	const LABELS_MIN_ZOOM = 15;
 	const DESKTOP_PANEL_WIDTH = 392;
 	const REVEAL_MARGIN = 56;
 	const PIN_TAP_LIFT = 16;
-	const SIMULATION_SHEET_HEIGHT = 280;
 
 	const paramsSchema = type({
 		q: type('string').default(() => ''),
@@ -190,11 +193,13 @@
 			if (params.zoom > 0 && params.lat !== 0 && params.lng !== 0) {
 				map!.jumpTo({ center: [params.lng, params.lat], zoom: params.zoom });
 			}
+			mapZoom = map!.getZoom();
 		});
 
 		const m = map;
 		const onMoveEnd = () => {
 			const c = m.getCenter();
+			mapZoom = m.getZoom();
 			params.update({
 				lng: Number(c.lng.toFixed(5)),
 				lat: Number(c.lat.toFixed(5)),
@@ -317,15 +322,25 @@
 
 	const simulation = createVelovSimulation();
 
-	const simulationSheetSnap = $derived(
-		Math.min(0.6, SIMULATION_SHEET_HEIGHT / (innerHeight.current || 800)),
+	let infoExpanded = $state(false);
+	let mobileBarHeight = $state(0);
+	let mapZoom = $state(12.5);
+
+	const mobileBottomInset = $derived(
+		!isMobile.current || infoExpanded
+			? 0
+			: selectedStation || simulation.active
+				? MOBILE_SHEET_INSET
+				: mobileBarHeight,
+	);
+	const labelsHint = $derived(mapZoom < LABELS_MIN_ZOOM ? 'Zoomez pour voir les chiffres.' : null);
+	const simulationHint = $derived(
+		simulation.step === 0 ? 'Choisissez une heure pour voir la prévision.' : labelsHint,
 	);
 
 	const simulationTimeline = $derived(
 		createVelovTimeline(simulation.origin || liveQuery.dataUpdatedAt || Date.now()),
 	);
-
-	const stationPeekSnap = $derived(MOBILE_DRAWER_PEEK_HEIGHT / (innerHeight.current || 800));
 
 	const stationSnap = $derived(
 		Math.min(
@@ -409,7 +424,7 @@
 		const features = map.queryRenderedFeatures(point, {
 			layers: ['velov-stations-layer-hitarea'],
 		});
-		const lift = simulation.frame && simulation.kind !== 'velos' ? 0 : PIN_TAP_LIFT;
+		const lift = simulation.kind !== 'velos' ? 0 : PIN_TAP_LIFT;
 		let nearest: Station | null = null;
 		let nearestDistance = Infinity;
 
@@ -464,7 +479,6 @@
 	let mapSearch = $state('');
 	let mapSearchOpen = $state(false);
 	let mapSearchHighlight = $state(0);
-	let infoExpanded = $state(false);
 
 	function toggleInfo() {
 		infoExpanded = !infoExpanded;
@@ -567,6 +581,86 @@
 	const noopHandler = () => {};
 </script>
 
+{#snippet searchField(wrapperClass: string, inputClass: string)}
+	<div class="relative {wrapperClass}">
+		<Search
+			class="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-gray-400"
+		/>
+		<input
+			type="search"
+			bind:value={mapSearch}
+			onfocus={() => (mapSearchOpen = true)}
+			onblur={() => setTimeout(() => (mapSearchOpen = false), 150)}
+			onkeydown={handleMapSearchKeydown}
+			aria-autocomplete="list"
+			aria-controls="velov-map-search-results"
+			aria-expanded={mapSearchOpen && mapSearchResults.length > 0}
+			aria-activedescendant={mapSearchOpen && mapSearchResults.length > 0
+				? `velov-search-opt-${mapSearchResults[mapSearchHighlight]?.idstation}`
+				: undefined}
+			placeholder="Rechercher une station…"
+			class="w-full rounded-md bg-white py-2 pr-2 pl-8 text-base focus:outline-none md:py-1.5 md:text-sm {inputClass}"
+		/>
+		{#if mapSearchOpen && mapSearchResults.length > 0}
+			<ul
+				id="velov-map-search-results"
+				role="listbox"
+				class="absolute top-full right-0 left-0 z-10 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
+			>
+				{#each mapSearchResults as s, i (s.idstation)}
+					<li role="presentation">
+						<button
+							id={`velov-search-opt-${s.idstation}`}
+							type="button"
+							role="option"
+							aria-selected={i === mapSearchHighlight}
+							onmousedown={(e) => {
+								e.preventDefault();
+								pickMapSearch(s);
+							}}
+							onmouseenter={() => (mapSearchHighlight = i)}
+							class="flex w-full flex-col gap-0.5 px-2 py-1.5 text-left text-xs hover:bg-gray-50 {i ===
+							mapSearchHighlight
+								? 'bg-gray-100'
+								: ''}"
+						>
+							<span class="block w-full truncate font-medium text-gray-900">{s.nom}</span>
+							<span class="block w-full truncate text-[10px] text-gray-500">
+								{s.commune} · {s.bikes} vélo{s.bikes > 1 ? 's' : ''} / {s.capacity}
+							</span>
+						</button>
+					</li>
+				{/each}
+			</ul>
+		{/if}
+	</div>
+{/snippet}
+
+{#snippet toolbarButtons()}
+	<button
+		type="button"
+		onclick={togglePalette}
+		aria-pressed={colorBlindPalette}
+		title="Couleurs adaptées aux daltoniens (vélos électriques en bleu)"
+		aria-label="Couleurs adaptées aux daltoniens"
+		class="rounded p-2.5 transition-colors md:p-0.5 {colorBlindPalette
+			? 'bg-brand-navy text-white hover:bg-brand-navy/90'
+			: 'text-gray-500 hover:bg-gray-100 hover:text-brand-navy'}"
+	>
+		<Palette class="h-4 w-4 md:h-3 md:w-3" />
+	</button>
+	<button
+		type="button"
+		onclick={refresh}
+		title="Rafraîchir"
+		aria-label="Rafraîchir les données"
+		class="rounded p-2.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-navy disabled:opacity-50 md:p-0.5"
+		disabled={liveQuery.isFetching}
+	>
+		<RefreshCw class="h-4 w-4 md:h-3 md:w-3 {liveQuery.isFetching ? 'animate-spin' : ''}" />
+	</button>
+{/snippet}
+
 {#snippet stationForecast(station: Station)}
 	{#if station.status !== 'CLOSED'}
 		<VelovForecast
@@ -668,10 +762,9 @@
 	/>
 {/snippet}
 
-{#snippet stationSheet(station: Station)}
+{#snippet stationSheetHeader(station: Station)}
 	{@const isClosed = station.status === 'CLOSED'}
-	{@const outOfService = Math.max(0, station.capacity - station.bikes - station.stands)}
-	<div class="pr-9">
+	<div>
 		<h3 class="truncate text-base leading-tight font-bold text-gray-900">{station.nom}</h3>
 		{#if isClosed}
 			<p
@@ -706,7 +799,11 @@
 			</p>
 		{/if}
 	</div>
+{/snippet}
 
+{#snippet stationSheetBody(station: Station)}
+	{@const isClosed = station.status === 'CLOSED'}
+	{@const outOfService = Math.max(0, station.capacity - station.bikes - station.stands)}
 	{#if simulation.active && !velovForecastView.expanded && !isClosed}
 		<div class="rounded-md border border-brand-navy/15 bg-brand-navy/5 px-3 py-2">
 			<VelovSimulationControls {simulation} timeline={simulationTimeline} compact />
@@ -739,7 +836,8 @@
 				? 'h-[55svh]'
 				: 'h-[calc(100svh-2.75rem)] md:h-[calc(100svh-4rem)]'} {!isMobile.current && selectedStation
 				? 'velov-panel-open'
-				: ''} {isMobile.current && selectedStation && !infoExpanded ? 'velov-sheet-open' : ''}"
+				: ''} {isMobile.current && !infoExpanded ? 'velov-mobile-inset' : ''}"
+			style:--velov-bottom="{mobileBottomInset}px"
 		>
 			{#if liveQuery.isLoading || staticQuery.isLoading}
 				<div
@@ -803,100 +901,50 @@
 					handleMouseLeave={noopHandler}
 					{map}
 					simulation={simulation.frame}
+					kind={simulation.kind}
 					selectedId={selectedStation?.idstation ?? null}
 				/>
 			</MapLibre>
 
 			<div
-				class="pointer-events-none absolute top-4 bottom-4 left-4 z-20 flex w-[260px] flex-col gap-3 sm:w-[300px] md:w-[360px]"
+				class="pointer-events-none absolute top-3 right-[3.75rem] left-3 z-20 flex flex-col gap-3 md:top-4 md:right-auto md:bottom-4 md:left-4 md:w-[360px]"
 			>
-				{#if !(isMobile.current && selectedStation)}
+				{#if isMobile.current}
+					<div
+						class="pointer-events-auto relative z-10 flex items-center rounded-xl bg-white/95 p-1 shadow-md ring-1 ring-gray-200 backdrop-blur-sm"
+					>
+						<h1 class="sr-only">Stations Vélo’v</h1>
+						{@render searchField('min-w-0 flex-1', '')}
+						<div class="flex shrink-0 items-center text-gray-500">
+							{@render toolbarButtons()}
+						</div>
+					</div>
+				{:else}
 					<div
 						class="pointer-events-auto relative z-10 shrink-0 rounded-lg bg-white/95 px-3 py-2 shadow-md ring-1 ring-gray-200 backdrop-blur-sm"
 					>
 						<div class="flex items-baseline justify-between gap-2">
-							<h1 class="text-base font-bold text-brand-navy md:text-lg">Stations Vélo’v</h1>
+							<h1 class="text-lg font-bold text-brand-navy">Stations Vélo’v</h1>
 							<div class="flex items-center gap-1.5 text-[10px] text-gray-500">
 								{#if lastUpdated}
 									<span>{timeFmt.format(lastUpdated)}</span>
 								{/if}
-								<button
-									type="button"
-									onclick={togglePalette}
-									aria-pressed={colorBlindPalette}
-									title="Couleurs adaptées aux daltoniens (vélos électriques en bleu)"
-									aria-label="Couleurs adaptées aux daltoniens"
-									class="rounded p-2.5 transition-colors md:p-0.5 {colorBlindPalette
-										? 'bg-brand-navy text-white hover:bg-brand-navy/90'
-										: 'text-gray-500 hover:bg-gray-100 hover:text-brand-navy'}"
-								>
-									<Palette class="h-4 w-4 md:h-3 md:w-3" />
-								</button>
-								<button
-									type="button"
-									onclick={refresh}
-									title="Rafraîchir"
-									aria-label="Rafraîchir les données"
-									class="rounded p-2.5 text-gray-500 transition-colors hover:bg-gray-100 hover:text-brand-navy disabled:opacity-50 md:p-0.5"
-									disabled={liveQuery.isFetching}
-								>
-									<RefreshCw
-										class="h-4 w-4 md:h-3 md:w-3 {liveQuery.isFetching ? 'animate-spin' : ''}"
-									/>
-								</button>
+								{@render toolbarButtons()}
 							</div>
 						</div>
 
-						<div class="relative mt-2">
-							<Search
-								class="pointer-events-none absolute top-1/2 left-2.5 h-4 w-4 -translate-y-1/2 text-gray-400"
-							/>
-							<input
-								type="search"
-								bind:value={mapSearch}
-								onfocus={() => (mapSearchOpen = true)}
-								onblur={() => setTimeout(() => (mapSearchOpen = false), 150)}
-								onkeydown={handleMapSearchKeydown}
-								aria-autocomplete="list"
-								aria-controls="velov-map-search-results"
-								aria-expanded={mapSearchOpen && mapSearchResults.length > 0}
-								aria-activedescendant={mapSearchOpen && mapSearchResults.length > 0
-									? `velov-search-opt-${mapSearchResults[mapSearchHighlight]?.idstation}`
-									: undefined}
-								placeholder="Rechercher une station…"
-								class="w-full rounded-md border border-gray-200 bg-white py-2 pr-2 pl-8 text-base shadow-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy focus:outline-none md:py-1.5 md:text-sm"
-							/>
-							{#if mapSearchOpen && mapSearchResults.length > 0}
-								<ul
-									id="velov-map-search-results"
-									role="listbox"
-									class="absolute top-full right-0 left-0 z-10 mt-1 max-h-64 overflow-y-auto rounded-md border border-gray-200 bg-white shadow-lg"
-								>
-									{#each mapSearchResults as s, i (s.idstation)}
-										<li role="presentation">
-											<button
-												id={`velov-search-opt-${s.idstation}`}
-												type="button"
-												role="option"
-												aria-selected={i === mapSearchHighlight}
-												onmousedown={(e) => {
-													e.preventDefault();
-													pickMapSearch(s);
-												}}
-												onmouseenter={() => (mapSearchHighlight = i)}
-												class="flex w-full flex-col gap-0.5 px-2 py-1.5 text-left text-xs hover:bg-gray-50 {i ===
-												mapSearchHighlight
-													? 'bg-gray-100'
-													: ''}"
-											>
-												<span class="block w-full truncate font-medium text-gray-900">{s.nom}</span>
-												<span class="block w-full truncate text-[10px] text-gray-500">
-													{s.commune} · {s.bikes} vélo{s.bikes > 1 ? 's' : ''} / {s.capacity}
-												</span>
-											</button>
-										</li>
-									{/each}
-								</ul>
+						{@render searchField(
+							'mt-2',
+							'border border-gray-200 shadow-sm focus:border-brand-navy focus:ring-1 focus:ring-brand-navy',
+						)}
+
+						<div class="mt-2 flex flex-col gap-1.5">
+							<VelovForecastKindToggle bind:kind={simulation.kind} />
+							{#if !simulation.active}
+								<VelovLegend kind={simulation.kind} live />
+								{#if labelsHint}
+									<p class="text-[10px] text-gray-400">{labelsHint}</p>
+								{/if}
 							{/if}
 						</div>
 
@@ -904,7 +952,7 @@
 							type="button"
 							aria-pressed={simulation.active}
 							onclick={() => (simulation.active = !simulation.active)}
-							class="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-md border px-2 py-2.5 text-sm font-semibold transition-colors md:py-1.5 md:text-xs {simulation.active
+							class="mt-2 inline-flex w-full items-center justify-center gap-1.5 rounded-md border px-2 py-1.5 text-xs font-semibold transition-colors {simulation.active
 								? 'border-brand-navy bg-brand-navy text-white hover:bg-brand-navy/90'
 								: 'border-gray-200 bg-white text-brand-navy hover:bg-gray-50'}"
 						>
@@ -912,43 +960,71 @@
 							{simulation.active ? 'Revenir au temps réel' : 'Simuler la disponibilité'}
 						</button>
 
-						{#if simulation.active && !isMobile.current}
-							<div class="mt-2">
-								<VelovSimulationControls {simulation} timeline={simulationTimeline} />
+						{#if simulation.active}
+							<div class="mt-3">
+								<VelovSimulationControls
+									{simulation}
+									timeline={simulationTimeline}
+									showKinds={false}
+									hint={simulationHint}
+								/>
 							</div>
 						{/if}
 					</div>
-				{/if}
 
-				{#if !isMobile.current && selectedStation}
-					<aside
-						class="pointer-events-auto relative flex min-h-0 flex-col overflow-y-auto rounded-lg bg-white shadow-md ring-1 ring-gray-200"
-						aria-label="Station sélectionnée"
-					>
-						<button
-							type="button"
-							onclick={() => (selectedStation = null)}
-							aria-label="Fermer"
-							class="absolute top-2 right-2 z-10 inline-flex items-center justify-center rounded-full bg-white/90 p-1.5 text-gray-600 shadow ring-1 ring-black/10 hover:bg-white hover:text-gray-900"
+					{#if selectedStation}
+						<aside
+							class="pointer-events-auto relative flex min-h-0 flex-col overflow-y-auto rounded-lg bg-white shadow-md ring-1 ring-gray-200"
+							aria-label="Station sélectionnée"
 						>
-							<X size={14} />
-						</button>
-						<div class="flex flex-col gap-3 px-3 pt-2 pb-3">
-							{@render stationDetails(selectedStation)}
-						</div>
-					</aside>
+							<button
+								type="button"
+								onclick={() => (selectedStation = null)}
+								aria-label="Fermer"
+								class="absolute top-2 right-2 z-10 inline-flex items-center justify-center rounded-full bg-white/90 p-1.5 text-gray-600 shadow ring-1 ring-black/10 hover:bg-white hover:text-gray-900"
+							>
+								<X size={14} />
+							</button>
+							<div class="flex flex-col gap-3 px-3 pt-2 pb-3">
+								{@render stationDetails(selectedStation)}
+							</div>
+						</aside>
+					{/if}
 				{/if}
 			</div>
+
+			{#if isMobile.current && !selectedStation && !simulation.active && !infoExpanded}
+				<div
+					bind:clientHeight={mobileBarHeight}
+					class="absolute inset-x-0 bottom-0 z-20 rounded-t-2xl border-t border-gray-200 bg-white px-4 pt-3 pb-3 shadow-[0_-6px_24px_rgba(0,0,0,0.12)]"
+				>
+					<VelovForecastKindToggle bind:kind={simulation.kind} />
+					<div class="mt-2.5 flex items-center justify-between gap-3">
+						<div class="min-w-0">
+							<VelovLegend kind={simulation.kind} live />
+							{#if labelsHint}
+								<p class="mt-0.5 text-[10px] text-gray-400">{labelsHint}</p>
+							{/if}
+						</div>
+						<button
+							type="button"
+							onclick={() => (simulation.active = true)}
+							class="inline-flex shrink-0 items-center gap-1.5 rounded-full bg-brand-navy px-4 py-2.5 text-sm font-semibold text-white shadow-sm active:bg-brand-navy/90"
+						>
+							<Clock class="h-4 w-4" />
+							Simuler
+						</button>
+					</div>
+				</div>
+			{/if}
 
 			<button
 				type="button"
 				onclick={toggleInfo}
 				aria-label={infoExpanded ? 'Carte plein écran' : "Plus d'informations"}
 				title={infoExpanded ? 'Carte plein écran' : "Plus d'informations"}
-				class="absolute right-2.5 z-20 inline-flex h-9 w-9 items-center justify-center rounded-md bg-white {isMobile.current &&
-				selectedStation
-					? 'bottom-[176px]'
-					: 'bottom-[80px]'} text-brand-navy shadow-md ring-1 ring-black/10 transition-colors hover:bg-gray-50 md:right-4 md:bottom-6 md:h-auto md:w-auto md:gap-1.5 md:rounded-lg md:bg-brand-navy md:px-3 md:py-2 md:text-xs md:font-semibold md:text-white md:hover:bg-brand-navy/90"
+				style:bottom={isMobile.current ? `${mobileBottomInset + 72}px` : undefined}
+				class="absolute right-2.5 z-20 inline-flex h-9 w-9 items-center justify-center rounded-md bg-white text-brand-navy shadow-md ring-1 ring-black/10 transition-colors hover:bg-gray-50 md:right-4 md:bottom-6 md:h-auto md:w-auto md:gap-1.5 md:rounded-lg md:bg-brand-navy md:px-3 md:py-2 md:text-xs md:font-semibold md:text-white md:hover:bg-brand-navy/90"
 			>
 				{#if infoExpanded}
 					<Maximize2 class="h-4 w-4 md:h-3.5 md:w-3.5" />
@@ -982,33 +1058,48 @@
 {/if}
 
 {#if isMobile.current && selectedStation}
+	{@const station = selectedStation}
 	<MobileDrawer
 		open={true}
 		bind:this={stationDrawer}
-		snapPoints={[stationPeekSnap, stationSnap, 0.88]}
-		initialSnapPoint={1}
+		snapPoints={[stationSnap, 0.88]}
+		initialSnapPoint={0}
+		peek
+		fit
 		backdrop={false}
 		dismissible={false}
 		closeButton
 		onClose={() => (selectedStation = null)}
 	>
-		<div class="flex flex-col gap-3 px-3">
-			{@render stationSheet(selectedStation)}
+		{#snippet header()}
+			{@render stationSheetHeader(station)}
+		{/snippet}
+		<div class="flex flex-col gap-3 px-2">
+			{@render stationSheetBody(station)}
 		</div>
 	</MobileDrawer>
 {:else if isMobile.current && simulation.active}
 	<MobileDrawer
 		open={true}
-		snapPoints={[simulationSheetSnap]}
+		snapPoints={[0.7]}
 		initialSnapPoint={0}
+		peek
+		fit
 		backdrop={false}
 		dismissible={false}
+		closeButton
+		closeLabel="Revenir au temps réel"
+		onClose={() => (simulation.active = false)}
 	>
-		<div class="px-3 pt-1">
+		{#snippet header()}
+			<VelovSimulationTime {simulation} timeline={simulationTimeline} />
+		{/snippet}
+		<div class="px-2">
 			<VelovSimulationControls
 				{simulation}
 				timeline={simulationTimeline}
-				onExit={() => (simulation.active = false)}
+				showTime={false}
+				hint={simulationHint}
 			/>
 		</div>
 	</MobileDrawer>
@@ -1028,8 +1119,8 @@
 		left: 376px;
 	}
 
-	:global(.velov-sheet-open .maplibregl-ctrl-bottom-left),
-	:global(.velov-sheet-open .maplibregl-ctrl-bottom-right) {
-		bottom: 112px !important;
+	:global(.velov-mobile-inset .maplibregl-ctrl-bottom-left),
+	:global(.velov-mobile-inset .maplibregl-ctrl-bottom-right) {
+		bottom: calc(var(--velov-bottom) + 8px) !important;
 	}
 </style>
