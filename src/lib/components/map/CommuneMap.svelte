@@ -1415,6 +1415,7 @@
 		open={true}
 		snapPoints={[0.4, 0.8]}
 		initialSnapPoint={0}
+		backdrop={false}
 		onClose={() => {
 			selectedFeatures = [];
 			selectedLngLat = null;
