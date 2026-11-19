@@ -13,7 +13,12 @@
 		VELOV_PIN_ICON_OFFSET,
 	} from '$lib/utils/velovPinIcon';
 	import { velovPalettePreference } from '$lib/utils/mapPreferences.svelte';
-	import { velovMapRange, velovShortRange } from '$lib/utils/velovForecast';
+	import {
+		velovLiveLevel,
+		velovMapRange,
+		velovShortRange,
+		type VelovForecastKind,
+	} from '$lib/utils/velovForecast';
 	import type { VelovSimulationFrame } from '$lib/utils/velovSimulation.svelte';
 	import type { Feature, FeatureCollection, Point } from 'geojson';
 	import type * as maplibregl from 'maplibre-gl';
@@ -25,6 +30,7 @@
 		map,
 		boundary,
 		simulation = null,
+		kind = 'velos',
 		selectedId = null,
 	}: {
 		isLayerVisible: (id: string) => boolean;
@@ -33,6 +39,7 @@
 		map?: maplibregl.Map;
 		boundary?: FeatureCollection;
 		simulation?: VelovSimulationFrame | null;
+		kind?: VelovForecastKind;
 		selectedId?: number | null;
 	} = $props();
 
@@ -112,7 +119,7 @@
 		['to-number', ['get', 'idstation'], -1],
 		selectedId ?? -2,
 	]);
-	const dots = $derived(!!simulation && simulation.kind !== 'velos');
+	const dots = $derived((simulation ? simulation.kind : kind) !== 'velos');
 
 	const iconSize = $derived(
 		byZoom(ICON_SIZE_STOPS, (size) => ['case', isSelected, size * SELECTED_SCALE, size]),
@@ -212,6 +219,26 @@
 			const mech = Number(p?.mechanical_bikes ?? 0);
 			const elec = Number(p?.electrical_bikes ?? 0);
 			const closed = p?.status === 'CLOSED';
+
+			if (kind !== 'velos') {
+				const known = !closed && p?.available_bikes !== undefined;
+				const count =
+					kind === 'bornes' ? Number(p?.available_stands ?? 0) : kind === 'elec' ? elec : mech;
+				const level = velovLiveLevel(count);
+				features.push({
+					...feature,
+					properties: {
+						...(p ?? {}),
+						icon: '',
+						sim_color: known ? chanceColors[level] : '#9ca3af',
+						sim_stroke: known && level === 'unlikely' ? '#6b7280' : '#ffffff',
+						sim_label: known ? String(count) : '',
+						sim_unit: known ? (kind === 'bornes' ? 'P' : 'V') : '',
+					},
+				});
+				continue;
+			}
+
 			const key =
 				cap > 0 ? velovPinIconKey(mech, elec, cap, closed, palette) : VELOV_DEFAULT_PIN_ICON;
 			features.push({

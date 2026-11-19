@@ -165,6 +165,16 @@ export function velovChance(probability: number): VelovChance {
 	return { percent, level, label: VELOV_CHANCE_LABELS[level] };
 }
 
+export const VELOV_LIVE_LEVELS: { level: VelovChanceLevel; label: string }[] = [
+	{ level: 'near-certain', label: '3 et plus' },
+	{ level: 'uncertain', label: '1 à 2' },
+	{ level: 'unlikely', label: 'aucun' },
+];
+
+export function velovLiveLevel(count: number): VelovChanceLevel {
+	return count <= 0 ? 'unlikely' : count <= 2 ? 'uncertain' : 'near-certain';
+}
+
 export function velovCountText(count: number, kind: VelovForecastKind): string {
 	return `${count} ${UNITS[kind]}${count > 1 ? 's' : ''}`;
 }
