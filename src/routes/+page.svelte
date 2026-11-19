@@ -44,6 +44,7 @@
 		saveDesktopSidebarOpen,
 		loadAuto3DLayers,
 		saveAuto3DLayers,
+		velovPalettePreference,
 		type LabelVisibility,
 	} from '$lib/utils/mapPreferences.svelte';
 	import { watchPitchForAuto3D } from '$lib/utils/auto3DLayers.svelte';
@@ -1602,6 +1603,7 @@
 				open={true}
 				snapPoints={[0.4, 0.8]}
 				initialSnapPoint={0}
+				backdrop={false}
 				onClose={() => (selectedFeatures = [])}
 			>
 				<div class="p-0">
@@ -1797,6 +1799,28 @@
 					/>
 					<Label for="config-auto-3d" class="cursor-pointer text-sm font-medium text-gray-700">
 						Afficher les bâtiments et arbres en 3D quand la carte est inclinée
+					</Label>
+				</div>
+			</div>
+
+			<hr class="border-gray-100" />
+
+			<div>
+				<h3 class="mb-2 text-sm font-semibold text-gray-900">Stations Vélo’v</h3>
+				<div class="flex items-center gap-3 rounded-lg p-2 transition-colors hover:bg-gray-50">
+					<Checkbox
+						id="config-velov-palette"
+						checked={velovPalettePreference.id === 'daltonien'}
+						onCheckedChange={(checked) => {
+							velovPalettePreference.id = checked ? 'daltonien' : 'classique';
+						}}
+						class="border-gray-300 data-[state=checked]:border-brand-navy data-[state=checked]:bg-brand-navy"
+					/>
+					<Label
+						for="config-velov-palette"
+						class="cursor-pointer text-sm font-medium text-gray-700"
+					>
+						Couleurs adaptées aux daltoniens : vélos électriques en bleu, mécaniques en orange
 					</Label>
 				</div>
 			</div>

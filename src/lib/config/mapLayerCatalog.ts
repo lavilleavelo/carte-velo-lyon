@@ -13,6 +13,8 @@ import parkingSecureIcon from '$lib/assets/icons/box_securisee_velo.png';
 import parkingLpaIcon from '$lib/assets/icons/parking-lpa.png';
 import pumpIcon from '$lib/assets/icons/pump.png';
 import fountainIcon from '$lib/assets/icons/fontaine.png';
+import { velovPinLegendIcon } from '$lib/utils/velovPinIcon';
+import { velovPalettePreference } from '$lib/utils/mapPreferences.svelte';
 
 export interface LayerCatalogEntry {
 	id: string;
@@ -76,7 +78,9 @@ export const availableLayers: readonly LayerCatalogEntry[] = [
 		id: 'velov',
 		label: 'Stations Velov',
 		color: '#EA2127FF',
-		icon: '/velov-pin.svg',
+		get icon() {
+			return velovPinLegendIcon(velovPalettePreference.id);
+		},
 		category: 'Vélov',
 	},
 	...Array.from({ length: 12 }, (_, i) => ({

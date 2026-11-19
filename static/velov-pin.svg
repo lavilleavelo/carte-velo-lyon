@@ -1,26 +1,20 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 60" width="48" height="60" aria-hidden="true">
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="3 1 42 51" width="42" height="51" aria-hidden="true">
   <defs>
     <clipPath id="velov-pin-clip">
-      <path d="M 24 56 L 8.245 32.620 A 19 19 0 1 1 39.755 32.620 Z"/>
+      <path d="M11.91 32.48A16 16 0 1 1 36.09 32.48L24.76 45.55A1 1 0 0 1 23.24 45.55Z"/>
     </clipPath>
   </defs>
   <path
-    d="M 24 56 L 8.245 32.620 A 19 19 0 1 1 39.755 32.620 Z"
-    fill="white"
+    d="M9.65 34.45A19 19 0 1 1 38.35 34.45L25.89 48.82A2.5 2.5 0 0 1 22.11 48.82Z"
+    fill="#ffffff"
+    stroke="#0f172a"
+    stroke-opacity="0.5"
   />
-  <rect
-    x="3"
-    y="29.5"
-    width="42"
-    height="28"
-    fill="#dc2626"
-    clip-path="url(#velov-pin-clip)"
-  />
-  <path
-    d="M 24 56 L 8.245 32.620 A 19 19 0 1 1 39.755 32.620 Z"
-    fill="none"
-    stroke="#4b5563"
-    stroke-width="1.6"
-    stroke-linejoin="round"
-  />
+  <g clip-path="url(#velov-pin-clip)">
+    <rect width="48" height="56" fill="#dfe3ea"/>
+    <rect y="17.5" width="48" height="11.5" fill="#dc2626"/>
+    <rect y="29" width="48" height="27" fill="#00a676"/>
+    <rect y="28.5" width="48" height="1" fill="#ffffff"/>
+    <rect y="17" width="48" height="1" fill="#ffffff"/>
+  </g>
 </svg>

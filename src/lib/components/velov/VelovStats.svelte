@@ -4,10 +4,12 @@
 	import CircleParking from '@lucide/svelte/icons/circle-parking';
 	import MapPin from '@lucide/svelte/icons/map-pin';
 	import type { Station } from './types';
+	import { velovPalettePreference } from '$lib/utils/mapPreferences.svelte';
 
 	let { stations }: { stations: Station[] } = $props();
 
 	const numFmt = new Intl.NumberFormat('fr-FR');
+	const palette = $derived(velovPalettePreference.colors);
 
 	const stats = $derived.by(() => {
 		const total = stations.length;
@@ -55,7 +57,7 @@
 	});
 </script>
 
-<section class="grid grid-cols-1 gap-3 sm:grid-cols-2 md:grid-cols-4">
+<section class="grid grid-cols-2 gap-2 sm:gap-3 md:grid-cols-4">
 	<div class="rounded-lg border border-gray-200 bg-white p-3 shadow-sm">
 		<div class="flex items-center gap-2 text-xs font-semibold text-gray-500 uppercase">
 			<MapPin class="h-3.5 w-3.5" />
@@ -79,11 +81,13 @@
 		</div>
 		<div class="flex items-center gap-2 text-xs text-gray-500">
 			<span class="inline-flex items-center gap-1">
-				<span class="inline-block h-2 w-2 rounded-full bg-red-600"></span>
+				<span class="inline-block h-2 w-2 rounded-full" style:background-color={palette.mech.fill}
+				></span>
 				{numFmt.format(stats.mech)} méca.
 			</span>
 			<span class="inline-flex items-center gap-1">
-				<span class="inline-block h-2 w-2 rounded-full bg-green-600"></span>
+				<span class="inline-block h-2 w-2 rounded-full" style:background-color={palette.elec.fill}
+				></span>
 				{numFmt.format(stats.elec)} élec.
 			</span>
 		</div>
@@ -107,7 +111,7 @@
 			<Zap class="h-3.5 w-3.5" />
 			Stations Vides/Pleines
 		</div>
-		<div class="mt-1 flex items-baseline gap-3">
+		<div class="mt-1 flex flex-wrap items-baseline gap-x-2 md:gap-x-3">
 			<span class="text-2xl font-bold text-red-700">{numFmt.format(stats.emptyStations)}</span>
 			<span class="text-xs text-gray-500">vides</span>
 			<span class="text-2xl font-bold text-amber-700">{numFmt.format(stats.fullStations)}</span>

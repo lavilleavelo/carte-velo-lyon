@@ -1,4 +1,10 @@
 import { type LabelCategory } from '$lib/components/map/labels/labelLayers';
+import {
+	VELOV_DEFAULT_PALETTE,
+	VELOV_PALETTES,
+	isVelovPaletteId,
+	type VelovPaletteId,
+} from '$lib/utils/velovPalette';
 
 function safeGetItem(key: string): string | null {
 	if (typeof globalThis.localStorage === 'undefined') return null;
@@ -47,3 +53,29 @@ export function loadAuto3DLayers(): boolean {
 export function saveAuto3DLayers(on: boolean) {
 	safeSetItem(AUTO_3D_KEY, String(on));
 }
+
+const VELOV_PALETTE_KEY = 'velovPalette';
+
+export function loadVelovPalette(): VelovPaletteId {
+	const stored = safeGetItem(VELOV_PALETTE_KEY);
+	return isVelovPaletteId(stored) ? stored : VELOV_DEFAULT_PALETTE;
+}
+
+export function saveVelovPalette(id: VelovPaletteId) {
+	safeSetItem(VELOV_PALETTE_KEY, id);
+}
+
+let velovPaletteId = $state(loadVelovPalette());
+
+export const velovPalettePreference = {
+	get id(): VelovPaletteId {
+		return velovPaletteId;
+	},
+	set id(id: VelovPaletteId) {
+		velovPaletteId = id;
+		saveVelovPalette(id);
+	},
+	get colors() {
+		return VELOV_PALETTES[velovPaletteId];
+	},
+};
