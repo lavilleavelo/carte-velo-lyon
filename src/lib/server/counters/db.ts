@@ -11,7 +11,8 @@ const SCHEMA = `
 		flow_ids TEXT NOT NULL,
 		lat REAL,
 		lon REAL,
-		synced_at TEXT
+		synced_at TEXT,
+		source TEXT NOT NULL DEFAULT 'eco-counter'
 	);
 
 	-- day: local date (Europe/Paris), hourly: JSON array of 24 local hours (null when the hour
@@ -89,6 +90,10 @@ export function getCountersDb(): DatabaseSync {
 		mkdirSync(dirname(DB_PATH), { recursive: true });
 		db = new DatabaseSync(DB_PATH);
 		db.exec(SCHEMA);
+		const columns = db.prepare('PRAGMA table_info(counters)').all() as { name: string }[];
+		if (!columns.some((column) => column.name === 'source')) {
+			db.exec(`ALTER TABLE counters ADD COLUMN source TEXT NOT NULL DEFAULT 'eco-counter'`);
+		}
 	}
 	return db;
 }

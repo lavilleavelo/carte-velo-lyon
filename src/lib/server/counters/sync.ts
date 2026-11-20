@@ -1,7 +1,14 @@
+import { getCachedCountersData } from '$lib/server/cache';
 import { addDays, isSpringDstDay, todayInParis } from './calendar';
 import { startCarCountersSync } from './carSync';
 import { getCountersDb, transaction } from './db';
 import { fetchEcoCounters, fetchEcoCounts, SCOOTER_PRACTICE, type EcoCounter } from './ecoCounter';
+import {
+	fetchGrandLyonCounter,
+	fetchGrandLyonMeasures,
+	groupHours,
+	type GrandLyonCounter,
+} from './grandLyon';
 import { syncCounterPhotos } from './photos';
 import { fetchSchoolHolidays } from './schoolHolidays';
 
@@ -14,7 +21,16 @@ const SYNC_INTERVAL_MS = 6 * 60 * 60 * 1000;
 const MIN_RESYNC_MS = 60 * 60 * 1000;
 const SCHEDULER_KEY = '__carteVeloLyonCountersSync';
 
+type SyncedCounter = Omit<EcoCounter, 'photos'> & {
+	source: 'eco-counter' | 'grand-lyon';
+	sync: () => Promise<void>;
+};
+
 let running: Promise<void> | null = null;
+
+function sumHours(hours: (number | null)[]): number {
+	return hours.reduce<number>((sum, count) => sum + (count ?? 0), 0);
+}
 
 // Rows carry no hour: days with missing hours cannot be aligned and are skipped
 function groupHourly(rows: [string, number][]): {
@@ -139,6 +155,64 @@ async function syncScooterDays(counter: EcoCounter, today: string): Promise<void
 	});
 }
 
+async function fetchGrandLyonCounters(ecoCounters: EcoCounter[]): Promise<GrandLyonCounter[]> {
+	const { velo } = await getCachedCountersData();
+	const ecoIds = new Set(ecoCounters.map((counter) => counter.idPdc));
+	const siteIds = (velo as { idPdc: number; source?: string }[])
+		.filter((counter) => counter.source === 'grand-lyon' && !ecoIds.has(counter.idPdc))
+		.map((counter) => counter.idPdc);
+	const counters = await Promise.all(siteIds.map((siteId) => fetchGrandLyonCounter(siteId)));
+	return counters.filter((counter) => counter !== null);
+}
+
+async function syncGrandLyonCounter(counter: GrandLyonCounter, today: string): Promise<void> {
+	const db = getCountersDb();
+
+	const { lastDay } = db
+		.prepare('SELECT MAX(day) AS lastDay FROM counter_days WHERE id_pdc = ?')
+		.get(counter.idPdc) as { lastDay: string | null };
+	const scooterFlows = new Set(
+		counter.flows.filter((flow) => flow.practice === SCOOTER_PRACTICE).map((flow) => flow.id),
+	);
+	const upsertDay = db.prepare(`
+		INSERT INTO counter_days (id_pdc, day, total, hourly) VALUES (?, ?, ?, ?)
+		ON CONFLICT (id_pdc, day) DO UPDATE SET total = excluded.total, hourly = excluded.hourly
+	`);
+	const upsertScooterDay = db.prepare(`
+		INSERT INTO counter_scooter_days (id_pdc, day, total) VALUES (?, ?, ?)
+		ON CONFLICT (id_pdc, day) DO UPDATE SET total = excluded.total
+	`);
+
+	const start = lastDay ? addDays(lastDay, -OVERLAP_DAYS) : (counter.firstDay ?? HISTORY_START);
+	for (let from = start; from < today; from = addDays(from, HOURLY_CHUNK_DAYS)) {
+		const chunkEnd = addDays(from, HOURLY_CHUNK_DAYS);
+		const measures = await fetchGrandLyonMeasures(
+			counter.flows.map((flow) => flow.id),
+			from,
+			chunkEnd < today ? chunkEnd : today,
+		);
+		const scooterDays = groupHours(
+			measures.filter((measure) => scooterFlows.has(measure.channelId)),
+		);
+		transaction(db, () => {
+			for (const [day, hours] of groupHours(measures)) {
+				const complete = hours.every(
+					(count, hour) => count !== null || (hour === 2 && isSpringDstDay(day)),
+				);
+				upsertDay.run(counter.idPdc, day, sumHours(hours), complete ? JSON.stringify(hours) : null);
+			}
+			for (const [day, hours] of scooterDays) {
+				upsertScooterDay.run(counter.idPdc, day, sumHours(hours));
+			}
+		});
+	}
+
+	db.prepare('UPDATE counters SET synced_at = ? WHERE id_pdc = ?').run(
+		new Date().toISOString(),
+		counter.idPdc,
+	);
+}
+
 async function runWithConcurrency<T>(
 	items: T[],
 	concurrency: number,
@@ -180,12 +254,30 @@ async function runSync(): Promise<void> {
 		console.error('[counters] school holidays sync failed:', error);
 	}
 
-	const counters = await fetchEcoCounters();
+	const today = todayInParis();
+	const ecoCounters = await fetchEcoCounters();
+	const grandLyonCounters = await fetchGrandLyonCounters(ecoCounters).catch((error) => {
+		console.error('[counters] Grand Lyon counters fetch failed:', error);
+		return [];
+	});
+	const counters: SyncedCounter[] = [
+		...ecoCounters.map((counter) => ({
+			...counter,
+			source: 'eco-counter' as const,
+			sync: () => syncCounter(counter, today),
+		})),
+		...grandLyonCounters.map((counter) => ({
+			...counter,
+			source: 'grand-lyon' as const,
+			sync: () => syncGrandLyonCounter(counter, today),
+		})),
+	];
 
 	const upsertCounter = db.prepare(`
-		INSERT INTO counters (id_pdc, name, flow_ids, lat, lon) VALUES (?, ?, ?, ?, ?)
+		INSERT INTO counters (id_pdc, name, flow_ids, lat, lon, source) VALUES (?, ?, ?, ?, ?, ?)
 		ON CONFLICT (id_pdc) DO UPDATE SET
-			name = excluded.name, flow_ids = excluded.flow_ids, lat = excluded.lat, lon = excluded.lon
+			name = excluded.name, flow_ids = excluded.flow_ids, lat = excluded.lat, lon = excluded.lon,
+			source = excluded.source
 	`);
 	const deleteFlows = db.prepare('DELETE FROM counter_flows WHERE id_pdc = ?');
 	const insertFlow = db.prepare(
@@ -193,7 +285,14 @@ async function runSync(): Promise<void> {
 	);
 	transaction(db, () => {
 		for (const counter of counters) {
-			upsertCounter.run(counter.idPdc, counter.name, counter.flowIds, counter.lat, counter.lon);
+			upsertCounter.run(
+				counter.idPdc,
+				counter.name,
+				counter.flowIds,
+				counter.lat,
+				counter.lon,
+				counter.source,
+			);
 			deleteFlows.run(counter.idPdc);
 			for (const flow of counter.flows) {
 				insertFlow.run(counter.idPdc, flow.id, flow.practice);
@@ -214,11 +313,10 @@ async function runSync(): Promise<void> {
 		return !lastSync || Date.now() - Date.parse(lastSync) > MIN_RESYNC_MS;
 	});
 
-	const today = todayInParis();
 	let failures = 0;
 	await runWithConcurrency(toSync, CONCURRENCY, async (counter) => {
 		try {
-			await syncCounter(counter, today);
+			await counter.sync();
 		} catch (error) {
 			failures++;
 			console.error(`[counters] sync failed for ${counter.name} (${counter.idPdc}):`, error);
@@ -231,7 +329,7 @@ async function runSync(): Promise<void> {
 	);
 
 	try {
-		await syncCounterPhotos(counters);
+		await syncCounterPhotos(ecoCounters);
 	} catch (error) {
 		console.error('[counters] photos sync failed:', error);
 	}

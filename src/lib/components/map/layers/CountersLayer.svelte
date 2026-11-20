@@ -22,6 +22,7 @@
 		description?: string;
 		arrondissement?: string;
 		cyclopolisId?: string;
+		test?: boolean;
 		coordinates: [number, number];
 		counts: { month: string; count: number }[];
 	}
@@ -33,7 +34,7 @@
 		return {
 			type: 'FeatureCollection',
 			features: counters
-				.filter((c) => c.coordinates && c.coordinates.length === 2)
+				.filter((c) => !c.test && c.coordinates && c.coordinates.length === 2)
 				.map((counter) => {
 					const lastCount = counter.counts?.length
 						? counter.counts[counter.counts.length - 1]
