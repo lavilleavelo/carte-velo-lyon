@@ -3,7 +3,7 @@ import { fetchJson, type FetchOptions } from './http';
 
 const RDATA_URL = 'https://data.grandlyon.com/fr/datapusher/ws/rdata/pvo_patrimoine_voirie';
 const MEASURES_URL =
-	'https://download.data.grandlyon.com/ws/timeseries/pvo_patrimoine_voirie.pvocomptagemeasure/all.json';
+	'https://data.grandlyon.com/fr/datapusher/ws/timeseries/pvo_patrimoine_voirie.pvocomptagemeasure/all.json';
 
 const PRACTICES = new Map([
 	['BIKE', BIKE_PRACTICE],
