@@ -7,15 +7,25 @@ services:
     environment:
       - CACHE_DIR=/data/cache
       - COUNTERS_DB_PATH=/data/db/counters.sqlite
+      - TCL_DATA_DIR=/data/tcl
+      - GRANDLYON_LOGIN=${GRANDLYON_LOGIN:-}
+      - GRANDLYON_PASSWORD=${GRANDLYON_PASSWORD:-}
+      - TCL_LINES=${TCL_LINES:-}
+      - TCL_GRENETTE_LINES=${TCL_GRENETTE_LINES:-}
+      - TCL_VM_LINES=${TCL_VM_LINES:-}
+      - TCL_ET_INTERVAL_S=${TCL_ET_INTERVAL_S:-}
+      - TCL_COLLECT=${TCL_COLLECT:-}
     volumes:
       - cache-data:/data/cache
       - counters-db:/data/db
+      - tcl-data:/data/tcl
     networks:
       - scoobydoo
 
 volumes:
   cache-data:
   counters-db:
+  tcl-data:
 
 networks:
   scoobydoo:

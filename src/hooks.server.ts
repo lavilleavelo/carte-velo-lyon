@@ -1,6 +1,7 @@
 import type { Handle, ServerInit } from '@sveltejs/kit';
 import { building } from '$app/environment';
 import { startCountersSync } from '$lib/server/counters/sync';
+import { startTclCollector } from '$lib/server/tcl/collector';
 
 const ALLOWED_ORIGINS = new Set([
 	'https://dazzling-gumdrop-a1bad4.netlify.app',
@@ -28,6 +29,7 @@ export const init: ServerInit = () => {
 	// Prerendering runs the server at build time: no sync there
 	if (!building) {
 		startCountersSync();
+		startTclCollector();
 	}
 };
 
