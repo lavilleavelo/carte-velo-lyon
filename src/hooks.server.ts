@@ -2,6 +2,7 @@ import type { Handle, ServerInit } from '@sveltejs/kit';
 import { building } from '$app/environment';
 import { startCountersSync } from '$lib/server/counters/sync';
 import { startTclCollector } from '$lib/server/tcl/collector';
+import { startTclSummaries } from '$lib/server/tcl/summary';
 
 const ALLOWED_ORIGINS = new Set([
 	'https://dazzling-gumdrop-a1bad4.netlify.app',
@@ -30,6 +31,7 @@ export const init: ServerInit = () => {
 	if (!building) {
 		startCountersSync();
 		startTclCollector();
+		startTclSummaries();
 	}
 };
 
