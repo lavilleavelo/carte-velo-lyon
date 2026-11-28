@@ -4,6 +4,7 @@ import { appendFile, mkdir } from 'node:fs/promises';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 import { todayInParis } from '$lib/server/counters/calendar';
+import { setLatestVehicles } from './vehicles';
 import {
 	estimatedJourneys,
 	journeyKey,
@@ -135,6 +136,7 @@ async function pollVehicles(context: Context, state: FeedStatus): Promise<number
 	state.lastBytes = bytes;
 	const day = startDay();
 	const activities = vehicleActivities(data);
+	setLatestVehicles(received, activities);
 	for (const activity of activities) {
 		const code = lineCode(activity);
 		if (code) {

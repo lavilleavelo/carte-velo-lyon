@@ -7,9 +7,10 @@ import { getTclDb } from './db';
 import { readRecords, tclDataDir } from './files';
 import { refreshGtfs } from './gtfs';
 import { createPassageDetector, refreshStops, type Passage } from './passages';
-import { directionOf, journeyKey, lineCode, recordedAt, vehicleKey } from './siri';
+import { createReplayWriter } from './replay';
+import { directionOf, journeyKey, lineCode, parseDuration, recordedAt, vehicleKey } from './siri';
 
-export const SUMMARY_VERSION = 6;
+export const SUMMARY_VERSION = 7;
 
 export const GRENETTE = {
 	westLon: 4.8327,
@@ -74,23 +75,6 @@ const state = {
 	lastRunAt: null as string | null,
 	lastError: null as string | null,
 };
-
-export function parseDuration(value: unknown): number | null {
-	if (typeof value !== 'string') {
-		return null;
-	}
-	const match = value.match(/^(-)?P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$/);
-	if (!match) {
-		return null;
-	}
-	const [, sign, days, hours, minutes, seconds] = match;
-	const total =
-		Number(days ?? 0) * 86400 +
-		Number(hours ?? 0) * 3600 +
-		Number(minutes ?? 0) * 60 +
-		Number(seconds ?? 0);
-	return sign ? -total : total;
-}
 
 const PARIS_HOUR = new Intl.DateTimeFormat('en-GB', {
 	timeZone: 'Europe/Paris',
@@ -213,6 +197,7 @@ async function summarizeDay(day: string): Promise<DaySummary> {
 		passages: [],
 	};
 	const detector = createPassageDetector();
+	const replay = createReplayWriter(day);
 	if (summary.bytes.vm === 0) {
 		return summary;
 	}
@@ -231,6 +216,7 @@ async function summarizeDay(day: string): Promise<DaySummary> {
 			}
 			previousReceived = at;
 			hour = parisHour(at);
+			await replay.add(at / 1000, Array.isArray(record.items) ? record.items : []);
 		}
 
 		for (const item of Array.isArray(record.items) ? record.items : []) {
@@ -342,6 +328,7 @@ async function summarizeDay(day: string): Promise<DaySummary> {
 			}
 		}
 	}
+	await replay.finish();
 	summary.passages = detector.passages;
 	return summary;
 }

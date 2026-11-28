@@ -83,3 +83,20 @@ export function stopIdOf(call: Json): number | null {
 export function estimatedCalls(journey: Json): Json[] {
 	return list(object(journey.EstimatedCalls).EstimatedCall).map(object);
 }
+
+export function parseDuration(value: unknown): number | null {
+	if (typeof value !== 'string') {
+		return null;
+	}
+	const match = value.match(/^(-)?P(?:(\d+)D)?T?(?:(\d+)H)?(?:(\d+)M)?(?:(\d+(?:\.\d+)?)S)?$/);
+	if (!match) {
+		return null;
+	}
+	const [, sign, days, hours, minutes, seconds] = match;
+	const total =
+		Number(days ?? 0) * 86400 +
+		Number(hours ?? 0) * 3600 +
+		Number(minutes ?? 0) * 60 +
+		Number(seconds ?? 0);
+	return sign ? -total : total;
+}

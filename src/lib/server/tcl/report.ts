@@ -163,7 +163,7 @@ export function studyLines(): string[] {
 	return grenetteLines();
 }
 
-function lineGroups() {
+export function lineGroups() {
 	const rows = getTclDb()
 		.prepare("SELECT DISTINCT line FROM delays WHERE line NOT LIKE '\\_%' ESCAPE '\\'")
 		.all() as { line: string }[];

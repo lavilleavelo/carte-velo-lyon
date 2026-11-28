@@ -517,3 +517,38 @@ export function createTripMatcher(day: string) {
 		},
 	};
 }
+
+let colorCache: {
+	archive: string;
+	colors: Record<string, { color: string; text: string }>;
+} | null = null;
+
+export async function lineColors(): Promise<Record<string, { color: string; text: string }>> {
+	const row = getTclDb()
+		.prepare('SELECT archive FROM gtfs_versions WHERE archive IS NOT NULL ORDER BY id DESC LIMIT 1')
+		.get() as { archive: string } | undefined;
+	if (!row) {
+		return {};
+	}
+	if (colorCache?.archive === row.archive) {
+		return colorCache.colors;
+	}
+	const colors: Record<string, { color: string; text: string }> = {};
+	try {
+		for await (const route of readZipCsv(row.archive, 'routes.txt')) {
+			const line = (route.route_short_name || route.route_id).toUpperCase();
+			if (/^[0-9A-Fa-f]{6}$/.test(route.route_color ?? '')) {
+				colors[line] = {
+					color: `#${route.route_color}`,
+					text: /^[0-9A-Fa-f]{6}$/.test(route.route_text_color ?? '')
+						? `#${route.route_text_color}`
+						: '#FFFFFF',
+				};
+			}
+		}
+	} catch {
+		return {};
+	}
+	colorCache = { archive: row.archive, colors };
+	return colors;
+}
