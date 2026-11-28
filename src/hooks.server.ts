@@ -54,7 +54,12 @@ export const handle: Handle = async ({ event, resolve }) => {
 		return new Response(null, { status: 204, headers });
 	}
 
-	const response = await resolve(event);
+	const response = await resolve(
+		event,
+		event.url.pathname.startsWith('/suivi-retard-tcl')
+			? { preload: ({ type }) => type === 'css' }
+			: undefined,
+	);
 
 	if (isApi && allowOrigin) {
 		response.headers.set('Access-Control-Allow-Origin', allowOrigin);
