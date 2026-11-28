@@ -6,6 +6,7 @@
 	import TclStopSelect from '$lib/components/tcl/TclStopSelect.svelte';
 	import TclSection from '$lib/components/tcl/TclSection.svelte';
 	import TclStat from '$lib/components/tcl/TclStat.svelte';
+	import { resolve } from '$app/paths';
 	import { tick } from 'svelte';
 	import type { PageProps } from './$types';
 
@@ -454,6 +455,11 @@
 			et aux piétons, elle rouvre aux voitures le {fullDayFormat.format(reopening)}. Comparer les
 			semaines avant et après cette date dira si les bus y perdent du temps.
 		</p>
+		<a
+			href={resolve('/suivi-retard-tcl/direct')}
+			class="mt-4 inline-flex items-center gap-2 rounded-lg bg-white/10 px-3 py-1.5 text-sm font-medium text-white hover:bg-white/20"
+			>Voir les bus et les trams sur la carte, en direct ou en rejeu →</a
+		>
 		<dl class="mt-5 flex flex-wrap gap-x-8 gap-y-2 text-sm text-white/80">
 			<div>
 				<dt class="inline">Relevés depuis le</dt>
